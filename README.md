@@ -24,6 +24,35 @@ pnpm lint
 pnpm test
 ```
 
+## Database
+
+The bingo tables live in their own `bingo` schema of the Supabase project shared with the
+twinion project (D3). `apps/api/drizzle.config.ts` sets `schemaFilter: ['bingo']` and its own
+`out` directory so drizzle-kit can never see twinion's `public` tables as absent and generate
+drops for them — and the migration journal is kept in `bingo` too, not in the default
+`drizzle` schema that twinion's own chain owns.
+
+**Never run `drizzle-kit push` or `pull`, and never point a tool at the shared project from a
+development machine.** Schema changes go through the migration chain, applied by a command:
+
+```bash
+# Edit apps/api/src/db/schema.ts, then emit SQL and read it before running it.
+pnpm --filter @twinion-bingo/api db:generate
+
+# An ephemeral local Postgres to verify against — throw it away afterwards.
+docker run -d --name bingo-pg -e POSTGRES_PASSWORD=postgres -p 55432:5432 postgres:17-alpine
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
+  pnpm --filter @twinion-bingo/api db:migrate
+DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
+  pnpm --filter @twinion-bingo/api test
+docker rm -f bingo-pg
+```
+
+CI's `db` job runs exactly that against a service container, twice, so re-applying stays a
+no-op. `pnpm test` without a `DATABASE_URL` skips the schema tests and still runs the safety
+gate that reads the emitted SQL. Applying a migration to the shared project is an operator
+step, run with a credential that never reaches CI or an agent.
+
 ## Deploy
 
 The API is its own Fly app; the web app is on Vercel. Both are deployed manually.
