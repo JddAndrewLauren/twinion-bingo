@@ -3,12 +3,34 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 /**
  * Runs against an ephemeral local Postgres that already has the migration
- * applied — see the README for the two commands. Without DATABASE_URL there is
- * nothing to assert against, so these skip rather than fail; CI provides one.
+ * applied — see the README for the two commands. These tests TRUNCATE, so they
+ * deliberately do NOT read `DATABASE_URL`: that variable carries the shared
+ * Supabase credential during an operator's real migration run, and the README's
+ * sequence would otherwise arm the truncate against it. A separate
+ * `TEST_DATABASE_URL` has to be set on purpose, and it has to be local.
+ * Unset, these skip rather than fail; CI's `db` job provides one.
  */
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.TEST_DATABASE_URL;
 
-describe.skipIf(databaseUrl === undefined)('the bingo schema', () => {
+const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+/**
+ * Second belt. A `TEST_DATABASE_URL` pointing anywhere but this machine is a
+ * mistake worth failing loudly over, never one to silently truncate through.
+ */
+function assertLocal(url: string): void {
+  const { hostname } = new URL(url);
+  if (!localHosts.has(hostname)) {
+    throw new Error(
+      `TEST_DATABASE_URL must point at a local, throwaway Postgres; got host "${hostname}". ` +
+        'These tests truncate every bingo table.',
+    );
+  }
+}
+
+if (databaseUrl !== undefined && databaseUrl !== '') assertLocal(databaseUrl);
+
+describe.skipIf(databaseUrl === undefined || databaseUrl === '')('the bingo schema', () => {
   // Never connected when skipped; postgres.js only dials on the first query.
   const sql = postgres(databaseUrl ?? 'postgres://unused', { max: 1 });
 

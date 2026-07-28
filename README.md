@@ -43,15 +43,19 @@ pnpm --filter @twinion-bingo/api db:generate
 docker run -d --name bingo-pg -e POSTGRES_PASSWORD=postgres -p 55432:5432 postgres:17-alpine
 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
   pnpm --filter @twinion-bingo/api db:migrate
-DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
+# Note the different variable: the schema tests truncate every bingo table, so they
+# read TEST_DATABASE_URL and never DATABASE_URL, and refuse any non-local host.
+TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
   pnpm --filter @twinion-bingo/api test
 docker rm -f bingo-pg
 ```
 
 CI's `db` job runs exactly that against a service container, twice, so re-applying stays a
-no-op. `pnpm test` without a `DATABASE_URL` skips the schema tests and still runs the safety
-gate that reads the emitted SQL. Applying a migration to the shared project is an operator
-step, run with a credential that never reaches CI or an agent.
+no-op. `pnpm test` without a `TEST_DATABASE_URL` skips the schema tests and still runs the
+safety gate that reads the emitted SQL. Applying a migration to the shared project is an
+operator step, run with a credential that never reaches CI or an agent — and because that
+credential goes in `DATABASE_URL`, which the truncating tests do not read, running the
+operator sequence can never point them at the shared project.
 
 ## Deploy
 
