@@ -1,6 +1,7 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomScreen } from '../app/r/[code]/room-screen';
+import { FakeEventSource } from './fake-event-source';
 
 const apiUrl = 'https://api.example';
 const shareLink = 'https://bingo.example/r/ABCD';
@@ -39,39 +40,8 @@ function stubApi() {
   return fetchMock;
 }
 
-/**
- * jsdom ships no `EventSource`, and the room screen opens one as soon as the
- * roster loads. This one records what was opened and lets a test push a frame
- * down it, which is how the live-roster case below stands in for a second phone.
- */
-class FakeEventSource {
-  static opened: FakeEventSource[] = [];
-
-  private listeners: ((event: MessageEvent) => void)[] = [];
-  closed = false;
-
-  constructor(readonly url: string) {
-    FakeEventSource.opened.push(this);
-  }
-
-  addEventListener(type: string, listener: (event: MessageEvent) => void) {
-    if (type === 'message') this.listeners.push(listener);
-  }
-
-  close() {
-    this.closed = true;
-  }
-
-  emit(event: { seq: number; kind: string }) {
-    const message = new MessageEvent('message', { data: JSON.stringify(event) });
-    for (const listener of this.listeners) listener(message);
-  }
-}
-
 beforeEach(() => {
   window.localStorage.clear();
-  FakeEventSource.opened = [];
-  vi.stubGlobal('EventSource', FakeEventSource);
 });
 
 afterEach(() => {
@@ -139,7 +109,10 @@ describe('opening a share link', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    // Waiting for the roster to be on screen, not merely for fetch to have been
+    // called: the read is only settled once the screen has rendered it, and a
+    // test that returns earlier leaves the screen's effects still to run.
+    await screen.findByText(/Ash/);
 
     const [, init] = fetchMock.mock.calls[0] ?? [];
     expect(new Headers(init?.headers).get('authorization')).toBe(
