@@ -1,0 +1,45 @@
+# Fly.io config for the bingo API (D2 — its own app, not an extension of twinion-api).
+# Secrets are set out-of-band via `flyctl secrets set` — never commit them here.
+# Non-secret values live in [env] below.
+
+app            = "twinion-bingo-api"
+primary_region = "lax"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT     = "8080"
+
+[http_service]
+  internal_port       = 8080
+  force_https         = true
+  # Mid-race machine stops are assumed and harmless: state lives in Postgres and
+  # Last-Event-ID replay turns a stop into a ~2–5 s gap. Do NOT set "off".
+  auto_stop_machines  = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  # A room is a couple of dozen devices each holding an SSE stream open for two
+  # hours, so count connections rather than requests.
+  [http_service.concurrency]
+    type       = "connections"
+    soft_limit = 200
+    hard_limit = 250
+
+  # Long-lived SSE streams: the proxy must not cut an idle-looking connection
+  # between calls. The stream sends a `:ping` every ~25 s.
+  [http_service.http_options]
+    idle_timeout = 600
+
+  [[http_service.checks]]
+    interval     = "15s"
+    timeout      = "5s"
+    grace_period = "10s"
+    method       = "get"
+    path         = "/health"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"
