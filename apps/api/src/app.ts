@@ -1,15 +1,19 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { isOriginAllowed, type AppConfig } from './config.js';
 
-export type AppConfig = {
-  /** Origin the web app is served from; the only origin allowed to call this API. */
-  webOrigin: string;
-};
+export type { AppConfig };
 
 export function createApp(config: AppConfig) {
   const app = new Hono();
 
-  app.use('*', cors({ origin: config.webOrigin }));
+  app.use(
+    '*',
+    cors({
+      origin: (origin) =>
+        isOriginAllowed(origin, config.allowedOrigins) ? origin : null,
+    }),
+  );
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
 

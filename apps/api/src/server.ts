@@ -1,9 +1,11 @@
 import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
+import { resolveServerConfig } from './config.js';
 
-const port = Number(process.env.PORT ?? 8080);
-const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+const { port, allowedOrigins } = resolveServerConfig(process.env);
 
-serve({ fetch: createApp({ webOrigin }).fetch, port, hostname: '::' });
+serve({ fetch: createApp({ allowedOrigins }).fetch, port, hostname: '::' });
 
-console.log(`api listening on :${port}, web origin ${webOrigin}`);
+console.log(
+  `api listening on :${port}, web origins ${allowedOrigins.join(', ')}`,
+);

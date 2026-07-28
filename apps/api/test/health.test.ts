@@ -3,7 +3,7 @@ import { createApp } from '../src/app.js';
 
 describe('health route', () => {
   it('reports the service is up', async () => {
-    const app = createApp({ webOrigin: 'https://bingo.example' });
+    const app = createApp({ allowedOrigins: ['https://bingo.example'] });
 
     const res = await app.request('/health');
 
