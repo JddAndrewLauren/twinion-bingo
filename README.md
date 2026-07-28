@@ -3,8 +3,10 @@
 Themed multiplayer bingo where the squares are *events*, not numbers. See `PLAN.md` for the design.
 
 ```
-apps/api    Hono API on its own Fly app (D2) — SSE stream lives here
-apps/web    Next.js 16 / React 19 / Tailwind v4 (D12)
+apps/api          Hono API on its own Fly app (D2) — SSE stream lives here
+apps/web          Next.js 16 / React 19 / Tailwind v4 (D12)
+packages/theme    pool:build — expands a theme folder into its square pool (D9)
+themes/           one folder per theme, generated pool committed (D10)
 ```
 
 ## Local development
@@ -15,6 +17,13 @@ pnpm dev            # web on :3000, API on :8080
 ```
 
 Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults.
+
+Square pools are generated at build time and committed, so regenerate and commit the diff after
+editing any theme folder — see `themes/README.md`:
+
+```bash
+pnpm pool:build     # rewrites themes/*/pool.generated.json
+```
 
 Gates, all run by CI on push:
 

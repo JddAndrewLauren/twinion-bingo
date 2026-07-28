@@ -1,0 +1,39 @@
+{
+  "squares": [
+    {
+      "key": "lights_out",
+      "label": "\"Lights out and away!\"",
+      "description": "Crofty calls the start with the line he has never once skipped.",
+      "tier": "certain",
+      "exclusivityGroup": "commentary:lights_out"
+    },
+    {
+      "key": "safety_car",
+      "label": "Safety car deployed",
+      "description": "The safety car is sent out, full or virtual.",
+      "tier": "certain",
+      "exclusivityGroup": "neutralisation:safety_car"
+    },
+    {
+      "key": "red_flag",
+      "label": "Red flag",
+      "description": "The race is stopped and the field is sent to the pit lane.",
+      "tier": "rare",
+      "exclusivityGroup": "neutralisation:red_flag"
+    },
+    {
+      "key": "rain_arrives",
+      "label": "Rain starts falling",
+      "description": "Rain reaches the circuit during the race, wherever on the track.",
+      "tier": "medium",
+      "exclusivityGroup": "weather:rain"
+    },
+    {
+      "key": "track_limits",
+      "label": "A lap time is deleted",
+      "description": "A lap time is deleted for exceeding track limits.",
+      "tier": "medium",
+      "exclusivityGroup": "stewards:track_limits"
+    }
+  ]
+}
