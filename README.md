@@ -30,11 +30,13 @@ The API is its own Fly app; the web app is on Vercel. Both are deployed manually
 
 ```bash
 # API — first time only
-fly launch --no-deploy --copy-config --config apps/api/fly.toml --dockerfile apps/api/Dockerfile
+fly apps create twinion-bingo-api --org personal
 fly secrets set WEB_ORIGIN=https://<web-host> --app twinion-bingo-api
 
-# API — every time (build context is the repo root, per the Dockerfile)
-fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile
+# API — every time. Run from the repo root and pass it as the build context; the
+# Dockerfile needs the workspace manifest and lockfile. Do NOT add --dockerfile:
+# that path resolves relative to fly.toml's own directory.
+fly deploy . --config apps/api/fly.toml
 
 # Web
 vercel deploy --prod    # root directory apps/web, NEXT_PUBLIC_API_URL=https://twinion-bingo-api.fly.dev

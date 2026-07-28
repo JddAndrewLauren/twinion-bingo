@@ -6,6 +6,10 @@ app            = "twinion-bingo-api"
 primary_region = "lax"
 
 [build]
+  # Resolved relative to THIS file's directory. The Dockerfile needs the repo root
+  # as its build context (workspace manifest + lockfile), so pass the root
+  # explicitly and don't add --dockerfile:
+  #   fly deploy . --config apps/api/fly.toml
   dockerfile = "Dockerfile"
 
 [env]
