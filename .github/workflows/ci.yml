@@ -42,3 +42,49 @@ jobs:
       - uses: actions/checkout@v5
 
       - run: docker build --file apps/api/Dockerfile .
+
+  # Migrations are applied by a command, never by hand, and this job is where
+  # that command is exercised. The database is an ephemeral service container:
+  # the shared Supabase project is never reachable from CI.
+  db:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Two names for the one throwaway container: `db:migrate` reads
+      # DATABASE_URL, and the truncating schema tests read TEST_DATABASE_URL —
+      # which no real credential is ever set under.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @twinion-bingo/api db:migrate
+
+      # Applying twice has to be a no-op, or a redeploy would be a hazard.
+      - run: pnpm --filter @twinion-bingo/api db:migrate
+
+      # TEST_DATABASE_URL is set, so the schema tests run rather than skipping.
+      - run: pnpm --filter @twinion-bingo/api test
