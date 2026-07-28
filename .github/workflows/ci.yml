@@ -2,7 +2,13 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+# A branch's older runs are worthless once a newer commit lands on it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -24,3 +30,15 @@ jobs:
       - run: pnpm lint
 
       - run: pnpm test
+
+      - run: pnpm build
+
+  # The image build is the other thing no test covers, and the only time it has
+  # broken it broke during a deploy. Build only, from the repo root as the build
+  # context — same shape as `fly deploy .`; nothing is pushed.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - run: docker build --file apps/api/Dockerfile .

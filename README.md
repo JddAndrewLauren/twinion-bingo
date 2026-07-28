@@ -33,6 +33,10 @@ The API is its own Fly app; the web app is on Vercel. Both are deployed manually
 fly apps create twinion-bingo-api --org personal
 fly secrets set WEB_ORIGIN=https://<web-host> --app twinion-bingo-api
 
+# WEB_ORIGIN is a comma-separated list of browser origins allowed to call the API.
+# Vercel preview URLs are matched automatically under the listed project's prefix,
+# so previews need no extra entry. The API refuses to start in production without it.
+
 # API — every time. Run from the repo root and pass it as the build context; the
 # Dockerfile needs the workspace manifest and lockfile. Do NOT add --dockerfile:
 # that path resolves relative to fly.toml's own directory.
