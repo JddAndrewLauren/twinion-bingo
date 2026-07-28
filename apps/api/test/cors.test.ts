@@ -36,12 +36,14 @@ describe('cross-origin access', () => {
 
     const res = await app.request('/health', {
       headers: {
-        Origin: 'https://twinion-bingo-web-git-my-branch-jdd.vercel.app',
+        // A real preview hostname Vercel minted for a branch on this project.
+        Origin:
+          'https://twinion-bingo-web-git-api-cors-config-john-dominguez-s-projects.vercel.app',
       },
     });
 
     expect(res.headers.get('access-control-allow-origin')).toBe(
-      'https://twinion-bingo-web-git-my-branch-jdd.vercel.app',
+      'https://twinion-bingo-web-git-api-cors-config-john-dominguez-s-projects.vercel.app',
     );
   });
 
