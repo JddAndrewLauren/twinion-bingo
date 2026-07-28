@@ -1,0 +1,430 @@
+{
+  "themeId": "f1",
+  "poolVersion": "v1",
+  "freeCentre": "LIGHTS OUT",
+  "squares": [
+    {
+      "id": "f1.v1:driver_moans_at_team:ALB",
+      "label": "Albon moans at Williams",
+      "description": "Albon complains about the car over Williams team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:ALB",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:BOR",
+      "label": "Bortoleto moans at Audi",
+      "description": "Bortoleto complains about the car over Audi team radio.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:BOR",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:HAD",
+      "label": "Hadjar moans at Red Bull",
+      "description": "Hadjar complains about the car over Red Bull team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:HAD",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:HAM",
+      "label": "Hamilton moans at Ferrari",
+      "description": "Hamilton complains about the car over Ferrari team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:HAM",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:HUL",
+      "label": "Hulkenberg moans at Audi",
+      "description": "Hulkenberg complains about the car over Audi team radio.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:HUL",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:LEC",
+      "label": "Leclerc moans at Ferrari",
+      "description": "Leclerc complains about the car over Ferrari team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:LEC",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:NOR",
+      "label": "Norris moans at McLaren",
+      "description": "Norris complains about the car over McLaren team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:NOR",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:PIA",
+      "label": "Piastri moans at McLaren",
+      "description": "Piastri complains about the car over McLaren team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:PIA",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:SAI",
+      "label": "Sainz moans at Williams",
+      "description": "Sainz complains about the car over Williams team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:SAI",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_moans_at_team:VER",
+      "label": "Verstappen moans at Red Bull",
+      "description": "Verstappen complains about the car over Red Bull team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "radio_moan:VER",
+      "templateId": "driver_moans_at_team"
+    },
+    {
+      "id": "f1.v1:driver_podium:ALB",
+      "label": "Albon on the podium",
+      "description": "Albon finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "podium:ALB",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:BOR",
+      "label": "Bortoleto on the podium",
+      "description": "Bortoleto finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "podium:BOR",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:HAD",
+      "label": "Hadjar on the podium",
+      "description": "Hadjar finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "podium:HAD",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:HAM",
+      "label": "Hamilton on the podium",
+      "description": "Hamilton finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "podium:HAM",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:HUL",
+      "label": "Hulkenberg on the podium",
+      "description": "Hulkenberg finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "podium:HUL",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:LEC",
+      "label": "Leclerc on the podium",
+      "description": "Leclerc finishes in the top three.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "podium:LEC",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:NOR",
+      "label": "Norris on the podium",
+      "description": "Norris finishes in the top three.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "podium:NOR",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:PIA",
+      "label": "Piastri on the podium",
+      "description": "Piastri finishes in the top three.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "podium:PIA",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:SAI",
+      "label": "Sainz on the podium",
+      "description": "Sainz finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "podium:SAI",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_podium:VER",
+      "label": "Verstappen on the podium",
+      "description": "Verstappen finishes in the top three.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "podium:VER",
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "f1.v1:driver_retires:ALB",
+      "label": "Albon retires",
+      "description": "Albon fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:ALB",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:BOR",
+      "label": "Bortoleto retires",
+      "description": "Bortoleto fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:BOR",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:HAD",
+      "label": "Hadjar retires",
+      "description": "Hadjar fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:HAD",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:HAM",
+      "label": "Hamilton retires",
+      "description": "Hamilton fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:HAM",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:HUL",
+      "label": "Hulkenberg retires",
+      "description": "Hulkenberg fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:HUL",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:LEC",
+      "label": "Leclerc retires",
+      "description": "Leclerc fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "out:LEC",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:NOR",
+      "label": "Norris retires",
+      "description": "Norris fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "out:NOR",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:PIA",
+      "label": "Piastri retires",
+      "description": "Piastri fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "out:PIA",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:SAI",
+      "label": "Sainz retires",
+      "description": "Sainz fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "out:SAI",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_retires:VER",
+      "label": "Verstappen DNFs",
+      "description": "Verstappen fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "out:VER",
+      "templateId": "driver_retires"
+    },
+    {
+      "id": "f1.v1:driver_wins:ALB",
+      "label": "Albon wins",
+      "description": "Albon takes the chequered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:HAM",
+      "label": "Hamilton wins",
+      "description": "Hamilton takes the chequered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:LEC",
+      "label": "Leclerc wins",
+      "description": "Leclerc takes the chequered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:NOR",
+      "label": "Norris wins",
+      "description": "Norris takes the chequered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:PIA",
+      "label": "Piastri wins",
+      "description": "Piastri takes the chequered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:SAI",
+      "label": "Sainz wins",
+      "description": "Sainz takes the chequered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:driver_wins:VER",
+      "label": "Verstappen wins",
+      "description": "Verstappen takes the chequered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "race_winner",
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "f1.v1:hand:lights_out",
+      "label": "\"Lights out and away!\"",
+      "description": "Crofty calls the start with the line he has never once skipped.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "commentary:lights_out",
+      "templateId": null
+    },
+    {
+      "id": "f1.v1:hand:rain_arrives",
+      "label": "Rain starts falling",
+      "description": "Rain reaches the circuit during the race, wherever on the track.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "weather:rain",
+      "templateId": null
+    },
+    {
+      "id": "f1.v1:hand:red_flag",
+      "label": "Red flag",
+      "description": "The race is stopped and the field is sent to the pit lane.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:red_flag",
+      "templateId": null
+    },
+    {
+      "id": "f1.v1:hand:safety_car",
+      "label": "Safety car deployed",
+      "description": "The safety car is sent out, full or virtual.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:safety_car",
+      "templateId": null
+    },
+    {
+      "id": "f1.v1:hand:track_limits",
+      "label": "A lap time is deleted",
+      "description": "A lap time is deleted for exceeding track limits.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "stewards:track_limits",
+      "templateId": null
+    },
+    {
+      "id": "f1.v1:team_botches_stop:AUD",
+      "label": "Audi botches a stop",
+      "description": "A Audi pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "botched_stop:AUD",
+      "templateId": "team_botches_stop"
+    },
+    {
+      "id": "f1.v1:team_botches_stop:FER",
+      "label": "Ferrari botches a stop",
+      "description": "A Ferrari pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "botched_stop:FER",
+      "templateId": "team_botches_stop"
+    },
+    {
+      "id": "f1.v1:team_botches_stop:MCL",
+      "label": "McLaren botches a stop",
+      "description": "A McLaren pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "botched_stop:MCL",
+      "templateId": "team_botches_stop"
+    },
+    {
+      "id": "f1.v1:team_botches_stop:RBR",
+      "label": "Red Bull fumbles a stop",
+      "description": "A Red Bull pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "botched_stop:RBR",
+      "templateId": "team_botches_stop"
+    },
+    {
+      "id": "f1.v1:team_botches_stop:WIL",
+      "label": "Williams botches a stop",
+      "description": "A Williams pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "botched_stop:WIL",
+      "templateId": "team_botches_stop"
+    }
+  ]
+}

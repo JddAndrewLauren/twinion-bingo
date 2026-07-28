@@ -1,0 +1,21 @@
+{
+  "team": [
+    { "key": "MCL", "name": "McLaren", "tier": "frontrunner" },
+    { "key": "RBR", "name": "Red Bull", "tier": "frontrunner" },
+    { "key": "FER", "name": "Ferrari", "tier": "frontrunner" },
+    { "key": "WIL", "name": "Williams", "tier": "midfield" },
+    { "key": "AUD", "name": "Audi", "tier": "backmarker" }
+  ],
+  "driver": [
+    { "key": "NOR", "name": "Norris", "tier": "frontrunner", "team": "MCL" },
+    { "key": "PIA", "name": "Piastri", "tier": "frontrunner", "team": "MCL" },
+    { "key": "VER", "name": "Verstappen", "tier": "frontrunner", "team": "RBR" },
+    { "key": "HAD", "name": "Hadjar", "tier": "midfield", "team": "RBR" },
+    { "key": "LEC", "name": "Leclerc", "tier": "frontrunner", "team": "FER" },
+    { "key": "HAM", "name": "Hamilton", "tier": "midfield", "team": "FER" },
+    { "key": "ALB", "name": "Albon", "tier": "midfield", "team": "WIL" },
+    { "key": "SAI", "name": "Sainz", "tier": "midfield", "team": "WIL" },
+    { "key": "HUL", "name": "Hulkenberg", "tier": "backmarker", "team": "AUD" },
+    { "key": "BOR", "name": "Bortoleto", "tier": "backmarker", "team": "AUD" }
+  ]
+}

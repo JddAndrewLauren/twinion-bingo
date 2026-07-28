@@ -1,0 +1,64 @@
+{
+  "templates": [
+    {
+      "id": "driver_wins",
+      "entityType": "driver",
+      "label": "{driver} wins",
+      "description": "{driver} takes the chequered flag in first place.",
+      "exclusivityGroup": "race_winner",
+      "tierByEntityTier": {
+        "frontrunner": "medium",
+        "midfield": "rare",
+        "backmarker": "excluded"
+      }
+    },
+    {
+      "id": "driver_podium",
+      "entityType": "driver",
+      "label": "{driver} on the podium",
+      "description": "{driver} finishes in the top three.",
+      "exclusivityGroup": "podium:{driver}",
+      "tierByEntityTier": {
+        "frontrunner": "certain",
+        "midfield": "medium",
+        "backmarker": "rare"
+      }
+    },
+    {
+      "id": "driver_retires",
+      "entityType": "driver",
+      "label": "{driver} retires",
+      "description": "{driver} fails to finish the race.",
+      "exclusivityGroup": "out:{driver}",
+      "tierByEntityTier": {
+        "frontrunner": "rare",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_moans_at_team",
+      "entityType": "driver",
+      "label": "{driver} moans at {team}",
+      "description": "{driver} complains about the car over {team} team radio.",
+      "exclusivityGroup": "radio_moan:{driver}",
+      "tierByEntityTier": {
+        "frontrunner": "medium",
+        "midfield": "medium",
+        "backmarker": "certain"
+      }
+    },
+    {
+      "id": "team_botches_stop",
+      "entityType": "team",
+      "label": "{team} botches a stop",
+      "description": "A {team} pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "exclusivityGroup": "botched_stop:{team}",
+      "tierByEntityTier": {
+        "frontrunner": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    }
+  ]
+}
