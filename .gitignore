@@ -1,0 +1,23 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# Platform
+.vercel/
+.fly/
+
+# Editor / OS
+.DS_Store
+.idea/
+*.swp
