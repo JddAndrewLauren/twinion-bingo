@@ -14,7 +14,9 @@ pnpm install
 pnpm dev            # web on :3000, API on :8080
 ```
 
-Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults.
+Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults. The
+API needs a `DATABASE_URL` to start — point it at the ephemeral container under **Database**
+below, never at the shared project.
 
 Gates, all run by CI on push:
 

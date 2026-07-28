@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
+import { unconnectedDb } from './support/db.js';
 
 const allowedOrigins = [
   'https://twinion-bingo-web.vercel.app',
@@ -8,7 +9,7 @@ const allowedOrigins = [
 
 describe('cross-origin access', () => {
   it('lets the deployed web app fetch from the browser', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: { Origin: 'https://twinion-bingo-web.vercel.app' },
@@ -20,7 +21,7 @@ describe('cross-origin access', () => {
   });
 
   it('lets a local dev server fetch from the browser', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: { Origin: 'http://localhost:3000' },
@@ -32,7 +33,7 @@ describe('cross-origin access', () => {
   });
 
   it('lets a preview deployment of the same Vercel project fetch', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: {
@@ -48,7 +49,7 @@ describe('cross-origin access', () => {
   });
 
   it('refuses an origin that is not the web app', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: { Origin: 'https://evil.example' },
@@ -58,7 +59,7 @@ describe('cross-origin access', () => {
   });
 
   it('refuses a different Vercel project', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: { Origin: 'https://someone-elses-app.vercel.app' },
@@ -68,7 +69,7 @@ describe('cross-origin access', () => {
   });
 
   it('refuses a host that merely starts with the web app origin', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       headers: { Origin: 'https://twinion-bingo-web.vercel.app.evil.example' },
@@ -78,7 +79,7 @@ describe('cross-origin access', () => {
   });
 
   it('answers the preflight a JSON POST triggers', async () => {
-    const app = createApp({ allowedOrigins });
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
     const res = await app.request('/health', {
       method: 'OPTIONS',
