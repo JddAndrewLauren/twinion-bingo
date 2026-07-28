@@ -138,6 +138,18 @@ describe('opening a share link', () => {
     expect(await screen.findByText('No room has the code ZZZZ.')).toBeDefined();
   });
 
+  it('treats a code the API rejects as no such room', async () => {
+    // ABIO holds the two characters the code alphabet omits, so the API answers 400.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 400 })),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABIO" shareLink={shareLink} />);
+
+    expect(await screen.findByText('No room has the code ABIO.')).toBeDefined();
+  });
+
   it('says so when the API cannot be reached', async () => {
     vi.stubGlobal(
       'fetch',

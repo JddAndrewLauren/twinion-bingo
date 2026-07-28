@@ -21,7 +21,10 @@ export async function fetchRoster(
     headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
   });
 
-  if (res.status === 404) return undefined;
+  // 400 alongside 404: the API rejects a code that isn't shaped like one — a typo
+  // landing on O or I, which the alphabet omits — and to the player that is the same
+  // fact as no such room, not a broken API.
+  if (res.status === 404 || res.status === 400) return undefined;
   if (!res.ok) throw new Error(`reading room ${code} failed: ${res.status}`);
 
   return (await res.json()) as Roster;
