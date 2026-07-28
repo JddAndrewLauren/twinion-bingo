@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { readToken, storeToken } from '../../player-token';
-import { fetchRoster, joinRoom, type Roster } from '../../room-api';
+import {
+  fetchRoster,
+  joinRoom,
+  subscribeToRoomEvents,
+  type Roster,
+} from '../../room-api';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
@@ -20,7 +25,7 @@ export function RoomScreen({
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinFailed, setJoinFailed] = useState(false);
-  /** Bumped to re-read the roster; live fanout replaces this in the next slice. */
+  /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
 
   useEffect(() => {
@@ -44,6 +49,30 @@ export function RoomScreen({
       cancelled = true;
     };
   }, [apiUrl, code, reload]);
+
+  /**
+   * Live fanout. An append to the room's log re-reads the roster, so a second
+   * phone joining shows up on the first without a refresh. Reading the roster
+   * back rather than patching it from the event keeps one description of what a
+   * roster is; the delay is because a connection replays the log it missed in
+   * one burst, and the roster only needs reading once at the end of one.
+   */
+  const streaming = load === 'ready';
+  useEffect(() => {
+    if (!streaming) return;
+
+    let settle: ReturnType<typeof setTimeout> | undefined;
+
+    const unsubscribe = subscribeToRoomEvents(apiUrl, code, () => {
+      clearTimeout(settle);
+      settle = setTimeout(() => setReload((count) => count + 1), 50);
+    });
+
+    return () => {
+      clearTimeout(settle);
+      unsubscribe();
+    };
+  }, [apiUrl, code, streaming]);
 
   async function submitName(event: React.FormEvent) {
     event.preventDefault();

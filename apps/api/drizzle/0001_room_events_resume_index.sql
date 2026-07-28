@@ -1,0 +1,1 @@
+CREATE INDEX "room_events_room_code_seq_idx" ON "bingo"."room_events" USING btree ("room_code","seq");
