@@ -16,7 +16,9 @@ pnpm install
 pnpm dev            # web on :3000, API on :8080
 ```
 
-Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults.
+Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults. The
+API needs a `DATABASE_URL` to start — point it at the ephemeral container under **Database**
+below, never at the shared project.
 
 Square pools are generated at build time and committed, so regenerate and commit the diff after
 editing any theme folder — see `themes/README.md`:
@@ -73,11 +75,26 @@ The API is its own Fly app; the web app is on Vercel. Both are deployed manually
 ```bash
 # API — first time only
 fly apps create twinion-bingo-api --org personal
-fly secrets set WEB_ORIGIN=https://<web-host> --app twinion-bingo-api
+fly secrets set \
+  WEB_ORIGIN=https://<web-host> \
+  DATABASE_URL=<shared-project-connection-string> \
+  --app twinion-bingo-api
 
+# Both are required, and both must be secrets — fly.toml's [env] is committed, so it
+# can hold NODE_ENV and PORT but never a credential. The API reads them at boot and
+# throws before it listens, so a missing or empty one is not a degraded API: the
+# deploy fails its health check and Fly rolls back to the previous release.
+#
 # WEB_ORIGIN is a comma-separated list of browser origins allowed to call the API.
 # Vercel preview URLs are matched automatically under the listed project's prefix,
-# so previews need no extra entry. The API refuses to start in production without it.
+# so previews need no extra entry. In production there is no localhost default.
+#
+# DATABASE_URL is the connection string for the shared project's database, where the
+# bingo tables live in their own `bingo` schema. There is no in-memory mode, so the
+# API refuses to start without it in every environment. Setting it here only lets the
+# API read and write rooms; applying a migration stays the separate operator step
+# under **Database** above, and neither drizzle-kit push/pull nor the truncating tests
+# may ever be pointed at this value.
 
 # API — every time. Run from the repo root and pass it as the build context; the
 # Dockerfile needs the workspace manifest and lockfile. Do NOT add --dockerfile:
