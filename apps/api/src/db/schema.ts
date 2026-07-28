@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   bigint,
   bigserial,
+  index,
   integer,
   primaryKey,
   pgSchema,
@@ -136,5 +137,11 @@ export const roomEvents = bingo.table(
     uniqueIndex('room_events_call_unique')
       .on(table.gameId, table.squareId)
       .where(sql`kind = 'CALL'`),
+    /**
+     * Every SSE resume is `WHERE room_code = ? AND seq > ?` in `seq` order. The
+     * primary key alone would make that a scan over every room's tail, so the
+     * one query the realtime spine runs on a loop gets its own index.
+     */
+    index('room_events_room_code_seq_idx').on(table.roomCode, table.seq),
   ],
 );

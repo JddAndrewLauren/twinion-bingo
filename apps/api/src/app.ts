@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { isOriginAllowed, type AppConfig } from './config.js';
 import { createRoomRoutes } from './rooms/routes.js';
+import { createStreamRoutes } from './rooms/stream.js';
 
 export type { AppConfig };
 
@@ -19,6 +20,7 @@ export function createApp(config: AppConfig) {
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
   app.route('/', createRoomRoutes(config.db));
+  app.route('/', createStreamRoutes(config.db, config.streamTimings));
 
   return app;
 }

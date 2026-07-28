@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomScreen } from '../app/r/[code]/room-screen';
+import { FakeEventSource } from './fake-event-source';
 
 const apiUrl = 'https://api.example';
 const shareLink = 'https://bingo.example/r/ABCD';
@@ -108,7 +109,10 @@ describe('opening a share link', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    // Waiting for the roster to be on screen, not merely for fetch to have been
+    // called: the read is only settled once the screen has rendered it, and a
+    // test that returns earlier leaves the screen's effects still to run.
+    await screen.findByText(/Ash/);
 
     const [, init] = fetchMock.mock.calls[0] ?? [];
     expect(new Headers(init?.headers).get('authorization')).toBe(
@@ -161,5 +165,56 @@ describe('opening a share link', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     expect(await screen.findByText('Could not reach the room.')).toBeDefined();
+  });
+});
+
+describe('the live roster', () => {
+  /** A room whose roster is whatever `players` holds when it is read. */
+  function stubRoom(players: { id: string; name: string; joinSeq: number }[]) {
+    window.localStorage.setItem('twinion-bingo:token:ABCD', 'host-token');
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({
+          code: 'ABCD',
+          themeId: 'f1.v1',
+          hostPlayerId: host.id,
+          players: [...players],
+          you: host,
+        }),
+      ),
+    );
+  }
+
+  it('adds a player who joined on another browser, with no refresh', async () => {
+    const players = [host];
+    stubRoom(players);
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByText(/Ash/);
+
+    const stream = FakeEventSource.opened.at(-1);
+    expect(stream?.url).toBe('https://api.example/rooms/ABCD/stream');
+
+    // The second phone joins: the log grows, and the stream says so.
+    players.push(guest);
+    act(() => stream?.emit({ seq: 2, kind: 'PLAYER_JOINED' }));
+
+    expect(await screen.findByText(/Bea/)).toBeDefined();
+  });
+
+  it('closes the stream when the screen goes away', async () => {
+    stubRoom([host]);
+
+    const view = render(
+      <RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />,
+    );
+    await screen.findByText(/Ash/);
+
+    const stream = FakeEventSource.opened.at(-1);
+    view.unmount();
+
+    expect(stream?.closed).toBe(true);
   });
 });

@@ -1,3 +1,6 @@
+import { beforeEach } from 'vitest';
+import { FakeEventSource } from './fake-event-source';
+
 /**
  * Node 26 exposes a global `localStorage` that is undefined unless the process
  * was started with `--localstorage-file`, and under vitest's jsdom environment
@@ -39,3 +42,14 @@ if (globalThis.localStorage === undefined) {
     value: new MemoryStorage(),
   });
 }
+
+// Installed once, for the whole file, and never stubbed: see the note on the
+// class. Only the record of what was opened is per-test.
+Object.defineProperty(globalThis, 'EventSource', {
+  configurable: true,
+  value: FakeEventSource,
+});
+
+beforeEach(() => {
+  FakeEventSource.opened = [];
+});

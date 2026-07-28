@@ -1,9 +1,12 @@
 import type { Db } from './db/client.js';
+import type { StreamTimings } from './rooms/stream.js';
 
 export type AppConfig = {
   /** Origins allowed to call this API from a browser, plus their Vercel previews. */
   allowedOrigins: string[];
   db: Db;
+  /** Poll and heartbeat periods for the SSE stream; the defaults are the real ones. */
+  streamTimings?: Partial<StreamTimings>;
 };
 
 export type ServerConfig = {
