@@ -8,11 +8,14 @@ import { findPlayerByToken, RoomNotFound } from '../rooms/store.js';
 import { DeckCompositionError } from './deck.js';
 import {
   callSquare,
+  CallNotFound,
   GameAlreadyLive,
   NotHost,
   NotInDeck,
   NotOnYourCard,
+  NotYourCall,
   readGame,
+  retractCall,
   roomCodeForGame,
   startGame,
 } from './store.js';
@@ -137,6 +140,59 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
     }
   });
 
+  /**
+   * D8's correction. The call named by `seq` is superseded by an appended RETRACT
+   * row and is never deleted — deleting it would break `Last-Event-ID` replay for
+   * every device that had already seen it, and the whole design rests on a device
+   * replaying the log arriving where a device that watched it live already is.
+   *
+   * Which of D8's three interactions got here — the ten-second undo toast, the
+   * confirmation dialog after it, or the host's unrestricted retract — is not
+   * something this route can see or needs to. Friction is the client's job; the
+   * rule is that a player may take back their own call and the host may take back
+   * anyone's.
+   */
+  routes.post('/games/:id/retract', async (c) => {
+    const id = c.req.param('id');
+    if (!UUID.test(id)) return c.json({ error: 'no game with that id' }, 404);
+
+    const code = await roomCodeForGame(db, id);
+    if (code === undefined) return c.json({ error: 'no game with that id' }, 404);
+
+    const token = bearerToken(c.req.header('authorization'));
+    const you =
+      token === undefined ? undefined : await findPlayerByToken(db, code, token);
+
+    if (you === undefined) {
+      return c.json({ error: 'a player token is required' }, 401);
+    }
+
+    const seq = readSeq(await readJson(c.req.raw));
+    if (seq === undefined) {
+      return c.json({ error: 'seq is required' }, 400);
+    }
+
+    try {
+      const retraction = await retractCall(db, id, you.id, seq);
+
+      // 200 rather than 201 when the call was already retracted, for the same
+      // reason a losing call gets one: nothing was created, and nothing went
+      // wrong either — the square is unmarked, which is what was asked for.
+      return c.json(retraction, retraction.appended ? 201 : 200);
+    } catch (error) {
+      if (error instanceof CallNotFound) {
+        return c.json({ error: 'no call in this game has that seq' }, 404);
+      }
+      if (error instanceof NotYourCall) {
+        return c.json(
+          { error: 'only the caller or the host can retract that call' },
+          403,
+        );
+      }
+      throw error;
+    }
+  });
+
   return routes;
 }
 
@@ -144,4 +200,13 @@ function readSquareId(body: Record<string, unknown>): string | undefined {
   const squareId = body.square_id;
 
   return typeof squareId === 'string' && squareId !== '' ? squareId : undefined;
+}
+
+/** `seq` is a bigserial, so anything but a positive whole number is a bad body. */
+function readSeq(body: Record<string, unknown>): number | undefined {
+  const seq = body.seq;
+
+  return typeof seq === 'number' && Number.isSafeInteger(seq) && seq > 0
+    ? seq
+    : undefined;
 }

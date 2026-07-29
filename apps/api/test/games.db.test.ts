@@ -42,13 +42,14 @@ type Joined = {
 };
 
 type CardSquare = { id: string; label: string; description: string; tier: string };
+type Mark = { squareId: string; seq: number; actorPlayerId: string };
 type GameView = {
   id: string;
   state: string;
   freeCentre: string;
   card: CardSquare[] | null;
   deck: { squares: CardSquare[]; called: string[] } | null;
-  marks: string[];
+  marks: Mark[];
   streamedThroughSeq: number;
 };
 
@@ -104,8 +105,28 @@ async function call(
   });
 }
 
-async function marksOf(code: string, token: string): Promise<string[]> {
+async function retract(
+  gameId: string,
+  seq: number,
+  token?: string,
+): Promise<Response> {
+  return app.request(`/games/${gameId}/retract`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(token === undefined ? {} : { authorization: `Bearer ${token}` }),
+    },
+    body: JSON.stringify({ seq }),
+  });
+}
+
+async function marksOf(code: string, token: string): Promise<Mark[]> {
   return ((await (await readGame(code, token)).json()) as GameView).marks;
+}
+
+/** The marked square ids alone, for the assertions that are only about which. */
+async function markedIdsOf(code: string, token: string): Promise<string[]> {
+  return (await marksOf(code, token)).map((mark) => mark.squareId);
 }
 
 async function callRows(code: string): Promise<{ square_id: string }[]> {
@@ -386,8 +407,8 @@ describe.skipIf(noTestDatabase)('calling a square', () => {
     expect(await callRows(host.code)).toEqual([{ square_id: shared }]);
 
     // The spotter's card and a card they never touched, both marked.
-    expect(await marksOf(host.code, host.token)).toEqual([shared]);
-    expect(await marksOf(host.code, guest.token)).toEqual([shared]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
+    expect(await markedIdsOf(host.code, guest.token)).toEqual([shared]);
   });
 
   it('leaves a card that does not hold the square unmarked', async () => {
@@ -395,8 +416,8 @@ describe.skipIf(noTestDatabase)('calling a square', () => {
 
     expect((await call(gameId, onlyMine, host.token)).status).toBe(201);
 
-    expect(await marksOf(host.code, host.token)).toEqual([onlyMine]);
-    expect(await marksOf(host.code, guest.token)).toEqual([]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([onlyMine]);
+    expect(await markedIdsOf(host.code, guest.token)).toEqual([]);
   });
 
   /**
@@ -411,7 +432,7 @@ describe.skipIf(noTestDatabase)('calling a square', () => {
     expect(res.status).toBe(403);
 
     expect(await callRows(host.code)).toEqual([]);
-    expect(await marksOf(host.code, host.token)).toEqual([]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
   });
 
   it('refuses a square id that is in no deck at all', async () => {
@@ -579,8 +600,8 @@ describe.skipIf(noTestDatabase)('the host deck sheet', () => {
     // The same one row a card call writes, and the same derivation off it: the
     // guest holding the square is marked, and the host who called it is not.
     expect(await callRows(host.code)).toEqual([{ square_id: notMineButTheirs }]);
-    expect(await marksOf(host.code, guest.token)).toEqual([notMineButTheirs]);
-    expect(await marksOf(host.code, host.token)).toEqual([]);
+    expect(await markedIdsOf(host.code, guest.token)).toEqual([notMineButTheirs]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
   });
 
   /**
@@ -680,12 +701,12 @@ describe.skipIf(noTestDatabase)('marks', () => {
 
     expect(started.marks).toEqual([]);
     expect((await call(started.id, square, host.token)).status).toBe(201);
-    expect(await marksOf(host.code, host.token)).toEqual([square]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([square]);
 
     // Deleting the log's CALL rows unmarks the card, with nothing else touched —
     // which could not be true if a mark were written down anywhere.
     await db.execute(sql`DELETE FROM bingo.room_events WHERE kind = 'CALL'`);
-    expect(await marksOf(host.code, host.token)).toEqual([]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
   });
 
   it('drop a call a RETRACT supersedes, and keep the ones it does not', async () => {
@@ -698,13 +719,37 @@ describe.skipIf(noTestDatabase)('marks', () => {
     };
     await call(started.id, second, host.token);
 
-    // #9 owns the retract route; the derivation has to be right before it lands.
-    await db.execute(
-      sql`INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, target_seq)
-          VALUES (${host.code}, ${started.id}, ${host.player.id}, 'RETRACT', ${call1.seq})`,
-    );
+    expect((await retract(started.id, call1.seq, host.token)).status).toBe(201);
 
-    expect(await marksOf(host.code, host.token)).toEqual([second]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([second]);
+  });
+
+  /**
+   * The seq a correction names. A device tapping a marked square has to be able
+   * to say which CALL it means, and the derived answer is the only place it could
+   * learn that from — nothing else on the client knows the log.
+   */
+  it('carry the call that made them, so a correction can name it', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const theirs = (await (await readGame(host.code, guest.token)).json()) as GameView;
+
+    const yours = new Set(theirs.card!.map((square) => square.id));
+    const shared = started.card!.map((square) => square.id).find((id) =>
+      yours.has(id),
+    )!;
+
+    const called = (await (await call(started.id, shared, guest.token)).json()) as {
+      seq: number;
+    };
+
+    // The host never touched it, and is still told which row marked it and who
+    // made that row — which is what decides whether their phone may offer to take
+    // it back, and what it would name if it did.
+    expect(await marksOf(host.code, host.token)).toEqual([
+      { squareId: shared, seq: called.seq, actorPlayerId: guest.player.id },
+    ]);
   });
 
   /**
@@ -734,8 +779,8 @@ describe.skipIf(noTestDatabase)('marks', () => {
     await call(gameId, shared, host.token);
     await call(gameId, onlyMine, host.token);
 
-    const stayed = await marksOf(host.code, guest.token);
-    const returned = await marksOf(host.code, guest.token);
+    const stayed = await markedIdsOf(host.code, guest.token);
+    const returned = await markedIdsOf(host.code, guest.token);
 
     expect(stayed).toEqual(returned);
     expect(stayed).toEqual([shared]);
@@ -759,5 +804,208 @@ describe.skipIf(noTestDatabase)('marks', () => {
     );
 
     expect(view.streamedThroughSeq).toBe(Number([...rows][0]!.seq));
+  });
+});
+
+/**
+ * D8's corrections. All three of the interactions the design describes — the
+ * ten-second undo toast, the confirmation dialog after it, and the host's
+ * unrestricted retract — arrive at this one route; what told them apart was
+ * friction on the client. What the server enforces is the rule underneath: your
+ * own call, or anyone's if you are the host.
+ */
+describe.skipIf(noTestDatabase)('retracting a call', () => {
+  beforeEach(truncate);
+
+  /** A room mid-game with one square called by the guest, on a card both hold. */
+  async function calledGame() {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const theirs = (await (await readGame(host.code, guest.token)).json()) as GameView;
+
+    const mine = started.card!.map((square) => square.id);
+    const yours = new Set(theirs.card!.map((square) => square.id));
+    const shared = mine.find((id) => yours.has(id))!;
+
+    const res = await call(started.id, shared, guest.token);
+    expect(res.status).toBe(201);
+    const called = (await res.json()) as { seq: number };
+
+    return { host, guest, gameId: started.id, shared, seq: called.seq };
+  }
+
+  async function eventKinds(code: string): Promise<string[]> {
+    const rows = await db.execute<{ kind: string }>(
+      sql`SELECT kind FROM bingo.room_events WHERE room_code = ${code} ORDER BY seq`,
+    );
+
+    return [...rows].map((row) => row.kind);
+  }
+
+  it('appends a RETRACT naming the call, and unmarks it on every card', async () => {
+    const { host, guest, gameId, shared, seq } = await calledGame();
+
+    expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
+
+    const res = await retract(gameId, seq, guest.token);
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({
+      targetSeq: seq,
+      squareId: shared,
+      actorPlayerId: guest.player.id,
+      appended: true,
+    });
+
+    // The caller's own card and a card belonging to someone who never touched it.
+    expect(await markedIdsOf(host.code, guest.token)).toEqual([]);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
+  });
+
+  /**
+   * The reason D8 is append-only rather than a delete. A device replaying from
+   * `Last-Event-ID` before the CALL is handed both rows and has to land where a
+   * device that watched it happen live already is; a deleted CALL would leave the
+   * replaying device marked forever, with nothing in the log to say otherwise.
+   */
+  it('never deletes or updates the call it supersedes', async () => {
+    const { host, guest, gameId, shared, seq } = await calledGame();
+
+    await retract(gameId, seq, guest.token);
+
+    expect(await eventKinds(host.code)).toEqual([
+      'PLAYER_JOINED',
+      'PLAYER_JOINED',
+      'GAME_STARTED',
+      'CALL',
+      'RETRACT',
+    ]);
+    // The CALL row is still exactly what it was, square id and all.
+    expect(await callRows(host.code)).toEqual([{ square_id: shared }]);
+
+    const rows = await db.execute<{ target_seq: string; actor_player_id: string }>(
+      sql`SELECT target_seq, actor_player_id FROM bingo.room_events
+          WHERE room_code = ${host.code} AND kind = 'RETRACT'`,
+    );
+    const [retraction] = [...rows];
+    expect(Number(retraction!.target_seq)).toBe(seq);
+    expect(retraction!.actor_player_id).toBe(guest.player.id);
+  });
+
+  /**
+   * The criterion that a replaying client ends up where a live one is. Both read
+   * the same derived answer, because the derivation is the only answer there is —
+   * so this asserts what the whole append-only model was chosen to buy.
+   */
+  it('leaves a device replaying the whole log where a device that watched it is', async () => {
+    const { host, gameId, seq } = await calledGame();
+
+    await retract(gameId, seq, host.token);
+
+    // Every row a device replaying from before the CALL would be handed.
+    const rows = await db.execute<{ kind: string; square_id: string | null; target_seq: string | null }>(
+      sql`SELECT kind, square_id, target_seq FROM bingo.room_events
+          WHERE room_code = ${host.code} ORDER BY seq`,
+    );
+    const replayed = [...rows];
+    expect(replayed.some((row) => row.kind === 'CALL')).toBe(true);
+    expect(replayed.some((row) => row.kind === 'RETRACT')).toBe(true);
+
+    // And what it derives from them is what the device that never left shows.
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
+  });
+
+  it('lets the host take back a call they did not make', async () => {
+    const { host, gameId, seq } = await calledGame();
+
+    expect((await retract(gameId, seq, host.token)).status).toBe(201);
+    expect(await markedIdsOf(host.code, host.token)).toEqual([]);
+  });
+
+  /**
+   * Correction scope, the mirror of D7's call scope. A player may fix their own
+   * mis-tap; taking away someone else's call is the host's to do, or it would be
+   * an argument rather than a correction.
+   */
+  it('refuses a player taking back someone else`s call, and writes nothing', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const other = await join(host.code, 'Other');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const theirs = (await (await readGame(host.code, guest.token)).json()) as GameView;
+
+    const yours = new Set(theirs.card!.map((square) => square.id));
+    const shared = started.card!.map((square) => square.id).find((id) =>
+      yours.has(id),
+    )!;
+
+    const called = (await (await call(started.id, shared, guest.token)).json()) as {
+      seq: number;
+    };
+
+    expect((await retract(started.id, called.seq, other.token)).status).toBe(403);
+
+    expect(await eventKinds(host.code)).toEqual([
+      'PLAYER_JOINED',
+      'PLAYER_JOINED',
+      'PLAYER_JOINED',
+      'GAME_STARTED',
+      'CALL',
+    ]);
+    expect(await markedIdsOf(host.code, guest.token)).toEqual([shared]);
+  });
+
+  it('is idempotent: a call already taken back is not taken back twice', async () => {
+    const { host, guest, gameId, seq } = await calledGame();
+
+    expect((await retract(gameId, seq, guest.token)).status).toBe(201);
+
+    const again = await retract(gameId, seq, host.token);
+    expect(again.status).toBe(200);
+    expect(await again.json()).toMatchObject({ targetSeq: seq, appended: false });
+
+    expect(
+      (await eventKinds(host.code)).filter((kind) => kind === 'RETRACT'),
+    ).toHaveLength(1);
+  });
+
+  it('404s a seq that is not a call in this game', async () => {
+    const { host, gameId, seq } = await calledGame();
+
+    // The GAME_STARTED row is in the log, but it is not a call.
+    expect((await retract(gameId, 1, host.token)).status).toBe(404);
+    expect((await retract(gameId, seq + 1000, host.token)).status).toBe(404);
+
+    expect(
+      (await eventKinds(host.code)).filter((kind) => kind === 'RETRACT'),
+    ).toHaveLength(0);
+  });
+
+  it('needs a player token, and a game that exists', async () => {
+    const { gameId, seq } = await calledGame();
+
+    expect((await retract(gameId, seq)).status).toBe(401);
+    expect((await retract(gameId, seq, 'not-a-token')).status).toBe(401);
+    expect(
+      (await retract('00000000-0000-4000-8000-000000000000', seq, 'x')).status,
+    ).toBe(404);
+    expect((await retract('nonsense', seq, 'x')).status).toBe(404);
+  });
+
+  it('400s a request with no usable seq', async () => {
+    const { host, gameId } = await calledGame();
+
+    for (const body of [{}, { seq: 'nine' }, { seq: 0 }, { seq: -1 }]) {
+      const res = await app.request(`/games/${gameId}/retract`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${host.token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      expect(res.status).toBe(400);
+    }
   });
 });
