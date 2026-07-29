@@ -53,6 +53,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — card           | `/r/:code`, a live game, this player dealt in    | The **5x5 card**: 25 square cells, the free centre reading "LIGHTS OUT", and every label legible and unclipped in its cell |
 | Game — marked card    | `/r/:code`, a live game with squares called      | Marked cells telling apart from unmarked ones at a glance, and still unclipped — a marked label is bolder, so a label that fit unmarked has to be re-checked marked |
 | Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast pinned to the bottom crediting the spotter by name, **covering no part of the card**, and wrapping rather than overflowing on a long name plus a 30-character label |
+| Game — host deck sheet | `/r/:code`, a live game, joined as the host, sheet open | All 40 deck rows, called ones telling apart from uncalled at a glance, **the amber admin chrome distinguishing the sheet from the host's own card**, and the toggle back to the card reachable |
 
 ### Known-unverified claims inherited from #7
 
@@ -79,6 +80,23 @@ states each, with a per-cell `scrollHeight`/`scrollWidth` assertion rather than 
 - At `ipad-11-landscape` the grid does not spread: `max-w-md` on the page holds it to a 400px square
   block, so the inverted risk above does not bite. What it leaves instead is a small card in a wide
   viewport with a lot of empty space — a layout question for #14's two-pane work, not a defect.
+
+**Settled by #10's gate run** (Playwright, `page.setViewportSize`, all four viewports, the sheet and
+the card back-to-back, with a per-row `scrollHeight`/`scrollWidth` assertion):
+
+- The deck sheet's 40 rows are unclipped at every viewport and no page scrolls horizontally. Rows are
+  full-width and wrap, so the sheet's risk is the opposite of the card's — nothing is squeezed into a
+  68px cell.
+- The guest view at `phone-small` offers no sheet and no toggle, which is the visual half of the
+  criterion the API enforces.
+- Like the card, the sheet sits in the page's `max-w-md` column, so `ipad-11-landscape` leaves the
+  same wide empty margin #8 noted. Same #14 question, same non-defect.
+- **A caution for any future card gate.** Padding a label to the 30-character cap with one long
+  unbreakable run (`Hand-written moment 36 WWWWWWW`) clips the card grid at both iPad viewports,
+  where the `clamp()` font has grown to its 0.8rem ceiling while `max-w-md` holds the cells at their
+  phone size. Words that break do not clip. Nothing in the pool generates a 7-character nonsense
+  token today, so this is a latent constraint on labels rather than a live defect — but it means the
+  card's headroom at the cap depends on the label's word lengths, not only its character count.
 
 ### Known-unverified claims inherited from #4
 

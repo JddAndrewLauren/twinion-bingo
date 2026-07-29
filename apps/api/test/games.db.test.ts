@@ -47,6 +47,7 @@ type GameView = {
   state: string;
   freeCentre: string;
   card: CardSquare[] | null;
+  deck: { squares: CardSquare[]; called: string[] } | null;
   marks: string[];
   streamedThroughSeq: number;
 };
@@ -487,6 +488,180 @@ describe.skipIf(noTestDatabase)('calling a square', () => {
     });
 
     expect(res.status).toBe(400);
+  });
+});
+
+/**
+ * The other half of D7: the host calls from the whole deck, not only their card,
+ * so a square that landed on one card while that player was in the kitchen can
+ * still be repaired. Everything downstream of the scope check has to be the same
+ * as a card call — same row, same derivation, same race behaviour.
+ */
+describe.skipIf(noTestDatabase)('the host deck sheet', () => {
+  beforeEach(truncate);
+
+  /**
+   * A room mid-game, plus a deck square the host was not dealt. Cards are 24 of a
+   * 40-square deck, so 16 of the host's deck are off their own card — and one of
+   * those is the whole point of the sheet.
+   */
+  async function gameWithSheet() {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const theirs = (await (await readGame(host.code, guest.token)).json()) as GameView;
+
+    const mine = new Set(started.card!.map((square) => square.id));
+    const yours = new Set(theirs.card!.map((square) => square.id));
+    const deck = started.deck!.squares.map((square) => square.id);
+    const notMineButTheirs = deck.find((id) => !mine.has(id) && yours.has(id));
+    const notTheirs = deck.find((id) => !yours.has(id));
+
+    expect(notMineButTheirs).toBeDefined();
+    expect(notTheirs).toBeDefined();
+
+    return {
+      host,
+      guest,
+      gameId: started.id,
+      deck,
+      /** In the deck and on the guest's card, but not on the host's. */
+      notMineButTheirs: notMineButTheirs!,
+      /** In the deck and off the guest's card — theirs to spot, not to call. */
+      notTheirs: notTheirs!,
+    };
+  }
+
+  it('hands the host the whole deck with its called state, and hands nobody else one', async () => {
+    const { host, guest, notTheirs } = await gameWithSheet();
+
+    const sheet = ((await (await readGame(host.code, host.token)).json()) as GameView)
+      .deck;
+
+    expect(sheet!.squares).toHaveLength(DECK_SIZE);
+    expect(sheet!.squares.map((square) => square.id)).toEqual(
+      (await gameRow(host.code)).deck,
+    );
+    // Prose, not just ids: the sheet is read aloud off the host's phone.
+    expect(sheet!.squares.every((square) => square.label !== '')).toBe(true);
+    expect(sheet!.called).toEqual([]);
+
+    // A guest is not handed the deck at all, so there is nothing on their device
+    // to hide — the sheet cannot leak what was never sent.
+    const theirs = (await (await readGame(host.code, guest.token)).json()) as GameView;
+    expect(theirs.deck).toBeNull();
+    // A deck square off their card reaches them nowhere in the response.
+    expect(JSON.stringify(theirs)).not.toContain(notTheirs);
+
+    // Nor is an anonymous reader, who gets no card either.
+    expect(((await (await readGame(host.code)).json()) as GameView).deck).toBeNull();
+  });
+
+  it('comes back with the deal, so the host has the sheet before any re-read', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    expect(started.deck!.squares).toHaveLength(DECK_SIZE);
+    expect(started.deck!.called).toEqual([]);
+  });
+
+  it('lets the host call a deck square that is on no card of theirs', async () => {
+    const { host, guest, gameId, notMineButTheirs } = await gameWithSheet();
+
+    const res = await call(gameId, notMineButTheirs, host.token);
+    expect(res.status).toBe(201);
+    expect((await res.json()) as { squareId: string }).toMatchObject({
+      squareId: notMineButTheirs,
+      actorPlayerId: host.player.id,
+      appended: true,
+    });
+
+    // The same one row a card call writes, and the same derivation off it: the
+    // guest holding the square is marked, and the host who called it is not.
+    expect(await callRows(host.code)).toEqual([{ square_id: notMineButTheirs }]);
+    expect(await marksOf(host.code, guest.token)).toEqual([notMineButTheirs]);
+    expect(await marksOf(host.code, host.token)).toEqual([]);
+  });
+
+  /**
+   * The asymmetry is the decision: the same out-of-card call is a repair from the
+   * host and a denial incentive from anybody else, so the API answers the two
+   * differently for the very same square.
+   */
+  it('refuses the same out-of-card call from a player who is not the host', async () => {
+    const { host, guest, gameId, notTheirs } = await gameWithSheet();
+
+    const refused = await call(gameId, notTheirs, guest.token);
+    expect(refused.status).toBe(403);
+    expect((await refused.json()) as { error: string }).toEqual({
+      error: 'that square is not on your card',
+    });
+    expect(await callRows(host.code)).toEqual([]);
+
+    // And the host, on that identical square, is allowed.
+    expect((await call(gameId, notTheirs, host.token)).status).toBe(201);
+    expect(await callRows(host.code)).toEqual([{ square_id: notTheirs }]);
+  });
+
+  it('refuses a square that is in no deck, even from the host', async () => {
+    const { host, gameId } = await gameWithSheet();
+
+    const res = await call(gameId, 'f1.v1:not_a_square:XXX', host.token);
+
+    expect(res.status).toBe(403);
+    expect((await res.json()) as { error: string }).toEqual({
+      error: "that square is not in this game's deck",
+    });
+    expect(await callRows(host.code)).toEqual([]);
+  });
+
+  /**
+   * The host loses a race like anybody else. A player got there first, so the
+   * host's tap creates nothing — and that is not an error, because the square the
+   * host was repairing is called, which is all they wanted.
+   */
+  it('hands the host the winning row when the square was already called', async () => {
+    const { host, guest, gameId, notMineButTheirs } = await gameWithSheet();
+
+    const theirs = (await (
+      await call(gameId, notMineButTheirs, guest.token)
+    ).json()) as { seq: number };
+
+    const mine = await call(gameId, notMineButTheirs, host.token);
+    expect(mine.status).toBe(200);
+    expect((await mine.json()) as { seq: number }).toMatchObject({
+      seq: theirs.seq,
+      actorPlayerId: guest.player.id,
+      appended: false,
+    });
+
+    expect(await callRows(host.code)).toEqual([{ square_id: notMineButTheirs }]);
+  });
+
+  /**
+   * The sheet's called state is derived from the log exactly as marks are, so a
+   * call made on a player's phone reaches the host's sheet with no second
+   * mechanism — the host's next read of the game is the whole update path.
+   */
+  it('shows a call another player made, and drops it again when it is retracted', async () => {
+    const { host, guest, gameId, notMineButTheirs } = await gameWithSheet();
+
+    const theirs = (await (
+      await call(gameId, notMineButTheirs, guest.token)
+    ).json()) as { seq: number };
+
+    const called = async () =>
+      ((await (await readGame(host.code, host.token)).json()) as GameView).deck!.called;
+
+    expect(await called()).toEqual([notMineButTheirs]);
+
+    // #9 owns the retract route; the sheet reads the same derivation marks do.
+    await db.execute(
+      sql`INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, target_seq)
+          VALUES (${host.code}, ${gameId}, ${host.player.id}, 'RETRACT', ${theirs.seq})`,
+    );
+
+    expect(await called()).toEqual([]);
   });
 });
 

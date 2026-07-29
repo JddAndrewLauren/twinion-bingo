@@ -10,6 +10,7 @@ import {
   callSquare,
   GameAlreadyLive,
   NotHost,
+  NotInDeck,
   NotOnYourCard,
   readGame,
   roomCodeForGame,
@@ -128,6 +129,9 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
     } catch (error) {
       if (error instanceof NotOnYourCard) {
         return c.json({ error: 'that square is not on your card' }, 403);
+      }
+      if (error instanceof NotInDeck) {
+        return c.json({ error: "that square is not in this game's deck" }, 403);
       }
       throw error;
     }

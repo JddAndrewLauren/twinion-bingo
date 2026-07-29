@@ -18,6 +18,17 @@ export type CardSquare = {
   tier: string;
 };
 
+/**
+ * The host's deck sheet: the whole ~40-square room deck and which of it has been
+ * called. The API sends it to the host and to nobody else, so a browser holding
+ * one is a browser entitled to the sheet — the screen does not need a second
+ * permission check that could fall out of step with the server's.
+ */
+export type Deck = {
+  squares: CardSquare[];
+  called: string[];
+};
+
 export type Game = {
   id: string;
   state: string;
@@ -25,6 +36,8 @@ export type Game = {
   freeCentre: string;
   /** This player's 24 earnable squares; null for a browser holding no token. */
   card: CardSquare[] | null;
+  /** The deck sheet if this browser's player hosts the room, null otherwise. */
+  deck: Deck | null;
   /**
    * Which of `card`'s square ids are marked. Derived server-side from the call
    * log on every read and stored nowhere — so this is always the whole truth,

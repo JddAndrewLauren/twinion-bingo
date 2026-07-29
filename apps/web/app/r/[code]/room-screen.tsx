@@ -14,6 +14,7 @@ import {
   type Roster,
 } from '../../room-api';
 import { CardGrid } from './card-grid';
+import { DeckSheet } from './deck-sheet';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
@@ -25,9 +26,10 @@ const TOAST_MS = 4000;
  * spotted it on every device — the spotter's own included, where it doubles as
  * the confirmation that their tap reached the room.
  *
- * The square is named only when it is one this player holds. A device knows the
- * prose for its own 24 squares and no others, and handing it the rest of the deck
- * so a toast could name them would leak the sheet that is the host's alone.
+ * The square is named only when this device knows its prose — its own 24 squares
+ * for a player, and the whole deck for the host, who is handed it for the sheet.
+ * Nobody else is given the rest of the deck so a toast could name it, because
+ * that would leak the sheet that is the host's alone.
  *
  * Undefined for anything that is not a call, and for an actor the roster has not
  * caught up with yet — an anonymous toast credits nobody, which is the one thing
@@ -45,7 +47,7 @@ function spotterCredit(
   );
   if (who === undefined) return undefined;
 
-  const square = game?.card?.find(
+  const square = [...(game?.card ?? []), ...(game?.deck?.squares ?? [])].find(
     (candidate) => candidate.id === event.squareId,
   );
 
@@ -73,6 +75,12 @@ export function RoomScreen({
   const [startFailed, setStartFailed] = useState(false);
   const [callFailed, setCallFailed] = useState(false);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
+  /**
+   * Whether the host is looking at the deck sheet instead of their card. One at a
+   * time on purpose: the two are different jobs, and a host who can see both at
+   * once is a host who has to work out which one they just tapped.
+   */
+  const [sheetOpen, setSheetOpen] = useState(false);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
   /**
@@ -228,7 +236,9 @@ export function RoomScreen({
   }
 
   /**
-   * Tapping a square you hold calls it for everyone holding it. Re-reading the
+   * Tapping a square calls it for everyone holding it — the same function for a
+   * cell on your card and a row on the host's deck sheet, so a call from the
+   * sheet is the same request, the same row and the same credit. Re-reading the
    * game rather than marking the cell locally keeps one description of what is
    * marked — the derived one — so the spotter's own phone converges by exactly
    * the path every other phone does, just a poll sooner.
@@ -277,15 +287,31 @@ export function RoomScreen({
   }
 
   if (game?.card != null) {
+    /**
+     * Only the host is handed a deck, so holding one is the whole entitlement
+     * check — there is no separate "am I the host" test here that could disagree
+     * with the server's.
+     */
+    const deck = game.deck;
+
     return (
       <div className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">Room {code}</h1>
-        <CardGrid
-          card={game.card}
-          freeCentre={game.freeCentre}
-          marks={game.marks}
-          onCall={call}
-        />
+        {deck !== null && sheetOpen ? (
+          <DeckSheet deck={deck} onCall={call} />
+        ) : (
+          <CardGrid
+            card={game.card}
+            freeCentre={game.freeCentre}
+            marks={game.marks}
+            onCall={call}
+          />
+        )}
+        {deck !== null && (
+          <button type="button" onClick={() => setSheetOpen(!sheetOpen)}>
+            {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
+          </button>
+        )}
         {callFailed && <p role="alert">Could not call that square.</p>}
         {toast !== null && (
           /**

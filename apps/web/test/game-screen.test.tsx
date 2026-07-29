@@ -1,4 +1,11 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomScreen } from '../app/r/[code]/room-screen';
 import { FakeEventSource } from './fake-event-source';
@@ -18,6 +25,20 @@ const card = Array.from({ length: 24 }, (_, index) => ({
 }));
 
 /**
+ * The room's 40-square deck. Its first 24 are the card above, so the last 16 are
+ * squares nobody but the host can call — which is the whole point of the sheet.
+ */
+const deckSquares = [
+  ...card,
+  ...Array.from({ length: 16 }, (_, index) => ({
+    id: `f1.v1:t:${24 + index}`,
+    label: `Square ${24 + index}`,
+    description: `What square ${24 + index} means.`,
+    tier: 'medium',
+  })),
+];
+
+/**
  * A room whose game only exists once it has been started — the same two states
  * the API has, so the screen is exercised across the transition rather than only
  * in its end state.
@@ -27,6 +48,7 @@ function stubRoom({
   liveFromTheStart = false,
   marks = [],
   streamedThroughSeq = 2,
+  deck = false,
 }: {
   you: typeof host | null;
   liveFromTheStart?: boolean;
@@ -34,6 +56,12 @@ function stubRoom({
   marks?: string[];
   /** How far down the log those marks account for — the toast's replay horizon. */
   streamedThroughSeq?: number;
+  /**
+   * Whether the API hands this browser a deck. Only the host is given one, so the
+   * stub decides it the way the server does rather than leaving the screen to
+   * work it out from the roster.
+   */
+  deck?: boolean;
 }) {
   const state = { live: liveFromTheStart, marks: [...marks] };
 
@@ -42,6 +70,16 @@ function stubRoom({
     state: 'live',
     freeCentre: 'LIGHTS OUT',
     card,
+    deck: deck
+      ? {
+          squares: deckSquares,
+          // The same derivation the marks are, taken against the deck rather
+          // than against a card.
+          called: deckSquares
+            .map((square) => square.id)
+            .filter((id) => state.marks.includes(id)),
+        }
+      : null,
     marks: [...state.marks],
     streamedThroughSeq,
   });
@@ -389,5 +427,146 @@ describe('calling a square', () => {
     );
 
     expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
+/** The other half of D7: the host calls from the deck, not only from their card. */
+describe('the host deck sheet', () => {
+  /** Opens the sheet from the card, which is where the host always starts. */
+  async function openSheet() {
+    fireEvent.click(await screen.findByRole('button', { name: 'Host deck sheet' }));
+
+    return screen.findByLabelText('Host deck sheet');
+  }
+
+  it('is reachable from the host`s card and lists the whole deck', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const sheet = await openSheet();
+
+    // Every deck square, including the 16 that are on no card of the host's.
+    expect(sheet.querySelectorAll('li')).toHaveLength(40);
+    expect(within(sheet).getByText('Square 39')).toBeDefined();
+    expect(within(sheet).getByText('0 of 40 called')).toBeDefined();
+  });
+
+  /**
+   * The separation the criterion asks for: the host is never a beat unsure
+   * whether they are playing their card or acting as host, because only one of
+   * the two is on screen and the sheet says which it is.
+   */
+  it('is a surface of its own rather than a second card', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    await openSheet();
+
+    expect(screen.queryByLabelText('Your card')).toBeNull();
+    // And back again, without a reload.
+    fireEvent.click(screen.getByRole('button', { name: 'Back to your card' }));
+    expect(await screen.findByLabelText('Your card')).toBeDefined();
+    expect(screen.queryByLabelText('Host deck sheet')).toBeNull();
+  });
+
+  it('is not offered to a player the API handed no deck', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(screen.queryByRole('button', { name: 'Host deck sheet' })).toBeNull();
+    expect(screen.queryByLabelText('Host deck sheet')).toBeNull();
+  });
+
+  it('calls a deck square that is on no card of the host`s, by the same request', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    const sheet = await openSheet();
+
+    fireEvent.click(within(sheet).getByText('Square 30'));
+
+    const posted = await waitFor(() => {
+      const found = room.fetchMock.mock.calls.find(([url]) =>
+        (url as string).endsWith('/call'),
+      );
+      expect(found).toBeDefined();
+
+      return found!;
+    });
+
+    // The same endpoint and the same body a tap on the card sends — one call
+    // path, so nothing downstream can tell a sheet call from a card call.
+    expect(posted[0]).toBe('https://api.example/games/game-id/call');
+    expect(JSON.parse((posted[1] as RequestInit).body as string)).toEqual({
+      square_id: 'f1.v1:t:30',
+    });
+
+    await waitFor(() =>
+      expect(
+        within(screen.getByLabelText('Host deck sheet'))
+          .getByRole('button', { name: /Square 30/ })
+          .getAttribute('aria-pressed'),
+      ).toBe('true'),
+    );
+  });
+
+  it('shows a square that arrived already called, and does not offer to call it again', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      deck: true,
+      marks: ['f1.v1:t:3'],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    const sheet = await openSheet();
+
+    const called = sheet.querySelectorAll('[aria-pressed="true"]');
+    expect(called).toHaveLength(1);
+    expect((called[0] as HTMLButtonElement).disabled).toBe(true);
+    expect(within(sheet).getByText('1 of 40 called')).toBeDefined();
+  });
+
+  /**
+   * The sheet updates live as calls arrive from players — by the same path the
+   * card does, because both render whatever the last read of the game handed
+   * them and the stream is what prompts that read.
+   */
+  it('updates as a call arrives from another player', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    await openSheet();
+
+    room.calledElsewhere('f1.v1:t:33');
+    act(() =>
+      stream().emit({
+        seq: 12,
+        kind: 'CALL',
+        actorPlayerId: guest.id,
+        squareId: 'f1.v1:t:33',
+      }),
+    );
+
+    // Named, because the host is the one device that holds the deck's prose.
+    expect((await screen.findByRole('status')).textContent).toBe(
+      'Bea spotted Square 33',
+    );
+
+    await waitFor(() =>
+      expect(
+        within(screen.getByLabelText('Host deck sheet'))
+          .getByRole('button', { name: /Square 33/ })
+          .getAttribute('aria-pressed'),
+      ).toBe('true'),
+    );
   });
 });

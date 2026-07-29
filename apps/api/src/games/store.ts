@@ -29,12 +29,24 @@ export class GameAlreadyLive extends Error {
  * Call scope is card-only for players (D7): a mark is monotonically good for you,
  * so under card-only calling you always call the moment you spot it. Opening
  * calling to the whole deck would pay you to stay quiet about a square you do not
- * hold. The host's unrestricted deck sheet is a separate slice.
+ * hold. The host is the one exception, and calls through the deck sheet instead.
  */
 export class NotOnYourCard extends Error {
   constructor(squareId: string) {
     super(`square ${squareId} is not on your card`);
     this.name = 'NotOnYourCard';
+  }
+}
+
+/**
+ * The host's scope is the room's deck, not everything (D7). Nothing outside the
+ * deck can be on anybody's card, so a CALL for it could never mark anything — it
+ * would only put a row in the log that no reader can account for.
+ */
+export class NotInDeck extends Error {
+  constructor(squareId: string) {
+    super(`square ${squareId} is not in this game's deck`);
+    this.name = 'NotInDeck';
   }
 }
 
@@ -46,6 +58,18 @@ export type CardSquare = {
   tier: string;
 };
 
+/**
+ * The host's deck sheet: the whole ~40-square room deck and which of it has been
+ * called. Sent to the host and to nobody else — every other device knows the
+ * prose for its own 24 squares only, which is what keeps the sheet an admin
+ * surface rather than a leak of everyone's cards.
+ */
+export type DeckView = {
+  squares: CardSquare[];
+  /** Deck squares with a live CALL — the same set marks are derived from. */
+  called: string[];
+};
+
 export type GameView = {
   id: string;
   state: string;
@@ -53,6 +77,8 @@ export type GameView = {
   freeCentre: string;
   /** This player's 24 earnable squares, or null for someone not in the room. */
   card: CardSquare[] | null;
+  /** The deck sheet, for the host reading this and null for everyone else. */
+  deck: DeckView | null;
   /**
    * Which of `card`'s squares are marked, computed here and stored nowhere: the
    * card's square ids intersected with the game's live CALLs. Sending the derived
@@ -166,6 +192,9 @@ export async function startGame(
     state: 'live',
     freeCentre: pool.freeCentre,
     card: mine === undefined ? null : describeCard(pool, mine.squareIds),
+    // Whoever got this far is the host — `NotHost` is thrown above otherwise — so
+    // the deck sheet comes back with the deal rather than waiting for a re-read.
+    deck: { squares: describeCard(pool, deck.map((square) => square.id)), called: [] },
     // A game one transaction old has no calls, and the empty list is the derived
     // answer rather than a placeholder for one.
     marks: [],
@@ -190,8 +219,11 @@ export async function readGame(
       id: games.id,
       themeId: games.themeId,
       state: games.state,
+      deck: games.deck,
+      hostPlayerId: rooms.hostPlayerId,
     })
     .from(games)
+    .innerJoin(rooms, eq(rooms.code, games.roomCode))
     .where(eq(games.roomCode, code))
     .orderBy(desc(games.startedAt))
     .limit(1);
@@ -208,37 +240,38 @@ export async function readGame(
           .from(cards)
           .where(and(eq(cards.gameId, game.id), eq(cards.playerId, playerId)));
 
+  /**
+   * The one formula the whole design follows from:
+   *
+   *     marks(player) = card.square_ids ∩ {CALLs not superseded by a RETRACT}
+   *
+   * Computed on every read and written down nowhere. That is what buys free
+   * reconnect, correct late joiners and cheap corrections — a stored mark would
+   * be a second description of what is marked, and the two would eventually
+   * disagree. The deck sheet's called state is the same intersection taken
+   * against the deck instead of a card, so both come off one read of the log.
+   *
+   * The order is the card's (and the deck's), not the log's, so a caller can line
+   * the answer up against the cells it already has.
+   */
+  const called = await calledSquares(db, game.id);
+
   return {
     id: game.id,
     state: game.state,
     freeCentre: pool.freeCentre,
     card: hand === undefined ? null : describeCard(pool, hand.squareIds),
+    deck:
+      playerId !== undefined && playerId === game.hostPlayerId
+        ? {
+            squares: describeCard(pool, game.deck),
+            called: game.deck.filter((id) => called.has(id)),
+          }
+        : null,
     marks:
-      hand === undefined ? [] : await markedSquares(db, game.id, hand.squareIds),
+      hand === undefined ? [] : hand.squareIds.filter((id) => called.has(id)),
     streamedThroughSeq: await settledHeadSeq(db, code),
   };
-}
-
-/**
- * The one formula the whole design follows from:
- *
- *     marks(player) = card.square_ids ∩ {CALLs not superseded by a RETRACT}
- *
- * Computed on every read and written down nowhere. That is what buys free
- * reconnect, correct late joiners and cheap corrections — a stored mark would be
- * a second description of what is marked, and the two would eventually disagree.
- *
- * The order is the card's, not the log's, so a caller can line marks up against
- * the cells it already has.
- */
-export async function markedSquares(
-  db: Db,
-  gameId: string,
-  squareIds: string[],
-): Promise<string[]> {
-  const called = await calledSquares(db, gameId);
-
-  return squareIds.filter((id) => called.has(id));
 }
 
 /**
@@ -288,6 +321,11 @@ async function calledSquares(db: Db, gameId: string): Promise<Set<string>> {
  * them a row and the other a 23505, and the loser is handed the winning row —
  * because from the player's side nothing went wrong: the square they spotted is
  * marked, which is all they were asking for.
+ *
+ * The host is the one caller not held to their own card (D7): they repair a miss
+ * from the deck sheet, and everything downstream of the scope check is the same
+ * row, the same fanout and the same credit. That includes losing the race — a
+ * host calling a square a player already called is handed the winning row too.
  */
 export async function callSquare(
   db: Db,
@@ -295,20 +333,35 @@ export async function callSquare(
   playerId: string,
   squareId: string,
 ): Promise<CallResult> {
-  const [hand] = await db
-    .select({ squareIds: cards.squareIds, roomCode: games.roomCode })
-    .from(cards)
-    .innerJoin(games, eq(games.id, cards.gameId))
-    .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+  const [game] = await db
+    .select({
+      roomCode: games.roomCode,
+      deck: games.deck,
+      hostPlayerId: rooms.hostPlayerId,
+    })
+    .from(games)
+    .innerJoin(rooms, eq(rooms.code, games.roomCode))
+    .where(eq(games.id, gameId));
 
-  if (hand === undefined) throw new NotOnYourCard(squareId);
-  if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
+  if (game === undefined) throw new NotOnYourCard(squareId);
+
+  if (playerId === game.hostPlayerId) {
+    if (!game.deck.includes(squareId)) throw new NotInDeck(squareId);
+  } else {
+    const [hand] = await db
+      .select({ squareIds: cards.squareIds })
+      .from(cards)
+      .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+
+    if (hand === undefined) throw new NotOnYourCard(squareId);
+    if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
+  }
 
   try {
     const [appended] = await db
       .insert(roomEvents)
       .values({
-        roomCode: hand.roomCode,
+        roomCode: game.roomCode,
         gameId,
         actorPlayerId: playerId,
         kind: 'CALL',
