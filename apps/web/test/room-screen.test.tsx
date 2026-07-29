@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoomScreen } from '../app/r/[code]/room-screen';
 import { FakeEventSource } from './fake-event-source';
@@ -187,19 +187,31 @@ describe('the live roster', () => {
     );
   }
 
+  /**
+   * The stream opens on `load === 'ready' && gameLoaded`, so waiting for a name
+   * to appear waits for the roster only — the game read has still to settle.
+   * Waiting for the stream itself is what these cases actually mean.
+   */
+  function openedStream() {
+    return waitFor(() => {
+      const opened = FakeEventSource.opened.at(-1);
+      expect(opened).toBeDefined();
+      return opened!;
+    });
+  }
+
   it('adds a player who joined on another browser, with no refresh', async () => {
     const players = [host];
     stubRoom(players);
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
-    await screen.findByText(/Ash/);
 
-    const stream = FakeEventSource.opened.at(-1);
-    expect(stream?.url).toBe('https://api.example/rooms/ABCD/stream');
+    const stream = await openedStream();
+    expect(stream.url).toBe('https://api.example/rooms/ABCD/stream');
 
     // The second phone joins: the log grows, and the stream says so.
     players.push(guest);
-    act(() => stream?.emit({ seq: 2, kind: 'PLAYER_JOINED' }));
+    act(() => stream.emit({ seq: 2, kind: 'PLAYER_JOINED' }));
 
     expect(await screen.findByText(/Bea/)).toBeDefined();
   });
@@ -210,11 +222,10 @@ describe('the live roster', () => {
     const view = render(
       <RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />,
     );
-    await screen.findByText(/Ash/);
 
-    const stream = FakeEventSource.opened.at(-1);
+    const stream = await openedStream();
     view.unmount();
 
-    expect(stream?.closed).toBe(true);
+    expect(stream.closed).toBe(true);
   });
 });
