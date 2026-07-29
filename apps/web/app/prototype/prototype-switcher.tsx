@@ -22,6 +22,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { asLabelSet, LABEL_SETS, LABEL_SET_NAMES } from './room/mock-state';
+import { asFit, asTextSize, FITS, TEXT_SIZES } from './room/proto-card';
+import { asFont, FONTS, fontFor } from './room/proto-fonts';
 
 /** Apple's minimum, and the reason the first cut of this bar did not work. */
 const TARGET = 'min-h-11 min-w-11';
@@ -39,7 +42,10 @@ export function PrototypeSwitcher({
   const router = useRouter();
   const params = useSearchParams();
 
-  const labels = params.get('labels') === 'real' ? 'real' : 'cap';
+  const labels = asLabelSet(params.get('labels'));
+  const text = asTextSize(params.get('text'));
+  const font = asFont(params.get('font'));
+  const fit = asFit(params.get('fit'));
   const stage = params.get('stage') === 'start' ? 'start' : 'mid';
   /**
    * Open on arrival so the controls are discoverable, shut as soon as a variant is
@@ -58,10 +64,42 @@ export function PrototypeSwitcher({
     show(variants[(at + by + variants.length) % variants.length] ?? current);
   }
 
-  function toggleLabels() {
+  function set(key: string, value: string) {
     const query = new URLSearchParams(params.toString());
-    query.set('labels', labels === 'cap' ? 'real' : 'cap');
+    query.set(key, value);
     router.replace(`?${query.toString()}`);
+  }
+
+  /**
+   * The two axes of "how much can a cell say" — label length and text size — as
+   * cycles rather than toggles, because each has four steps and a bar built for a
+   * thumb has no room for eight more buttons. Cycling also matches how they get
+   * judged: hold one still, step the other until the cell breaks.
+   */
+  function cycleLabels() {
+    const at = LABEL_SETS.indexOf(labels);
+    set('labels', LABEL_SETS[(at + 1) % LABEL_SETS.length] ?? 'cap');
+  }
+
+  function cycleText(by = 1) {
+    const at = TEXT_SIZES.findIndex((size) => size.key === text);
+    const next = (at + by + TEXT_SIZES.length) % TEXT_SIZES.length;
+    set('text', TEXT_SIZES[next]?.key ?? 'XL');
+  }
+
+  /**
+   * The other two ways of buying characters per line, which is what the size and
+   * length axes kept running out of: a narrower or taller-x-height face, and a
+   * strategy for the one word that still does not fit.
+   */
+  function cycleFont() {
+    const at = FONTS.findIndex((choice) => choice.key === font);
+    set('font', FONTS[(at + 1) % FONTS.length]?.key ?? 'roboto-condensed');
+  }
+
+  function cycleFit() {
+    const at = FITS.findIndex((choice) => choice.key === fit);
+    set('fit', FITS[(at + 1) % FITS.length]?.key ?? 'shrink');
   }
 
   /**
@@ -70,9 +108,7 @@ export function PrototypeSwitcher({
    * has been called.
    */
   function toggleStage() {
-    const query = new URLSearchParams(params.toString());
-    query.set('stage', stage === 'mid' ? 'start' : 'mid');
-    router.replace(`?${query.toString()}`);
+    set('stage', stage === 'mid' ? 'start' : 'mid');
   }
 
   // Still here for the desktop pass, but no longer the only way through.
@@ -87,6 +123,10 @@ export function PrototypeSwitcher({
 
       if (event.key === 'ArrowLeft') step(-1);
       if (event.key === 'ArrowRight') step(1);
+      // Up/down for text size, so the desktop pass can walk the size axis without
+      // reaching for the bar. Up is bigger, and both wrap.
+      if (event.key === 'ArrowUp') cycleText(1);
+      if (event.key === 'ArrowDown') cycleText(-1);
     }
 
     window.addEventListener('keydown', onKey);
@@ -113,6 +153,28 @@ export function PrototypeSwitcher({
           {/* What is on screen, on its own line so it never squeezes a target. */}
           <p className="truncate px-1 text-[11px] font-semibold">
             {current} — {name}
+          </p>
+          {/*
+            The two axes spelled out, because these get judged by photographing an
+            iPad and a photo of a card is no use if it does not say which pair of
+            settings produced it.
+          */}
+          <p className="truncate px-1 text-[11px] tabular-nums">
+            {LABEL_SET_NAMES[labels]} · text {text} at{' '}
+            {TEXT_SIZES.find((size) => size.key === text)?.scale}cqw (
+            {TEXT_SIZES.find((size) => size.key === text)?.phonePx})
+          </p>
+          <p className="truncate px-1 text-[11px]">
+            {fontFor(font).name} ·{' '}
+            {FITS.find((choice) => choice.key === fit)?.name}
+            {/*
+              `condense` needs a width axis to do anything at all, and an inert
+              control that looks live is how you conclude a strategy failed when it
+              never ran.
+            */}
+            {fit === 'condense' && !fontFor(font).widthAxis
+              ? ' — inert, needs Archivo'
+              : ''}
           </p>
 
           {/* Wraps, so six keys still fit at `phone-small` without shrinking any. */}
@@ -142,13 +204,46 @@ export function PrototypeSwitcher({
             {/*
               The second control, because #12 has to decide about D4's <=30 char cap
               as well as about layout, and the two are the same judgement made twice.
+              Four steps now rather than two: a cap is a number, and picking a number
+              means seeing both sides of the one you have.
             */}
             <button
               type="button"
-              onClick={toggleLabels}
+              onClick={cycleLabels}
               className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
             >
-              {labels === 'cap' ? 'at cap' : 'real pool'}
+              {LABEL_SET_NAMES[labels]}
+            </button>
+            {/*
+              The other half of the same question. Length and size trade against each
+              other in one 68pt box, so they sit side by side: step one, then the
+              other, and the cell tells you where the pair stops working.
+            */}
+            <button
+              type="button"
+              onClick={() => cycleText(1)}
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+            >
+              text {text}
+            </button>
+            {/*
+              Length and size both ran out before the cap did — every failure was one
+              word too wide for the cell. These two are the other levers on that same
+              word: a narrower face, and what to do when it still does not fit.
+            */}
+            <button
+              type="button"
+              onClick={cycleFont}
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+            >
+              {fontFor(font).name}
+            </button>
+            <button
+              type="button"
+              onClick={cycleFit}
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+            >
+              fit: {FITS.find((choice) => choice.key === fit)?.name}
             </button>
             <button
               type="button"

@@ -28,21 +28,102 @@ token — it is mock state end to end.
   desktop. Or set `?variant=A|B|C|C1|C2|C3` by hand. The bar collapses to a single handle once you
   pick, because expanded it sits over whatever is at its height — which on a phone is the element
   being judged. Tap the handle to bring it back.
-- `?labels=cap` (default) — plausible labels **at** the 30-character cap whose longest words are
-  11-13 characters: `investigation`, `championship`, `disqualified`, `reprimanded`.
-- `?labels=real` — the committed 47-square pool's own longest labels, longest word 10. The control.
 - `?stage=start` (bar: **lights out**) — nothing called, so the list is all **24** rows. This is the
   list's worst case *and* the only state where the longest descriptions are on screen at all, because
   the list carries open squares and `mid` has already marked the squares whose prose runs longest.
 
-**Judge on `cap`.** `real` is what is on screen today; `cap` is what #16 will author.
+### The two axes in the box: length and size
 
-### If the switcher does nothing
+"How much can a 68pt cell say" is two questions that trade against each other, so the bar has one
+cycle button for each and they are meant to be walked as a pair — hold one, step the other until the
+cell stops working.
 
-It must be `pnpm ... dev`. The bar is gated on `NODE_ENV !== 'production'`, so under `next build && next
-start` it renders as nothing at all and the variants are only reachable by editing `?variant=` in the
-address bar. That gate is deliberate — it is what stops a stray merge shipping the bar — but it does
-mean a production build looks like a broken prototype.
+**Length** — `?labels=`, the bar's second button, four steps:
+
+| | Label max | Longest word | What it is |
+| --- | --- | --- | --- |
+| `short` | 16 | 10 | Terse authoring. What the cap looks like with room to spare |
+| `real` | 28 | 10 | The committed 47-square pool's own longest labels. What is on screen today |
+| `cap` (default) | 28 | 13 | At the cap, with `investigation`, `championship`, `disqualified`, `reprimanded` |
+| `long` | 41 | 13 | **Over** the cap. Not a proposal — what raising it would cost |
+
+`real` and `cap` are the same label length; what separates them is the longest *word*, which is what
+a cell actually breaks on. **Judge on `cap`** — it is what #16 will author. The other three say how
+much room the cap has on either side of it.
+
+**Size** — `?text=S|M|L|XL`, the bar's third button, or up/down arrows on desktop. Values are cqw per
+cell line, i.e. a fraction of the card's own width, so every step is bigger on an iPad than on a
+phone by construction (see the file header in `proto-card.tsx` for why that matters):
+
+| | cqw | At `phone` |
+| --- | --- | --- |
+| `S` | 1.85 | ~7px |
+| `M` | 2.15 | ~8px — reproduces the real card today |
+| `L` | 2.55 | ~10px |
+| **`XL` (default)** | 3.0 | ~11px — **the decision** |
+
+The pill's second line names both settings, because these get judged by photographing an iPad and a
+photo of a card is no use without the pair that produced it.
+
+### The other two axes: face, and what to do when one word still will not fit
+
+Length and size both ran out before the cap did, and **every** failure was the same shape: one word
+too wide for the cell, never too many lines. So there are two more levers on that word.
+
+**Face** — `?font=`, the bar's fourth button:
+
+| | What it is |
+| --- | --- |
+| **`roboto-condensed` (default)** | Narrower letters. **The decision** |
+| `system` | The control — SF on the hardware this is judged on, and what the app renders today |
+| `inter` | A larger x-height at the same nominal size, nothing narrower. Helps at 320px, *worse* on the iPad |
+| `archivo` | Variable on the **`wdth` axis**, 62-125, which is what makes `condense` below possible |
+
+**Fit** — `?fit=`, the bar's fifth button, for the cells that still do not fit:
+
+| | What it does | Cost |
+| --- | --- | --- |
+| `clip` | Nothing. Ring it and move on | The control, and what the card does today |
+| **`shrink` (default)** | Drop that one cell's font size, floored at 80% | Neighbouring cells stop sharing a type size |
+| `condense` | Hold the size, pull the `wdth` axis in instead | **Needs `?font=archivo`** — inert on any other face |
+| `scale-x` | Squeeze horizontally with a transform | Works on every face; distorts the strokes |
+
+Cells that still clip after the strategy has run are the ones ringed red — so a ring means "this label
+is too long", not "this label needed help".
+
+### Measuring the cells: use a `Range`, not `scrollWidth`
+
+`proto-card.tsx` rings the cells that clip, and how it measures them matters more than it looks. Both
+of these are real failures that happened here:
+
+- **`scrollWidth` on the cell under-reports.** The cell is a `justify-center` flex container and
+  content overflowing a centred line is not counted. This is the failure `docs/SURFACES.md` and #47
+  record having hidden the overflow defect three times.
+- **`scrollWidth` cannot see a transform.** It is a layout measurement. With `scale-x`, labels that had
+  been squeezed until they genuinely fitted still measured as overflowing — so the strategy ran to its
+  floor, reported failure, and ringed cells it had already fixed. Caught by driving it; invisible in
+  review.
+
+So: a `Range` over the text's own line boxes, against the cell's content box — `getBoundingClientRect`
+**plus border width plus padding** on each edge. Dropping the 1px border is worth 21 spurious
+disagreements on its own; that one was a bug in the checking script rather than in the card, which is
+its own kind of warning.
+
+And check the viewport against `docs/SURFACES.md` before quoting a number: `phone-small` is
+**375 x 667**, not 320. A sweep at 320 is stricter than the gate, so it does not invalidate a pass —
+but every figure it produces is wrong by about 1.5px of cell text, and three issue comments went out
+carrying them.
+
+### It must be `pnpm ... dev` — in a production build this route does not exist
+
+`page.tsx` calls `notFound()` when `NODE_ENV === 'production'`, so under `next build && next start` the
+whole route is a 404. Verified: `/prototype/room` returns 404 from a production build while `/` still
+returns 200.
+
+Gating only the switcher was not enough. The page built as `○ /prototype/room` and would have served a
+fake room — fake players, fake result — on a public URL, and once the font axis existed it shipped
+webfont bytes to go with it. Deleting `apps/web/app/prototype/` is #14's job; this is what makes the
+gap until then safe to deploy through.
 
 ## The variants
 
