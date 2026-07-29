@@ -16,13 +16,20 @@ const ROW =
  * marks it is derived server-side from the call log and arrives with every read
  * of the game, so a call another player makes lands here by the same path as
  * one the host makes — the sheet just renders whatever it was last handed.
+ *
+ * `finished` closes the sheet's rows for the same reason it closes the card's
+ * cells: after D5's full house the API refuses every call. The sheet stays
+ * reachable, because reading where the game ended is what it is for.
  */
 export function DeckSheet({
   deck,
   onCall,
+  finished,
 }: {
   deck: Deck;
   onCall: (squareId: string) => void;
+  /** Whether the game has reached `done`, after which nothing may be called. */
+  finished: boolean;
 }) {
   const called = new Set(deck.called);
 
@@ -56,7 +63,7 @@ export function DeckSheet({
                 type="button"
                 title={square.description}
                 aria-pressed={isCalled}
-                disabled={isCalled}
+                disabled={finished || isCalled}
                 onClick={() => onCall(square.id)}
                 className={`${ROW} ${
                   isCalled

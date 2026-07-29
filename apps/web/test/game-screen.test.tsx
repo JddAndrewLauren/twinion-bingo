@@ -59,6 +59,7 @@ function stubRoom({
   gameState = 'live',
   streamedThroughSeq = 2,
   deck = false,
+  closesOnCall = false,
 }: {
   you: typeof host | null;
   liveFromTheStart?: boolean;
@@ -77,12 +78,17 @@ function stubRoom({
    * work it out from the roster.
    */
   deck?: boolean;
+  /**
+   * Whether the next call completes a full house — the API closes the game in
+   * the same transaction, so the read that follows the tap comes back `done`.
+   */
+  closesOnCall?: boolean;
 }) {
-  const state = { live: liveFromTheStart, marks: [...marks] };
+  const state = { live: liveFromTheStart, marks: [...marks], done: false };
 
   const view = () => ({
     id: 'game-id',
-    state: gameState,
+    state: state.done ? 'done' : gameState,
     freeCentre: 'LIGHTS OUT',
     card,
     deck: deck
@@ -121,6 +127,7 @@ function stubRoom({
       if (!state.marks.some((mark) => mark.squareId === called.squareId)) {
         state.marks.push(called);
       }
+      if (closesOnCall) state.done = true;
 
       return Response.json({ ...called, appended: true }, { status: 201 });
     }
@@ -183,12 +190,20 @@ function stubRoom({
   };
 }
 
-/** The stream this browser opened, which is where every other phone's news arrives. */
+/**
+ * The stream this browser opened, which is where every other phone's news
+ * arrives. It waits, because the stream opens on `load === 'ready' &&
+ * gameLoaded` — a card on screen means the game *read* landed, and the flag it
+ * sets settles a microtask later. Reading `opened` straight after the card
+ * appears is a race that fails as an undefined stream.
+ */
 function stream() {
-  const opened = FakeEventSource.opened.at(-1);
-  expect(opened).toBeDefined();
+  return waitFor(() => {
+    const opened = FakeEventSource.opened.at(-1);
+    expect(opened).toBeDefined();
 
-  return opened!;
+    return opened!;
+  });
 }
 
 beforeEach(() => {
@@ -272,7 +287,8 @@ describe('a game starting on someone else`s phone', () => {
 
     // The host starts it somewhere else; this browser only sees the log grow.
     room.startElsewhere();
-    act(() => stream().emit({ seq: 3, kind: 'GAME_STARTED' }));
+    const live = await stream();
+    act(() => live.emit({ seq: 3, kind: 'GAME_STARTED' }));
 
     expect(await screen.findByLabelText('Your card')).toBeDefined();
   });
@@ -403,8 +419,9 @@ describe('calling a square', () => {
     await screen.findByLabelText('Your card');
 
     room.calledElsewhere('f1.v1:t:7');
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 12,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -436,8 +453,9 @@ describe('calling a square', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
     await screen.findByLabelText('Your card');
 
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 12,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -474,8 +492,9 @@ describe('calling a square', () => {
     ).toBe('true');
 
     // The replay of that very call, at or below the snapshot's horizon.
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 12,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -604,8 +623,9 @@ describe('the host deck sheet', () => {
     await openSheet();
 
     room.calledElsewhere('f1.v1:t:33');
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 12,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -761,8 +781,9 @@ describe('taking a call back', () => {
     await screen.findByRole('button', { name: 'Undo' });
 
     room.calledElsewhere('f1.v1:t:7', host.id);
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 5000,
         kind: 'CALL',
         actorPlayerId: host.id,
@@ -792,8 +813,9 @@ describe('taking a call back', () => {
     const mine = room.markFor('f1.v1:t:5');
     expect(mine).toBeDefined();
 
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: mine!.seq,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -872,8 +894,9 @@ describe('taking a call back', () => {
     ).toBe('true');
 
     room.retractedElsewhere(12);
+    const live = await stream();
     act(() =>
-      stream().emit({ seq: 13, kind: 'RETRACT', actorPlayerId: host.id }),
+      live.emit({ seq: 13, kind: 'RETRACT', actorPlayerId: host.id }),
     );
 
     await waitFor(() =>
@@ -1085,8 +1108,9 @@ describe('a replayed log', () => {
     ]);
 
     // The replay of the very call the snapshot already accounts for.
+    const live = await stream();
     act(() =>
-      stream().emit({
+      live.emit({
         seq: 12,
         kind: 'CALL',
         actorPlayerId: guest.id,
@@ -1095,5 +1119,99 @@ describe('a replayed log', () => {
     );
 
     await waitFor(async () => expect(await read()).toEqual(before));
+  });
+});
+
+/**
+ * D5's full house is a one-way door: the game reaches `state='done'` and the API
+ * refuses every later call and retraction with 409, under the same lock a call
+ * takes. The card has to say so *before* the tap, because a 409 surfacing as
+ * "Could not call that square." reads as a failure of the tap rather than as the
+ * game being over.
+ */
+describe('a game that is done', () => {
+  it('offers no call on a square nobody reached', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true, gameState: 'done' });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(
+      screen.getByRole('button', { name: 'Square 3' }).hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  it('offers no retraction on a call you made yourself', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      gameState: 'done',
+      // D8 would otherwise let the caller take this one back.
+      marks: [markOf(0, 101, guest.id)],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const own = screen.getByRole('button', { name: 'Square 0' });
+    expect(own.getAttribute('aria-pressed')).toBe('true');
+    expect(own.hasAttribute('disabled')).toBe(true);
+  });
+
+  /**
+   * The host's reach is wider than their card, so the sheet is a second way to
+   * reach the same closed endpoint — and it goes quiet for the same reason.
+   */
+  it('offers no call from the host deck sheet either', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      gameState: 'done',
+      deck: true,
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Host deck sheet' }));
+
+    const sheet = await screen.findByLabelText('Host deck sheet');
+    expect(
+      within(sheet)
+        .getByRole('button', { name: /Square 30/ })
+        .hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  /**
+   * The hard case, and the reason this is not just a render-time flag: the tap
+   * that closes the game is the one that opens an undo window. D8's ten seconds
+   * would otherwise outlive the game, offering a retraction the API answers 409.
+   */
+  it('withdraws the undo window when your own call is what closed the game', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true, closesOnCall: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 3' }));
+
+    // The game comes back done on the read that the call triggers.
+    await screen.findByText('Final standings');
+
+    expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Square 4' }).hasAttribute('disabled'),
+    ).toBe(true);
+  });
+
+  it('still lets the host tap through to the sheet to read where it ended', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      gameState: 'done',
+      deck: true,
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Host deck sheet' }));
+
+    expect(await screen.findByLabelText('Host deck sheet')).toBeDefined();
   });
 });

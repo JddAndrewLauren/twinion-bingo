@@ -394,11 +394,18 @@ export function RoomScreen({
     const canRetract = (mark: Mark) =>
       youAreHost || mark.actorPlayerId === roster.you?.id;
 
+    /**
+     * D5's one-way door, read the same way `Results` reads it. Past this point
+     * the API answers 409 to every call and retraction, so the card and the
+     * sheet stop offering them rather than letting a tap fail.
+     */
+    const finished = game.state === 'done';
+
     return (
       <div className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">Room {code}</h1>
         {deck !== null && sheetOpen ? (
-          <DeckSheet deck={deck} onCall={call} />
+          <DeckSheet deck={deck} onCall={call} finished={finished} />
         ) : (
           <CardGrid
             card={game.card}
@@ -408,6 +415,7 @@ export function RoomScreen({
             onCall={call}
             canRetract={canRetract}
             onRetract={setConfirming}
+            finished={finished}
           />
         )}
         {deck !== null && (
@@ -430,6 +438,11 @@ export function RoomScreen({
          * already naming: your own tap, announced twice, one line apart. That one
          * is a duplicate rather than news, so it is the only thing suppressed —
          * matched by `seq`, so it is exactly that row and nothing near it.
+         *
+         * The undo row is withdrawn once the game is `done`, because the call
+         * that closed it can open a window that outlives the game it belongs to:
+         * the full house lands on the very tap the window is offering to undo.
+         * The credit toast stays — it is news, not an offer.
          */}
         {(undo !== null || toast !== null) && (
           <div className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md flex-col gap-1">
@@ -446,7 +459,7 @@ export function RoomScreen({
                 {toast.text}
               </p>
             )}
-            {undo !== null && (
+            {undo !== null && !finished && (
               <div
                 role="status"
                 className="flex items-center justify-between gap-3 rounded-t bg-emerald-800 p-3 text-emerald-50"

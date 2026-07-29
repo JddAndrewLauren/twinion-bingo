@@ -34,6 +34,12 @@ const CELL = 'flex h-full w-full items-center justify-center rounded border p-1 
  * may *win* with a mark, not about who may take it back: a host retracting an
  * inherited call is still D8's business, so the two states compose rather than
  * override each other.
+ *
+ * `finished` is D5's one-way door. Once the full house has closed the game the
+ * API refuses every call and retraction with 409, so the whole card goes quiet:
+ * offering a tap that is certain to come back as "Could not call that square."
+ * would read as a broken card rather than as a game that is over. The card stays
+ * on screen, marks and all, because it is what the room looks at afterwards.
  */
 export function CardGrid({
   card,
@@ -43,6 +49,7 @@ export function CardGrid({
   onCall,
   canRetract,
   onRetract,
+  finished,
 }: {
   card: CardSquare[];
   freeCentre: string;
@@ -53,6 +60,8 @@ export function CardGrid({
   /** Whether D8 lets this viewer take this call back — the caller, or the host. */
   canRetract: (mark: Mark) => boolean;
   onRetract: (mark: Mark) => void;
+  /** Whether the game has reached `done`, after which nothing may be called. */
+  finished: boolean;
 }) {
   const marked = new Map(marks.map((mark) => [mark.squareId, mark]));
   const inherited = new Set(inheritedMarks);
@@ -96,7 +105,7 @@ export function CardGrid({
                 }
                 data-inherited={isInherited ? 'true' : undefined}
                 aria-pressed={isMarked}
-                disabled={isMarked && !retractable}
+                disabled={finished || (isMarked && !retractable)}
                 onClick={() =>
                   mark === undefined ? onCall(square.id) : onRetract(mark)
                 }
