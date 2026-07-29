@@ -6,5 +6,6 @@ export {
   loadPool,
   loadPools,
   loadTheme,
+  loadThemeMeta,
 } from './generate.js';
 export type * from './types.js';
