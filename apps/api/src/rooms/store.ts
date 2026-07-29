@@ -2,10 +2,15 @@ import { randomBytes } from 'node:crypto';
 import { and, asc, eq } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { players, roomEvents, rooms } from '../db/schema.js';
+import { defaultThemeId } from '../games/pools.js';
 import { generateRoomCode } from './codes.js';
 
-/** Themes are repo folders (D10); the F1 pool arrives with the theme slice. */
-const DEFAULT_THEME_ID = 'f1.v1';
+/**
+ * Themes are repo folders (D10), and a manifest is a committed file that cannot
+ * change under a running process — so the default theme's id is derived once, at
+ * boot, exactly like the pools it has to agree with.
+ */
+const DEFAULT_THEME_ID = defaultThemeId();
 
 /** Enough attempts that exhausting them means something other than bad luck. */
 const CODE_ATTEMPTS = 8;

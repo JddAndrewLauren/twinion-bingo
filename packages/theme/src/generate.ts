@@ -25,9 +25,18 @@ export function discoverThemes(themesRoot: string): string[] {
     .sort();
 }
 
+/**
+ * A theme folder's manifest alone. The composed theme id is derivable from this
+ * much, so a caller that only needs the id — the API naming a room's theme —
+ * reads one small file rather than the whole authored source.
+ */
+export function loadThemeMeta(themeDir: string): ThemeMeta {
+  return readJson<ThemeMeta>(join(themeDir, 'theme.json'));
+}
+
 export function loadTheme(themeDir: string): ThemeSource {
   return {
-    meta: readJson<ThemeMeta>(join(themeDir, 'theme.json')),
+    meta: loadThemeMeta(themeDir),
     entities: readJson<Entities>(join(themeDir, 'entities.json')),
     templates: readJson<{ templates: Template[] }>(join(themeDir, 'templates.json')).templates,
     handcrafted: readJson<{ squares: HandcraftedSquare[] }>(join(themeDir, 'handcrafted.json'))
