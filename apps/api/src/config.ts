@@ -1,9 +1,19 @@
+import type { Db } from './db/client.js';
+import type { StreamTimings } from './rooms/stream.js';
+
 export type AppConfig = {
   /** Origins allowed to call this API from a browser, plus their Vercel previews. */
   allowedOrigins: string[];
+  db: Db;
+  /** Poll and heartbeat periods for the SSE stream; the defaults are the real ones. */
+  streamTimings?: Partial<StreamTimings>;
 };
 
-export type ServerConfig = AppConfig & { port: number };
+export type ServerConfig = {
+  allowedOrigins: string[];
+  databaseUrl: string;
+  port: number;
+};
 
 const DEFAULT_PORT = 8080;
 const LOCAL_WEB_ORIGIN = 'http://localhost:3000';
@@ -16,7 +26,26 @@ const LOCAL_WEB_ORIGIN = 'http://localhost:3000';
 export function resolveServerConfig(
   env: Record<string, string | undefined>,
 ): ServerConfig {
-  return { allowedOrigins: resolveAllowedOrigins(env), port: resolvePort(env) };
+  return {
+    allowedOrigins: resolveAllowedOrigins(env),
+    databaseUrl: resolveDatabaseUrl(env),
+    port: resolvePort(env),
+  };
+}
+
+/**
+ * No default, in any environment. Every room read and write goes to Postgres,
+ * so a guessed connection string would only turn a missing-config error at boot
+ * into a failed join at the moment six people are trying to get into a room.
+ */
+function resolveDatabaseUrl(env: Record<string, string | undefined>): string {
+  const url = env.DATABASE_URL?.trim();
+
+  if (url === undefined || url === '') {
+    throw new Error('DATABASE_URL must be set; the API has no in-memory mode.');
+  }
+
+  return url;
 }
 
 function resolveAllowedOrigins(

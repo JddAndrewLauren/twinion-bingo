@@ -1,0 +1,12 @@
+{
+  "prune": ["f1.v1:driver_wins:HAD"],
+  "reword": {
+    "f1.v1:driver_retires:VER": {
+      "label": "Verstappen DNFs",
+      "description": "Verstappen fails to finish the race."
+    },
+    "f1.v1:team_botches_stop:RBR": {
+      "label": "Red Bull fumbles a stop"
+    }
+  }
+}

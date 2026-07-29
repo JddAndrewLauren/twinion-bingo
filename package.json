@@ -7,6 +7,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
+    "pool:build": "pnpm --filter @twinion-bingo/theme run pool:build",
     "test": "pnpm -r test"
   }
 }

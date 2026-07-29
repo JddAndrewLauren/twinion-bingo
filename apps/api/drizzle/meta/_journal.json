@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785277944811,
+      "tag": "0000_bingo_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785281057904,
+      "tag": "0001_room_events_resume_index",
+      "breakpoints": true
+    }
+  ]
+}
