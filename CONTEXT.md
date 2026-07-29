@@ -40,8 +40,16 @@ on ~3.6 of 6 cards, and it is the reason a call has anyone to matter to.
 "always marked": nothing has to happen for it to count, so lines through it are complete when their
 other four squares are (`apps/api/src/games/lines.ts`).
 
-**Tier** — `certain`, `medium`, `rare`. Pacing is governed by a card's rarity mix, not by pool size
-(D6).
+**Tier** — a square's per-race probability of being broadcast: `certain` ≈ fires most races, `medium`
+≈ roughly every other race, `rare` ≈ a few times a season. The TV broadcast is the evidence a call is
+judged against, so a tier is a claim about what the coverage shows, not about what happens on track.
+Pacing is governed by a card's rarity mix, not by pool size (D6).
+
+**Entity tier** — a theme's own ordinal plausibility rating for the people and teams in it; in F1,
+`podium` / `points` / `field`. Templates gate on it to decide whether a square exists for an entity at
+all, and at which *Tier* if it does — the same ambition is `certain` for one entity, `rare` for
+another, and absent for a third. Distinct from *Tier*: each theme names its own entity tiers, whereas
+square tiers are fixed game-wide vocabulary.
 
 ## Calling, and taking it back
 
