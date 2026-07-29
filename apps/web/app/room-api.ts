@@ -18,6 +18,56 @@ export type CardSquare = {
   tier: string;
 };
 
+/**
+ * The host's deck sheet: the whole ~40-square room deck and which of it has been
+ * called. The API sends it to the host and to nobody else, so a browser holding
+ * one is a browser entitled to the sheet — the screen does not need a second
+ * permission check that could fall out of step with the server's.
+ */
+export type Deck = {
+  squares: CardSquare[];
+  called: string[];
+};
+
+/**
+ * A marked square and the CALL row that marked it. The seq is what a retraction
+ * names, and the actor is what decides which of D8's corrections this browser may
+ * offer for it — your own call, or anyone's if you are the host.
+ */
+export type Mark = {
+  squareId: string;
+  seq: number;
+  actorPlayerId: string;
+};
+
+/** The row a call resolved to, whether this tap wrote it or lost the race. */
+export type CallResult = {
+  seq: number;
+  squareId: string;
+  actorPlayerId: string;
+  /** False when another device's identical call was already in the log. */
+  appended: boolean;
+};
+
+/** A rung of the win ladder, as the log recorded it: who won what, and when. */
+export type PrizeAward = {
+  seq: number;
+  prizeKind: string;
+  playerId: string;
+  name: string;
+};
+
+export type Standing = { playerId: string; name: string; marks: number };
+
+export type TimelineEntry = {
+  seq: number;
+  squareId: string;
+  /** Elapsed game time, `+42:10` — wall-clock since the host started it. */
+  elapsed: string;
+  playerId: string;
+  name: string;
+};
+
 export type Game = {
   id: string;
   state: string;
@@ -25,10 +75,43 @@ export type Game = {
   freeCentre: string;
   /** This player's 24 earnable squares; null for a browser holding no token. */
   card: CardSquare[] | null;
+  /** The deck sheet if this browser's player hosts the room, null otherwise. */
+  deck: Deck | null;
+  /**
+   * Which of `card`'s square ids are marked. Derived server-side from the call
+   * log on every read and stored nowhere — so this is always the whole truth,
+   * never a patch to apply on top of one, which is what makes a phone that slept
+   * through a stint come back to exactly the card everyone else is looking at.
+   */
+  marks: Mark[];
+  /**
+   * The square ids in `marks` this player cannot claim with: calls that landed
+   * before they joined. Empty for everyone who was here at lights out.
+   */
+  inheritedMarks: string[];
+  /** The win ladder as the log recorded it, in the order it was climbed. */
+  prizes: PrizeAward[];
+  /** Every player by raw mark count, derived server-side on every read. */
+  standings: Standing[];
+  /** The race timeline: live calls with elapsed stamps and their spotter. */
+  timeline: TimelineEntry[];
+  /**
+   * How far down the room's log `marks` accounts for, in stream event ids. Held
+   * next to the stream this browser opens: a frame above it is news, a frame at
+   * or below it is replay the snapshot already includes.
+   */
+  streamedThroughSeq: number;
 };
 
 /** The fields of a `room_events` row the web app reads; a frame carries more. */
-export type RoomEvent = { seq: number; kind: string };
+export type RoomEvent = {
+  seq: number;
+  kind: string;
+  /** Who did it, named against the roster to credit a call's spotter. */
+  actorPlayerId?: string;
+  /** The square a CALL is about; null on the kinds that are not about one. */
+  squareId?: string | null;
+};
 
 /** Undefined rather than a throw: an unknown code is a normal thing to type. */
 export async function fetchRoster(
@@ -97,6 +180,73 @@ export async function startGame(
   if (!res.ok) throw new Error(`starting a game in ${code} failed: ${res.status}`);
 
   return (await res.json()) as Game;
+}
+
+/**
+ * Tap a square you hold and it marks for everyone holding it (D1). The mark still
+ * arrives by the next read of the game, the same path every other phone takes —
+ * what comes back here is the row itself, because D8's ten-second undo has to
+ * know which CALL to offer taking back and cannot wait for the stream to tell it.
+ *
+ * A 409-shaped race is not a failure here — the API answers a losing tap with the
+ * call that won (`appended: false`), so the only errors left are a square that is
+ * not on this card and an API that could not be reached.
+ */
+export async function callSquare(
+  apiUrl: string,
+  gameId: string,
+  squareId: string,
+  token: string,
+): Promise<CallResult> {
+  const res = await fetch(
+    `${apiUrl}/games/${encodeURIComponent(gameId)}/call`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ square_id: squareId }),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`calling ${squareId} failed: ${res.status}`);
+  }
+
+  return (await res.json()) as CallResult;
+}
+
+/**
+ * Take back a call (D8), by the `seq` of the CALL row it names. All three of D8's
+ * paths — the undo toast, the confirmation dialog and the host's retract — arrive
+ * here; the friction that told them apart was the screen's business, and the
+ * server only checks the rule that the call is yours or that you are the host.
+ *
+ * Nothing comes back that the screen renders. The square unmarks because the next
+ * read of the game says so, which is also how it unmarks on every other device.
+ */
+export async function retractCall(
+  apiUrl: string,
+  gameId: string,
+  seq: number,
+  token: string,
+): Promise<void> {
+  const res = await fetch(
+    `${apiUrl}/games/${encodeURIComponent(gameId)}/retract`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ seq }),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`retracting call ${seq} failed: ${res.status}`);
+  }
 }
 
 /**

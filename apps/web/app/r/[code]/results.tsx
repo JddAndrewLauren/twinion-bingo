@@ -1,0 +1,109 @@
+import type { CardSquare, Game } from '../../room-api';
+
+/** D5's ladder, in the words a room says out loud. */
+const PRIZE_NAMES: Record<string, string> = {
+  LINE: 'first line',
+  TWO_LINES: 'two lines',
+  FULL_HOUSE: 'full house',
+};
+
+/**
+ * Everything the log says about the game so far: the ladder, the standings and
+ * the timeline. All three arrive with every read of the game and none of them is
+ * state here, which is the whole reason a phone that slept through a stint needs
+ * no catch-up — it re-reads the derived answer rather than replaying to one.
+ *
+ * Below the card rather than beside it: the card is what a thumb is on, and at
+ * `phone-small` there is no width to put anything next to it. #14's two-pane iPad
+ * layout is where this gets a column of its own.
+ */
+export function Results({ game }: { game: Game }) {
+  const finished = game.state === 'done';
+
+  return (
+    <div className="flex flex-col gap-4 text-sm">
+      {game.prizes.length > 0 && (
+        <section className="flex flex-col gap-1">
+          <h2 className="font-semibold">Prizes</h2>
+          <ol className="flex flex-col gap-1">
+            {game.prizes.map((prize) => (
+              <li key={`${prize.seq}:${prize.playerId}`}>
+                <span className="font-semibold text-emerald-300">
+                  {PRIZE_NAMES[prize.prizeKind] ?? prize.prizeKind}
+                </span>
+                {' — '}
+                {prize.name}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      <section className="flex flex-col gap-1">
+        <h2 className="font-semibold">
+          {finished ? 'Final standings' : 'Standings'}
+        </h2>
+        <ol className="flex flex-col gap-1">
+          {game.standings.map((standing) => (
+            <li key={standing.playerId} className="flex justify-between gap-3">
+              <span className="truncate">{standing.name}</span>
+              <span className="tabular-nums text-neutral-400">
+                {standing.marks}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="flex flex-col gap-1">
+        <h2 className="font-semibold">Timeline</h2>
+        {game.timeline.length === 0 ? (
+          <p className="text-neutral-400">Nothing called yet.</p>
+        ) : (
+          <ol className="flex flex-col gap-1">
+            {[...game.timeline].reverse().map((entry) => (
+              <li key={entry.seq} className="flex gap-2">
+                {/*
+                  Elapsed game time, not a lap number — there is no timing feed,
+                  and on a recording this is wall-clock since the host started,
+                  pauses included. Fixed-width so the column reads as a column.
+                */}
+                <span className="w-14 shrink-0 tabular-nums text-neutral-400">
+                  {entry.elapsed}
+                </span>
+                <span className="min-w-0">
+                  <span className="font-semibold">{entry.name}</span>
+                  {' spotted '}
+                  {labelFor(game.card, entry.squareId) ?? 'a square'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/**
+ * A square is named only when this device knows its prose — the same rule the
+ * spotter toast follows, and for the same two reasons: consistency with that
+ * toast, and not shipping the whole 40-square deck to a client that needs 24.
+ *
+ * It is NOT a secrecy measure, and must not be inherited as one. Square ids are
+ * semantically transparent (`f1.v1:driver_retires:VER`), and every CALL frame on
+ * the stream already carries `squareId` to every device in the room — see
+ * `readEventsAfter` in `apps/api/src/rooms/events.ts`. A device therefore already
+ * learns the identity of every called square, and withholding the label hides
+ * prose the id spells out. Nothing here is kept back that #8's stream did not
+ * surface first.
+ *
+ * Consequence worth naming for #14: a 40-square deck against a 24-square card
+ * means roughly 40% of timeline rows read "X spotted a square".
+ */
+function labelFor(
+  card: CardSquare[] | null,
+  squareId: string,
+): string | undefined {
+  return card?.find((square) => square.id === squareId)?.label;
+}

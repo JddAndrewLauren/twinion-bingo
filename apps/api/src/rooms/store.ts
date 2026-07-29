@@ -1,18 +1,24 @@
 import { randomBytes } from 'node:crypto';
+import type { Pool } from '@twinion-bingo/theme';
 import { and, asc, eq } from 'drizzle-orm';
-import type { Db } from '../db/client.js';
+import type { Db, Tx } from '../db/client.js';
+import { isUniqueViolation } from '../db/errors.js';
 import { players, roomEvents, rooms } from '../db/schema.js';
+import { dealLateJoinCard } from '../games/late-join.js';
+import { defaultThemeId } from '../games/pools.js';
 import { generateRoomCode } from './codes.js';
 
-/** Themes are repo folders (D10); the F1 pool arrives with the theme slice. */
-const DEFAULT_THEME_ID = 'f1.v1';
+/**
+ * Themes are repo folders (D10), and a manifest is a committed file that cannot
+ * change under a running process — so the default theme's id is derived once, at
+ * boot, exactly like the pools it has to agree with.
+ */
+const DEFAULT_THEME_ID = defaultThemeId();
 
 /** Enough attempts that exhausting them means something other than bad luck. */
 const CODE_ATTEMPTS = 8;
 
 const MAX_NAME_LENGTH = 24;
-
-type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export type Player = { id: string; name: string; joinSeq: number };
 
@@ -75,8 +81,14 @@ export async function createRoom(db: Db, name: string): Promise<JoinResult> {
   );
 }
 
+/**
+ * Joining mid-game deals the newcomer in rather than parking them in a lobby the
+ * room has already left, so the join and the deal are one transaction — see
+ * `dealLateJoinCard`.
+ */
 export async function joinRoom(
   db: Db,
+  pools: Map<string, Pool>,
   code: string,
   name: string,
 ): Promise<JoinResult> {
@@ -88,7 +100,11 @@ export async function joinRoom(
 
     if (room === undefined) throw new RoomNotFound(code);
 
-    return addPlayer(tx, code, name);
+    const joined = await addPlayer(tx, code, name);
+
+    await dealLateJoinCard(tx, pools, code, joined.player.id);
+
+    return joined;
   });
 }
 
@@ -169,26 +185,4 @@ async function addPlayer(
     .where(eq(players.id, inserted.id));
 
   return { code, token, player: { id: inserted.id, name, joinSeq } };
-}
-
-/**
- * Postgres reports a duplicate room code as SQLSTATE 23505. Drizzle wraps driver
- * errors, so the code can sit a few links down the `cause` chain.
- */
-function isUniqueViolation(error: unknown): boolean {
-  let current: unknown = error;
-
-  for (let depth = 0; depth < 5 && current !== null && current !== undefined; depth += 1) {
-    if (
-      typeof current === 'object' &&
-      'code' in current &&
-      current.code === '23505'
-    ) {
-      return true;
-    }
-
-    current = (current as { cause?: unknown }).cause;
-  }
-
-  return false;
 }

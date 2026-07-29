@@ -1,5 +1,6 @@
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadPools, type Pool } from '@twinion-bingo/theme';
+import { composeThemeId, loadPools, loadThemeMeta, type Pool } from '@twinion-bingo/theme';
 
 /**
  * Where the committed pools live. Themes are repo folders (D10), so they are
@@ -17,6 +18,19 @@ export function themesRoot(): string {
   return configured !== undefined && configured !== ''
     ? configured
     : fileURLToPath(new URL('../../../../themes', import.meta.url));
+}
+
+/**
+ * The theme every new room is created with, until choosing one is a thing a host
+ * can do. It names a folder, not an id: the id is whatever that folder's manifest
+ * says it is, so bumping `poolVersion` moves new rooms onto the pool the build
+ * actually produces instead of leaving them pointing at a version that no longer
+ * exists.
+ */
+const DEFAULT_THEME = 'f1';
+
+export function defaultThemeId(root: string = themesRoot()): string {
+  return composeThemeId(loadThemeMeta(join(root, DEFAULT_THEME)));
 }
 
 export class ThemeNotFound extends Error {

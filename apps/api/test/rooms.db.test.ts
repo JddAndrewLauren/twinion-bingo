@@ -1,9 +1,24 @@
+import { readFileSync } from 'node:fs';
+import { join as joinPath } from 'node:path';
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/client.js';
+import { themesRoot } from '../src/games/pools.js';
 import { ROOM_CODE_ALPHABET } from '../src/rooms/codes.js';
 import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
+
+/**
+ * The manifest's own two fields, read here rather than imported, so this suite
+ * says what `themes/f1/theme.json` says and not what the API's resolver says.
+ */
+function manifestThemeId(): string {
+  const manifest = JSON.parse(
+    readFileSync(joinPath(themesRoot(), 'f1', 'theme.json'), 'utf8'),
+  ) as { id: string; poolVersion: string };
+
+  return `${manifest.id}.${manifest.poolVersion}`;
+}
 
 /** Runs against the ephemeral local Postgres the README's two commands set up. */
 const db = createDb(testDatabaseUrl ?? 'postgres://unused');
@@ -73,7 +88,7 @@ describe.skipIf(noTestDatabase)('creating a room and joining it', () => {
 
     expect(roster.hostPlayerId).toBe(created.player.id);
     expect(roster.players.map((player) => player.name)).toEqual(['Host']);
-    expect(roster.themeId).toBe('f1.v1');
+    expect(roster.themeId).toBe(manifestThemeId());
   });
 
   it('issues a distinct opaque token to every player', async () => {
