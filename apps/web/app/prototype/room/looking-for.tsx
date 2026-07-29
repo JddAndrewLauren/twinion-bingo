@@ -129,15 +129,27 @@ export function LookingForRows({ game }: { game: Game }) {
  * landscape iPad. Nothing to learn and nothing to tap, at the price of needing a
  * surface that can afford it.
  */
-export function LookingForPanel({ game }: { game: Game }) {
+export function LookingForPanel({
+  game,
+  /**
+   * False where a tab caption already names this panel — the tab and a heading
+   * saying the same thing twice, one under the other, is just noise.
+   */
+  heading = true,
+}: {
+  game: Game;
+  heading?: boolean;
+}) {
   const open = openSquares(game);
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold">
-        {HEADING}{' '}
-        <span className="font-normal text-neutral-400">({open.length})</span>
-      </h2>
+      {heading && (
+        <h2 className="text-sm font-semibold">
+          {HEADING}{' '}
+          <span className="font-normal text-neutral-400">({open.length})</span>
+        </h2>
+      )}
       <ul className="flex flex-col gap-2">
         {open.map((square) => (
           <li key={square.id}>

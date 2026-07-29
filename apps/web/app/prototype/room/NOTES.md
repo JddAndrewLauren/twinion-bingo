@@ -56,9 +56,26 @@ everything else identical is what keeps the comparison about the list rather tha
 
 | | Where the list lives | Disclosure | The bet |
 | --- | --- | --- | --- |
-| **C1** | Under the card, on the Card tab | One block, shut by default, all-or-nothing | You consult it between events, not during one |
+| **C1** | Phone: under the card. **Landscape iPad: a tab in the right column, open by default** | Phone: one block, shut by default. iPad: none | You consult it between events on a phone; propped by the TV it is the first thing you want |
 | **C2** | Under the card, on the Card tab | Labels always listed; prose one row at a time | "What is still out there" is a glance; prose is only wanted for the square being argued about |
 | **C3** | Its own phone tab, and the iPad's left column | None at all | It is a third surface, not a footnote to the card — and the argument about how much to hide only exists because it was in the wrong place |
+
+### C1's two layouts, which disagree on purpose
+
+C1 is the chosen shape, and its phone and landscape-iPad layouts now put the list in
+different places, because the devices differ in room and in posture:
+
+- **Phone / portrait iPad** (below `lg`) — one collapsible block under the card, shut by default.
+  The card keeps the screen until asked. The count in the heading is the only part readable while
+  it is shut.
+- **Landscape iPad** — not under the card at all. The right column is tabbed, **Looking for** and
+  **Race**, opening on *Looking for*: early in a race what you want is what to watch for, not a
+  timeline of things that already happened. The left column is the card alone, so it never moves.
+  Measured at `ipad-11-landscape`: all 12 open squares and their prose fit the column without
+  scrolling.
+
+**The cost to weigh:** standings and the timeline are now one tap away on the iPad rather than
+permanently visible, and permanent visibility was the thing plain C was best at.
 
 ### What the list is
 
