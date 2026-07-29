@@ -1,10 +1,11 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildPool, serializePool } from './build.js';
+import { buildPool, composeThemeId, serializePool } from './build.js';
 import type {
   Entities,
   HandcraftedSquare,
   Overrides,
+  Pool,
   Template,
   ThemeMeta,
   ThemeSource,
@@ -33,6 +34,32 @@ export function loadTheme(themeDir: string): ThemeSource {
       .squares,
     overrides: readJson<Overrides>(join(themeDir, 'overrides.json')),
   };
+}
+
+/**
+ * Reads a theme folder's committed pool. The API draws decks from this file
+ * rather than re-expanding the sources, so what a room plays with is exactly the
+ * reviewed artefact in the repo — `pool:build` is an authoring step, not a
+ * runtime one.
+ */
+export function loadPool(themeDir: string): Pool {
+  return readJson<Pool>(join(themeDir, POOL_FILENAME));
+}
+
+/**
+ * Every theme's pool, keyed by its composed theme id — the same string
+ * `rooms.theme_id` stores. Keyed off each pool's own manifest fields rather than
+ * its folder name, so a theme is found by what it says it is.
+ */
+export function loadPools(themesRoot: string): Map<string, Pool> {
+  const pools = new Map<string, Pool>();
+
+  for (const theme of discoverThemes(themesRoot)) {
+    const pool = loadPool(join(themesRoot, theme));
+    pools.set(composeThemeId({ id: pool.themeId, poolVersion: pool.poolVersion }), pool);
+  }
+
+  return pools;
 }
 
 export interface BuiltTheme {

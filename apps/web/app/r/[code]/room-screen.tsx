@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react';
 import { readToken, storeToken } from '../../player-token';
 import {
+  fetchGame,
   fetchRoster,
   joinRoom,
+  startGame,
   subscribeToRoomEvents,
+  type Game,
   type Roster,
 } from '../../room-api';
+import { CardGrid } from './card-grid';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
@@ -22,9 +26,12 @@ export function RoomScreen({
 }) {
   const [load, setLoad] = useState<Load>('loading');
   const [roster, setRoster] = useState<Roster | null>(null);
+  const [game, setGame] = useState<Game | null>(null);
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinFailed, setJoinFailed] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [startFailed, setStartFailed] = useState(false);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
 
@@ -44,6 +51,28 @@ export function RoomScreen({
       .catch(() => {
         if (!cancelled) setLoad('unreachable');
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiUrl, code, reload]);
+
+  /**
+   * The game read, on the same `reload` counter as the roster — so the
+   * `GAME_STARTED` row that the stream delivers is what puts every player's card
+   * on screen, host and guests alike, with no second mechanism for the host.
+   *
+   * A room with no game yet is the normal lobby state, not a failure, so an
+   * unreachable API here leaves the roster on screen rather than replacing it.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchGame(apiUrl, code, readToken(code))
+      .then((found) => {
+        if (!cancelled) setGame(found ?? null);
+      })
+      .catch(() => {});
 
     return () => {
       cancelled = true;
@@ -90,6 +119,22 @@ export function RoomScreen({
     }
   }
 
+  async function start() {
+    const token = readToken(code);
+    if (token === undefined) return;
+
+    setStarting(true);
+    setStartFailed(false);
+
+    try {
+      setGame(await startGame(apiUrl, code, token));
+    } catch {
+      setStartFailed(true);
+    } finally {
+      setStarting(false);
+    }
+  }
+
   if (load === 'loading') return <p>Loading room {code}…</p>;
   if (load === 'missing') return <p>No room has the code {code}.</p>;
   if (load === 'unreachable' || roster === null) {
@@ -119,6 +164,17 @@ export function RoomScreen({
     );
   }
 
+  if (game?.card != null) {
+    return (
+      <div className="flex flex-col gap-3">
+        <h1 className="text-2xl font-semibold">Room {code}</h1>
+        <CardGrid card={game.card} freeCentre={game.freeCentre} />
+      </div>
+    );
+  }
+
+  const youAreHost = roster.you !== null && roster.you.id === roster.hostPlayerId;
+
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-2xl font-semibold">Room {code}</h1>
@@ -133,6 +189,12 @@ export function RoomScreen({
           </li>
         ))}
       </ul>
+      {youAreHost && (
+        <button type="button" onClick={start} disabled={starting}>
+          {starting ? 'Dealing…' : 'Start game'}
+        </button>
+      )}
+      {startFailed && <p role="alert">Could not start the game.</p>}
     </div>
   );
 }

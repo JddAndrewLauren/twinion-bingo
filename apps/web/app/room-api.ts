@@ -11,6 +11,22 @@ export type Roster = {
 
 export type Joined = { code: string; token: string; player: Player };
 
+export type CardSquare = {
+  id: string;
+  label: string;
+  description: string;
+  tier: string;
+};
+
+export type Game = {
+  id: string;
+  state: string;
+  /** The theme-flavoured free centre, e.g. "LIGHTS OUT" for F1. */
+  freeCentre: string;
+  /** This player's 24 earnable squares; null for a browser holding no token. */
+  card: CardSquare[] | null;
+};
+
 /** The fields of a `room_events` row the web app reads; a frame carries more. */
 export type RoomEvent = { seq: number; kind: string };
 
@@ -46,6 +62,41 @@ export async function joinRoom(
   name: string,
 ): Promise<Joined> {
   return postJoin(`${apiUrl}/rooms/${encodeURIComponent(code)}/join`, { name });
+}
+
+/**
+ * The room's game, or undefined before the host has started one — which is the
+ * normal state of a room sitting in its lobby, not an error.
+ */
+export async function fetchGame(
+  apiUrl: string,
+  code: string,
+  token: string | undefined,
+): Promise<Game | undefined> {
+  const res = await fetch(`${apiUrl}/rooms/${encodeURIComponent(code)}/game`, {
+    headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 404 || res.status === 400) return undefined;
+  if (!res.ok) throw new Error(`reading room ${code}'s game failed: ${res.status}`);
+
+  return (await res.json()) as Game;
+}
+
+/** Host only; the server enforces it, and the button is only shown to the host. */
+export async function startGame(
+  apiUrl: string,
+  code: string,
+  token: string,
+): Promise<Game> {
+  const res = await fetch(`${apiUrl}/rooms/${encodeURIComponent(code)}/games`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error(`starting a game in ${code} failed: ${res.status}`);
+
+  return (await res.json()) as Game;
 }
 
 /**

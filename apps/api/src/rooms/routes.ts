@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { bearerToken } from '../bearer.js';
 import type { Db } from '../db/client.js';
 import { normalizeRoomCode } from './codes.js';
 import {
@@ -73,10 +74,4 @@ async function readJson(request: Request): Promise<Record<string, unknown>> {
   } catch {
     return {};
   }
-}
-
-function bearerToken(header: string | undefined): string | undefined {
-  const token = /^Bearer (.+)$/i.exec(header ?? '')?.[1];
-
-  return token === undefined || token === '' ? undefined : token;
 }

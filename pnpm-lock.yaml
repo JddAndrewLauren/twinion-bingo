@@ -13,6 +13,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.0.12
         version: 2.0.12(hono@4.12.32)
+      '@twinion-bingo/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(postgres@3.4.9)
