@@ -54,6 +54,15 @@ a label over 30 characters, a duplicate id, a template referencing an unknown en
 placeholder, an entity paired to a missing entity, a template missing a tier rule, and an override
 pointing at a square that no longer exists. Every fault in a run is reported together.
 
+## The one rule the build does not enforce
+
+**No unbreakable run in a label over 10 characters** — a word, or a word with its punctuation
+attached. The 30-character cap is about the whole label; this is about a single token, and it is
+the tighter constraint. A card cell stops growing at ~77px while its text does not, so an 11-character
+word overflows *horizontally* on `ipad-11-*`. That is a live defect, tracked as #47, and until it is
+fixed the pool works around it: see the reading in `docs/SURFACES.md`. Count the quote marks and the
+exclamation mark — `Dangerous!"` is eleven.
+
 ## Status
 
 `themes/f1` is a starter pool that exercises the machinery. Authoring the real ~180 squares is #16.
