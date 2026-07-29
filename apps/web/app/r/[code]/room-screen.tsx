@@ -7,9 +7,11 @@ import {
   fetchGame,
   fetchRoster,
   joinRoom,
+  retractCall,
   startGame,
   subscribeToRoomEvents,
   type Game,
+  type Mark,
   type RoomEvent,
   type Roster,
 } from '../../room-api';
@@ -20,6 +22,22 @@ type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
 /** Long enough to read who spotted it, short enough not to sit over the card. */
 const TOAST_MS = 4000;
+
+/**
+ * D8's graduated friction, and the whole reason it is graduated. The common case
+ * for a wrong call is a misread during a restart — half the field is moving, the
+ * tap was a reflex, and the correction is a reflex too. A modal in that moment is
+ * exactly the wrong thing, so for ten seconds the caller's own call is one tap
+ * away from gone. After that a mistake is no longer a reflex, and the same
+ * correction costs a confirmation.
+ *
+ * The window is driven by the call's own HTTP response and never by the stream.
+ * It has to be: `room_events.seq` is handed out on insert rather than on commit,
+ * so a frame can be stepped over and arrive late by an unbounded amount — a
+ * ten-second budget spent waiting for the stream to confirm your own tap would be
+ * a window that sometimes never opened at all.
+ */
+const UNDO_WINDOW_MS = 10_000;
 
 /**
  * The credit half of D1. Spotting is what the game rewards, so a call says who
@@ -56,6 +74,17 @@ function spotterCredit(
     : `${who.name} spotted ${square.label}`;
 }
 
+/**
+ * A square's prose, for the toast and the dialog that talk about it. Same limit as
+ * the credit toast: a device knows the prose for its own 24 squares and no others,
+ * so anything else is named only as "that square".
+ */
+function labelFor(game: Game, squareId: string): string {
+  return (
+    game.card?.find((square) => square.id === squareId)?.label ?? 'that square'
+  );
+}
+
 export function RoomScreen({
   apiUrl,
   code,
@@ -81,6 +110,15 @@ export function RoomScreen({
    * once is a host who has to work out which one they just tapped.
    */
   const [sheetOpen, setSheetOpen] = useState(false);
+  /**
+   * The call this phone just made, offered back for one tap until the window
+   * closes. Only ever a row this request appended: losing a tied race hands back
+   * the winner's call, which is not this player's to take away.
+   */
+  const [undo, setUndo] = useState<Mark | null>(null);
+  /** The mark a tap on the card is asking to take back, once the window has shut. */
+  const [confirming, setConfirming] = useState<Mark | null>(null);
+  const [retractFailed, setRetractFailed] = useState(false);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
   /**
@@ -201,6 +239,18 @@ export function RoomScreen({
     return () => clearTimeout(timer);
   }, [toast]);
 
+  /**
+   * The window shutting. After this the call is still correctable — by tapping the
+   * square, which asks first — so nothing is lost here except the reflex.
+   */
+  useEffect(() => {
+    if (undo === null) return;
+
+    const timer = setTimeout(() => setUndo(null), UNDO_WINDOW_MS);
+
+    return () => clearTimeout(timer);
+  }, [undo]);
+
   async function submitName(event: React.FormEvent) {
     event.preventDefault();
     setJoining(true);
@@ -242,6 +292,10 @@ export function RoomScreen({
    * game rather than marking the cell locally keeps one description of what is
    * marked — the derived one — so the spotter's own phone converges by exactly
    * the path every other phone does, just a poll sooner.
+   *
+   * The row that comes back opens D8's undo window, but only when this request is
+   * what appended it. Losing a tied race hands back the call that won, which
+   * belongs to whoever made it.
    */
   async function call(squareId: string) {
     const token = readToken(code);
@@ -250,10 +304,39 @@ export function RoomScreen({
     setCallFailed(false);
 
     try {
-      await callSquare(apiUrl, game.id, squareId, token);
+      const called = await callSquare(apiUrl, game.id, squareId, token);
+      if (called.appended) {
+        setUndo({
+          squareId: called.squareId,
+          seq: called.seq,
+          actorPlayerId: called.actorPlayerId,
+        });
+      }
       setReload((count) => count + 1);
     } catch {
       setCallFailed(true);
+    }
+  }
+
+  /**
+   * All three of D8's paths end here, differing only in what it cost to get here.
+   * The square unmarks because the re-read says so, which is the same path it
+   * unmarks by on every other device — there is no local undo of a local mark,
+   * because there was never a local mark.
+   */
+  async function retract(mark: Mark) {
+    const token = readToken(code);
+    if (token === undefined || game === null) return;
+
+    setConfirming(null);
+    setUndo(null);
+    setRetractFailed(false);
+
+    try {
+      await retractCall(apiUrl, game.id, mark.seq, token);
+      setReload((count) => count + 1);
+    } catch {
+      setRetractFailed(true);
     }
   }
 
@@ -286,6 +369,8 @@ export function RoomScreen({
     );
   }
 
+  const youAreHost = roster.you !== null && roster.you.id === roster.hostPlayerId;
+
   if (game?.card != null) {
     /**
      * Only the host is handed a deck, so holding one is the whole entitlement
@@ -293,6 +378,20 @@ export function RoomScreen({
      * with the server's.
      */
     const deck = game.deck;
+
+    /**
+     * D8's rule, and the only thing the screen decides for itself: a player may
+     * take back their own call, and the host may take back anyone's. The server
+     * checks the same thing, so this is about not offering what would be refused
+     * rather than about enforcement.
+     *
+     * The sheet does not offer it, only the card. A retraction names a CALL by
+     * `seq`, and `deck.called` carries square ids alone — so the host's reach
+     * through the UI stops at deck squares that are also on their own card. See
+     * the note on #9.
+     */
+    const canRetract = (mark: Mark) =>
+      youAreHost || mark.actorPlayerId === roster.you?.id;
 
     return (
       <div className="flex flex-col gap-3">
@@ -305,6 +404,8 @@ export function RoomScreen({
             freeCentre={game.freeCentre}
             marks={game.marks}
             onCall={call}
+            canRetract={canRetract}
+            onRetract={setConfirming}
           />
         )}
         {deck !== null && (
@@ -313,24 +414,71 @@ export function RoomScreen({
           </button>
         )}
         {callFailed && <p role="alert">Could not call that square.</p>}
-        {toast !== null && (
+        {retractFailed && <p role="alert">Could not take that call back.</p>}
+        {undo !== null ? (
           /**
-           * `status` rather than `alert`: a call is news, not a problem, and an
-           * assertive live region would interrupt a screen reader mid-square.
-           * Pinned to the bottom so it never covers the card being read.
+           * D8's fast path. It replaces the spotter toast rather than stacking
+           * above it, because the only call it can be about is the one this phone
+           * just made — and that call's own credit toast would be saying the same
+           * thing twice, in the one place the card must stay uncovered.
            */
-          <p
+          <div
             role="status"
-            className="fixed inset-x-0 bottom-0 mx-auto max-w-md rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
+            className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md items-center justify-between gap-3 rounded-t bg-emerald-800 p-3 text-emerald-50"
           >
-            {toast.text}
-          </p>
+            <span>Called {labelFor(game, undo.squareId)}</span>
+            <button
+              type="button"
+              onClick={() => void retract(undo)}
+              className="shrink-0 rounded border border-emerald-200 px-3 py-1 font-semibold"
+            >
+              Undo
+            </button>
+          </div>
+        ) : (
+          toast !== null && (
+            /**
+             * `status` rather than `alert`: a call is news, not a problem, and an
+             * assertive live region would interrupt a screen reader mid-square.
+             * Pinned to the bottom so it never covers the card being read.
+             */
+            <p
+              role="status"
+              className="fixed inset-x-0 bottom-0 mx-auto max-w-md rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
+            >
+              {toast.text}
+            </p>
+          )
+        )}
+        {confirming !== null && (
+          /**
+           * D8's slow path. Past the reflex window a correction is deliberate, so
+           * it is asked about — and it says the call unmarks for everyone, because
+           * that is the part a player taking back their own tap may not expect.
+           */
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Take back this call"
+            className="fixed inset-0 flex items-center justify-center bg-black/70 p-4"
+          >
+            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-neutral-700 bg-neutral-900 p-4">
+              <p>
+                Take back {labelFor(game, confirming.squareId)}? It unmarks for
+                everyone holding it.
+              </p>
+              <button type="button" onClick={() => void retract(confirming)}>
+                Take it back
+              </button>
+              <button type="button" onClick={() => setConfirming(null)}>
+                Keep it
+              </button>
+            </div>
+          </div>
         )}
       </div>
     );
   }
-
-  const youAreHost = roster.you !== null && roster.you.id === roster.hostPlayerId;
 
   return (
     <div className="flex flex-col gap-3">

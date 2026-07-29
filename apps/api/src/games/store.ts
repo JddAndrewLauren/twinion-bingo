@@ -50,6 +50,27 @@ export class NotInDeck extends Error {
   }
 }
 
+/** The `seq` a retraction named is not a CALL in this game — or not there at all. */
+export class CallNotFound extends Error {
+  constructor(seq: number) {
+    super(`this game has no call at seq ${seq}`);
+    this.name = 'CallNotFound';
+  }
+}
+
+/**
+ * Correction scope, the mirror of D7's call scope: you may take back your own
+ * call, and the host may take back anyone's (D8). Without the first half a
+ * mis-tap becomes an argument rather than a correction; without the second the
+ * room has no way to fix a call whose caller has put their phone down.
+ */
+export class NotYourCall extends Error {
+  constructor(seq: number) {
+    super(`call ${seq} was made by someone else, and you are not the host`);
+    this.name = 'NotYourCall';
+  }
+}
+
 /** A card as it renders: the square's prose, plus the theme's free centre. */
 export type CardSquare = {
   id: string;
@@ -86,7 +107,7 @@ export type GameView = {
    * it re-reads the whole truth instead of accumulating frames it might have
    * missed.
    */
-  marks: string[];
+  marks: Mark[];
   /**
    * How far down the room's log these marks account for, in stream event ids. A
    * device holds it next to the stream it opens: a frame above this is news, a
@@ -95,12 +116,33 @@ export type GameView = {
   streamedThroughSeq: number;
 };
 
+/**
+ * A marked square, and the CALL row that marked it. The seq is what a retraction
+ * names (D8), and the actor is what decides which of D8's three paths a device
+ * may offer: your own call, or anyone's if you are the host.
+ */
+export type Mark = {
+  squareId: string;
+  seq: number;
+  actorPlayerId: string;
+};
+
 /** The row a call resolved to, whether this request wrote it or lost the race. */
 export type CallResult = {
   seq: number;
   squareId: string;
   actorPlayerId: string;
   /** False when another device's identical call was already in the log. */
+  appended: boolean;
+};
+
+/** The row a retraction resolved to, and the CALL it supersedes. */
+export type RetractResult = {
+  seq: number;
+  targetSeq: number;
+  squareId: string;
+  actorPlayerId: string;
+  /** False when that call had already been retracted by someone else. */
   appended: boolean;
 };
 
@@ -253,6 +295,10 @@ export async function readGame(
    *
    * The order is the card's (and the deck's), not the log's, so a caller can line
    * the answer up against the cells it already has.
+   *
+   * A mark carries the CALL row that made it, not just the square id, because a
+   * correction has to name that row by `seq` and a device cannot learn a seq
+   * anywhere else (D8). The deck sheet wants only the ids, so it takes the keys.
    */
   const called = await calledSquares(db, game.id);
 
@@ -269,22 +315,38 @@ export async function readGame(
           }
         : null,
     marks:
-      hand === undefined ? [] : hand.squareIds.filter((id) => called.has(id)),
+      hand === undefined
+        ? []
+        : hand.squareIds
+            .map((id) => called.get(id))
+            .filter((mark): mark is Mark => mark !== undefined),
     streamedThroughSeq: await settledHeadSeq(db, code),
   };
 }
 
 /**
- * The game's live calls. A RETRACT names the CALL it supersedes by `target_seq`
- * (D8), so the correction is an appended row and the call it undoes stays in the
- * log — deleting it would break `Last-Event-ID` replay for every device that had
+ * The game's live calls, each keyed by the square it marked and carrying the row
+ * that marked it. A RETRACT names the CALL it supersedes by `target_seq` (D8), so
+ * the correction is an appended row and the call it undoes stays in the log —
+ * deleting it would break `Last-Event-ID` replay for every device that had
  * already seen it.
+ *
+ * The call's `seq` and actor come back with it because a correction needs both:
+ * `POST /games/:id/retract` names the CALL by `seq`, and whether a device may
+ * offer that correction at all turns on who made it.
  */
-async function calledSquares(db: Db, gameId: string): Promise<Set<string>> {
+async function calledSquares(
+  db: Db,
+  gameId: string,
+): Promise<Map<string, Mark>> {
   const retraction = alias(roomEvents, 'retraction');
 
   const rows = await db
-    .select({ squareId: roomEvents.squareId })
+    .select({
+      seq: roomEvents.seq,
+      squareId: roomEvents.squareId,
+      actorPlayerId: roomEvents.actorPlayerId,
+    })
     .from(roomEvents)
     .where(
       and(
@@ -304,10 +366,19 @@ async function calledSquares(db: Db, gameId: string): Promise<Set<string>> {
       ),
     );
 
-  return new Set(
+  return new Map(
     rows
-      .map((row) => row.squareId)
-      .filter((id): id is string => id !== null),
+      .filter((row): row is typeof row & { squareId: string } =>
+        row.squareId !== null,
+      )
+      .map((row) => [
+        row.squareId,
+        {
+          squareId: row.squareId,
+          seq: Number(row.seq),
+          actorPlayerId: row.actorPlayerId,
+        },
+      ]),
   );
 }
 
@@ -412,6 +483,98 @@ async function readCall(
     squareId,
     actorPlayerId: existing.actorPlayerId,
     appended: false,
+  };
+}
+
+/**
+ * D8's correction, and the reason the log is append-only. A RETRACT row names the
+ * CALL it supersedes by `target_seq`; the CALL itself is never deleted and never
+ * updated, so a device replaying from `Last-Event-ID` before the CALL sees both
+ * rows and derives the same unmarked square as one that watched it happen live.
+ *
+ * The graduated friction of D8 — a one-tap undo inside ten seconds, a
+ * confirmation dialog after — is entirely the client's, because it is about how
+ * likely a tap was a mistake and not about who is allowed to do what. The server
+ * enforces only the part that is a rule: your own call, or any call if you are
+ * the host.
+ *
+ * A call that is already retracted is not retracted twice. There is no unique
+ * index to make that airtight and a duplicate RETRACT would derive the same
+ * marks anyway, so this is about the timeline #11 reads out of the log, which
+ * should not say the same call was taken back twice because two thumbs landed
+ * together.
+ */
+export async function retractCall(
+  db: Db,
+  gameId: string,
+  playerId: string,
+  targetSeq: number,
+): Promise<RetractResult> {
+  const [target] = await db
+    .select({
+      squareId: roomEvents.squareId,
+      actorPlayerId: roomEvents.actorPlayerId,
+      roomCode: games.roomCode,
+      hostPlayerId: rooms.hostPlayerId,
+    })
+    .from(roomEvents)
+    .innerJoin(games, eq(games.id, roomEvents.gameId))
+    .innerJoin(rooms, eq(rooms.code, games.roomCode))
+    .where(
+      and(
+        eq(roomEvents.seq, BigInt(targetSeq)),
+        eq(roomEvents.gameId, gameId),
+        eq(roomEvents.kind, 'CALL'),
+      ),
+    );
+
+  if (target === undefined || target.squareId === null) {
+    throw new CallNotFound(targetSeq);
+  }
+
+  const yours = target.actorPlayerId === playerId;
+  const youAreHost = target.hostPlayerId === playerId;
+  if (!yours && !youAreHost) throw new NotYourCall(targetSeq);
+
+  const [already] = await db
+    .select({ seq: roomEvents.seq, actorPlayerId: roomEvents.actorPlayerId })
+    .from(roomEvents)
+    .where(
+      and(
+        eq(roomEvents.kind, 'RETRACT'),
+        eq(roomEvents.targetSeq, BigInt(targetSeq)),
+      ),
+    );
+
+  if (already !== undefined) {
+    return {
+      seq: Number(already.seq),
+      targetSeq,
+      squareId: target.squareId,
+      actorPlayerId: already.actorPlayerId,
+      appended: false,
+    };
+  }
+
+  const [appended] = await db
+    .insert(roomEvents)
+    .values({
+      roomCode: target.roomCode,
+      gameId,
+      actorPlayerId: playerId,
+      kind: 'RETRACT',
+      targetSeq: BigInt(targetSeq),
+    })
+    .returning({ seq: roomEvents.seq });
+
+  if (appended === undefined) throw new Error('appending RETRACT added no row');
+
+  return {
+    seq: Number(appended.seq),
+    targetSeq,
+    squareId: target.squareId,
+    actorPlayerId: playerId,
+    appended: true,
   };
 }
 

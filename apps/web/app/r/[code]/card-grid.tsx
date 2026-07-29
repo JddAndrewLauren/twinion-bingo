@@ -1,4 +1,4 @@
-import type { CardSquare } from '../../room-api';
+import type { CardSquare, Mark } from '../../room-api';
 
 /** 5x5, and the middle cell is the free one — so 24 squares are dealt (D4). */
 const COLUMNS = 5;
@@ -18,21 +18,31 @@ const CELL = 'flex h-full w-full items-center justify-center rounded border p-1 
  *
  * An unmarked square is a button, because tapping it calls that event for every
  * player holding it (D1). A marked one stays a button rather than reverting to
- * text, so the grid does not reflow under a thumb the moment a call lands, but a
- * disabled one: the call has happened, and a second tap has nothing to add.
+ * text, so the grid does not reflow under a thumb the moment a call lands.
+ *
+ * Whether that marked button does anything is D8's second and third paths: a call
+ * you made, or any call if you are the host, can be taken back by tapping it —
+ * which is the slow, confirmed route, the toast having been the fast one. A mark
+ * this player may not correct stays disabled, because a second tap on someone
+ * else's call has nothing to add.
  */
 export function CardGrid({
   card,
   freeCentre,
   marks,
   onCall,
+  canRetract,
+  onRetract,
 }: {
   card: CardSquare[];
   freeCentre: string;
-  marks: string[];
+  marks: Mark[];
   onCall: (squareId: string) => void;
+  /** Whether D8 lets this viewer take this call back — the caller, or the host. */
+  canRetract: (mark: Mark) => boolean;
+  onRetract: (mark: Mark) => void;
 }) {
-  const marked = new Set(marks);
+  const marked = new Map(marks.map((mark) => [mark.squareId, mark]));
   const dealt = [...card];
   const cells = Array.from({ length: COLUMNS * COLUMNS }, (_, index) =>
     index === CENTRE ? null : dealt.shift(),
@@ -48,7 +58,9 @@ export function CardGrid({
     >
       {cells.map((square, index) => {
         const free = square === undefined || square === null;
-        const isMarked = !free && marked.has(square.id);
+        const mark = free ? undefined : marked.get(square.id);
+        const isMarked = mark !== undefined;
+        const retractable = mark !== undefined && canRetract(mark);
 
         return (
           <li key={square?.id ?? 'free'} className="aspect-square">
@@ -64,8 +76,10 @@ export function CardGrid({
                 type="button"
                 title={square.description}
                 aria-pressed={isMarked}
-                disabled={isMarked}
-                onClick={() => onCall(square.id)}
+                disabled={isMarked && !retractable}
+                onClick={() =>
+                  mark === undefined ? onCall(square.id) : onRetract(mark)
+                }
                 className={`${CELL} ${
                   isMarked
                     ? 'border-emerald-400 bg-emerald-800 font-semibold text-emerald-50'

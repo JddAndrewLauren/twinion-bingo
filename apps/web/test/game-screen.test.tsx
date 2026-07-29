@@ -24,6 +24,11 @@ const card = Array.from({ length: 24 }, (_, index) => ({
   tier: 'medium',
 }));
 
+type Mark = { squareId: string; seq: number; actorPlayerId: string };
+
+/** The seq the stub hands the next appended call — a real log never reuses one. */
+let nextSeq = 100;
+
 /**
  * The room's 40-square deck. Its first 24 are the card above, so the last 16 are
  * squares nobody but the host can call — which is the whole point of the sheet.
@@ -53,7 +58,7 @@ function stubRoom({
   you: typeof host | null;
   liveFromTheStart?: boolean;
   /** What the server's derivation already says is marked when this phone arrives. */
-  marks?: string[];
+  marks?: Mark[];
   /** How far down the log those marks account for — the toast's replay horizon. */
   streamedThroughSeq?: number;
   /**
@@ -77,7 +82,7 @@ function stubRoom({
           // than against a card.
           called: deckSquares
             .map((square) => square.id)
-            .filter((id) => state.marks.includes(id)),
+            .filter((id) => state.marks.some((mark) => mark.squareId === id)),
         }
       : null,
     marks: [...state.marks],
@@ -90,10 +95,26 @@ function stubRoom({
     // puts the mark on screen.
     if (url.endsWith('/call')) {
       const body = JSON.parse(init!.body as string) as { square_id: string };
-      if (!state.marks.includes(body.square_id)) state.marks.push(body.square_id);
+      const called = {
+        squareId: body.square_id,
+        seq: (nextSeq += 1),
+        actorPlayerId: you!.id,
+      };
+      if (!state.marks.some((mark) => mark.squareId === called.squareId)) {
+        state.marks.push(called);
+      }
+
+      return Response.json({ ...called, appended: true }, { status: 201 });
+    }
+
+    // A RETRACT supersedes the CALL it names and the derivation stops returning
+    // it, which is the only thing that unmarks a square — here as in the API.
+    if (url.endsWith('/retract')) {
+      const body = JSON.parse(init!.body as string) as { seq: number };
+      state.marks = state.marks.filter((mark) => mark.seq !== body.seq);
 
       return Response.json(
-        { seq: 9, squareId: body.square_id, actorPlayerId: you?.id, appended: true },
+        { targetSeq: body.seq, appended: true },
         { status: 201 },
       );
     }
@@ -126,8 +147,14 @@ function stubRoom({
       state.live = true;
     },
     /** Somebody else's tap reaching the log, which the stream then announces. */
-    calledElsewhere: (squareId: string) => {
-      if (!state.marks.includes(squareId)) state.marks.push(squareId);
+    calledElsewhere: (squareId: string, by: string = guest.id) => {
+      if (!state.marks.some((mark) => mark.squareId === squareId)) {
+        state.marks.push({ squareId, seq: (nextSeq += 1), actorPlayerId: by });
+      }
+    },
+    /** Somebody else taking a call back, which the stream then announces. */
+    retractedElsewhere: (seq: number) => {
+      state.marks = state.marks.filter((mark) => mark.seq !== seq);
     },
   };
 }
@@ -264,7 +291,13 @@ describe('the card itself', () => {
   });
 
   it('shows the marks the server derived, and does not offer to call them again', async () => {
-    stubRoom({ you: host, liveFromTheStart: true, marks: ['f1.v1:t:3'] });
+    // A guest looking at someone else's call: a bystander with nothing to correct,
+    // so the marked cell is inert rather than a second chance to call it.
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: host.id }],
+    });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
@@ -403,7 +436,7 @@ describe('calling a square', () => {
     stubRoom({
       you: host,
       liveFromTheStart: true,
-      marks: ['f1.v1:t:7'],
+      marks: [{ squareId: 'f1.v1:t:7', seq: 12, actorPlayerId: guest.id }],
       streamedThroughSeq: 12,
     });
 
@@ -521,7 +554,7 @@ describe('the host deck sheet', () => {
       you: host,
       liveFromTheStart: true,
       deck: true,
-      marks: ['f1.v1:t:3'],
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: guest.id }],
     });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -567,6 +600,189 @@ describe('the host deck sheet', () => {
           .getByRole('button', { name: /Square 33/ })
           .getAttribute('aria-pressed'),
       ).toBe('true'),
+    );
+  });
+});
+
+/**
+ * D8's graduated friction. The same correction — an appended RETRACT naming the
+ * CALL — reached three ways, and what differs is only what it cost to reach it.
+ */
+describe('taking a call back', () => {
+  /** The `/retract` body this browser posted, or undefined if it posted none. */
+  function retracted(fetchMock: ReturnType<typeof vi.fn>) {
+    const posted = fetchMock.mock.calls.find(([url]) =>
+      (url as string).endsWith('/retract'),
+    );
+
+    return posted === undefined
+      ? undefined
+      : (JSON.parse((posted[1] as RequestInit).body as string) as { seq: number });
+  }
+
+  /**
+   * The reflex case. A misread during a restart is the common way a call goes
+   * wrong, and a modal in that moment is exactly the wrong thing — so inside the
+   * window the correction is one tap and asks nothing.
+   */
+  it('offers your own call back for one tap, with nothing to confirm', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+
+    const toast = await screen.findByRole('status');
+    expect(toast.textContent).toContain('Called Square 5');
+    // Nothing stands between the toast and the correction.
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Square 5' }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+
+    // Still no confirmation, and the square unmarks by the same re-read that
+    // marked it — there was never a local mark to undo locally.
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(retracted(room.fetchMock)).toBeDefined());
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Square 5' }).getAttribute('aria-pressed'),
+      ).toBe('false'),
+    );
+  });
+
+  /**
+   * The window shutting, and the second path opening. Past ten seconds a wrong
+   * call is no longer a reflex, so the same correction costs a confirmation —
+   * reached by tapping the square rather than by a toast that is long gone.
+   */
+  it('replaces the one-tap undo with a confirmation once the window closes', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    try {
+      const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+      await screen.findByRole('button', { name: 'Undo' });
+
+      /**
+       * The button being in the DOM only means React committed the render. The
+       * effect that schedules the window's expiry is a *passive* effect, which
+       * flushes after that commit — so advancing the clock the moment the button
+       * appears can advance past a timer that has not been scheduled yet, and the
+       * window would then never close. Flush first, then advance, then wait.
+       */
+      await act(async () => {});
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15_000);
+      });
+
+      await waitFor(() =>
+        expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull(),
+      );
+
+      // The square is marked and still this player's to correct, so it is not
+      // inert — it asks first.
+      fireEvent.click(screen.getByRole('button', { name: 'Square 5' }));
+
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog.textContent).toContain('Square 5');
+      expect(retracted(room.fetchMock)).toBeUndefined();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Take it back' }));
+
+      await waitFor(() => expect(retracted(room.fetchMock)).toBeDefined());
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: 'Square 5' }).getAttribute('aria-pressed'),
+        ).toBe('false'),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the call alone when the confirmation is declined', async () => {
+    const room = stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: guest.id }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 3' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Keep it' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(retracted(room.fetchMock)).toBeUndefined();
+    expect(
+      screen.getByRole('button', { name: 'Square 3' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  /**
+   * D8's third path. Players may only take back their own calls, or a correction
+   * would be an argument; the host may take back anyone's, so a call whose caller
+   * has put their phone down is still fixable.
+   */
+  it('lets the host take back a call somebody else made', async () => {
+    const room = stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: guest.id }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 3' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Take it back' }));
+
+    await waitFor(() => expect(retracted(room.fetchMock)?.seq).toBe(7));
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Square 3' }).getAttribute('aria-pressed'),
+      ).toBe('false'),
+    );
+  });
+
+  /**
+   * The fanout criterion, from the side of a device that did nothing. A RETRACT
+   * arriving on the stream unmarks the square here by the same re-read that
+   * marked it, with no local bookkeeping to keep in step.
+   */
+  it('unmarks a square when someone else`s retraction arrives on the stream', async () => {
+    const room = stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:7', seq: 12, actorPlayerId: host.id }],
+      streamedThroughSeq: 12,
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      (await screen.findByRole('button', { name: 'Square 7' })).getAttribute(
+        'aria-pressed',
+      ),
+    ).toBe('true');
+
+    room.retractedElsewhere(12);
+    act(() =>
+      stream().emit({ seq: 13, kind: 'RETRACT', actorPlayerId: host.id }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Square 7' }).getAttribute('aria-pressed'),
+      ).toBe('false'),
     );
   });
 });
