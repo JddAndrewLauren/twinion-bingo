@@ -20,7 +20,7 @@
  *   no longer the only way through.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 /** Apple's minimum, and the reason the first cut of this bar did not work. */
@@ -40,6 +40,11 @@ export function PrototypeSwitcher({
   const params = useSearchParams();
 
   const labels = params.get('labels') === 'real' ? 'real' : 'cap';
+  /**
+   * Open on arrival so the controls are discoverable, shut as soon as a variant is
+   * chosen so the pill stops covering the thing it was chosen to show.
+   */
+  const [expanded, setExpanded] = useState(true);
 
   function show(variant: string) {
     const query = new URLSearchParams(params.toString());
@@ -80,47 +85,80 @@ export function PrototypeSwitcher({
 
   return (
     /*
-      Clear of the bottom ~120px, because that slot holds the credit toast and D8's
-      undo row and whether those cover the card is one of the things being judged —
-      a switcher sitting on top of them would hide the evidence.
+      Two things this wrapper has to get right, both learned the hard way:
+
+      - `pointer-events-none` on the strip, `auto` on the pill. Otherwise this
+        `inset-x-0` band swallows every tap at its own height across the full width,
+        and it was eating C1's "what am I looking for" header — which reads exactly
+        like the list being broken rather than like the switcher being in the way.
+      - Bottom-left, clear of the ~120px the credit toast and D8's undo row occupy.
+        Whether those cover the card is one of the things being judged, so a
+        switcher parked on top of them would hide the evidence.
     */
-    <div className="fixed inset-x-0 bottom-28 z-50 flex justify-center px-2">
-      <div className="flex max-w-full flex-col gap-1 rounded-2xl bg-fuchsia-600 p-2 text-white shadow-lg shadow-black/50">
-        {/* What is on screen, on its own line so it never squeezes a target. */}
-        <p className="truncate px-1 text-center text-[11px] font-semibold">
-          {current} — {name}
-        </p>
+    <div className="pointer-events-none fixed bottom-24 left-2 z-50 flex max-w-[calc(100%-1rem)] flex-col items-start gap-1">
+      {expanded ? (
+        <div className="pointer-events-auto flex max-w-full flex-col gap-1 rounded-2xl bg-fuchsia-600 p-2 text-white shadow-lg shadow-black/50">
+          {/* What is on screen, on its own line so it never squeezes a target. */}
+          <p className="truncate px-1 text-[11px] font-semibold">
+            {current} — {name}
+          </p>
 
-        <div className="flex items-center gap-1">
-          {variants.map((variant) => (
+          {/* Wraps, so six keys still fit at `phone-small` without shrinking any. */}
+          <div className="flex flex-wrap items-center gap-1">
+            {variants.map((variant) => (
+              <button
+                key={variant}
+                type="button"
+                onClick={() => {
+                  show(variant);
+                  // Out of the way the moment it has done its job: the pill
+                  // otherwise sits over whatever is at this height, and on a phone
+                  // that is the very element being judged.
+                  setExpanded(false);
+                }}
+                aria-pressed={variant === current}
+                className={`${TARGET} rounded-xl px-3 text-base font-bold ${
+                  variant === current
+                    ? 'bg-white text-fuchsia-700'
+                    : 'bg-black/25 text-white'
+                }`}
+              >
+                {variant}
+              </button>
+            ))}
+
+            {/*
+              The second control, because #12 has to decide about D4's <=30 char cap
+              as well as about layout, and the two are the same judgement made twice.
+            */}
             <button
-              key={variant}
               type="button"
-              onClick={() => show(variant)}
-              aria-pressed={variant === current}
-              className={`${TARGET} flex-1 rounded-xl px-3 text-base font-bold ${
-                variant === current
-                  ? 'bg-white text-fuchsia-700'
-                  : 'bg-black/25 text-white'
-              }`}
+              onClick={toggleLabels}
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
             >
-              {variant}
+              {labels === 'cap' ? 'at cap' : 'real pool'}
             </button>
-          ))}
-
-          {/*
-            The second control, because #12 has to decide about D4's <=30 char cap
-            as well as about layout, and the two are the same judgement made twice.
-          */}
-          <button
-            type="button"
-            onClick={toggleLabels}
-            className={`${TARGET} ml-1 rounded-xl bg-black/25 px-3 text-xs font-semibold`}
-          >
-            {labels === 'cap' ? 'at cap' : 'real pool'}
-          </button>
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              aria-label="Hide the variant switcher"
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+            >
+              hide
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Collapsed: one 44px handle naming the variant, and nothing else. */
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          aria-label="Show the variant switcher"
+          className={`${TARGET} pointer-events-auto rounded-full bg-fuchsia-600 px-3 text-sm font-bold text-white shadow-lg shadow-black/50`}
+        >
+          {current}
+        </button>
+      )}
     </div>
   );
 }

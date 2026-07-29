@@ -23,65 +23,274 @@ import type { CardSquare, Game, Roster } from '../../room-api';
 
 export type LabelSet = 'cap' | 'real';
 
+/**
+ * A square as the pool actually carries it (D4): a `label` of <=30 characters for
+ * the cell, and a `description` that says exactly what counts. The "what am I
+ * looking for" list is what makes the second one load-bearing rather than a
+ * long-press nicety, so these are written to disambiguate, not to pad.
+ */
+type MockSquare = { label: string; tier: string; description: string };
+
 /** The committed pool's longest labels — longest word 10 (`Verstappen`). */
-const REAL_LABELS: [string, string][] = [
-  ['Verstappen moans at Red Bull', 'medium'],
-  ['Hamilton moans at Ferrari', 'medium'],
-  ['Hulkenberg moans at Audi', 'certain'],
-  ['Leclerc moans at Ferrari', 'medium'],
-  ['Piastri moans at McLaren', 'medium'],
-  ['Hulkenberg on the podium', 'rare'],
-  ['Verstappen on the podium', 'certain'],
-  ['Hadjar moans at Red Bull', 'medium'],
-  ['Albon moans at Williams', 'medium'],
-  ['Bortoleto moans at Audi', 'certain'],
-  ['Norris moans at McLaren', 'medium'],
-  ['Sainz moans at Williams', 'medium'],
-  ['Bortoleto on the podium', 'rare'],
-  ['Red Bull fumbles a stop', 'medium'],
-  ['Safety car before lap 10', 'medium'],
-  ['Ferrari fumbles a stop', 'medium'],
-  ['Norris on the podium', 'certain'],
-  ['Rain in the final stint', 'rare'],
-  ['A driver retires the car', 'certain'],
-  ['Piastri leads a lap', 'medium'],
-  ['Two cars touch at turn 1', 'certain'],
-  ['Leclerc sets fastest lap', 'medium'],
-  ['A pit lane start', 'rare'],
-  ['Hamilton passes on track', 'medium'],
-];
+const REAL_LABELS: MockSquare[] = (
+  [
+    [
+      'Verstappen moans at Red Bull',
+      'medium',
+      'Verstappen complains about the car over Red Bull team radio.',
+    ],
+    [
+      'Hamilton moans at Ferrari',
+      'medium',
+      'Hamilton complains about the car over Ferrari team radio.',
+    ],
+    [
+      'Hulkenberg moans at Audi',
+      'certain',
+      'Hulkenberg complains about the car over Audi team radio.',
+    ],
+    [
+      'Leclerc moans at Ferrari',
+      'medium',
+      'Leclerc complains about the car over Ferrari team radio.',
+    ],
+    [
+      'Piastri moans at McLaren',
+      'medium',
+      'Piastri complains about the car over McLaren team radio.',
+    ],
+    [
+      'Hulkenberg on the podium',
+      'rare',
+      'Hulkenberg finishes in the top three.',
+    ],
+    [
+      'Verstappen on the podium',
+      'certain',
+      'Verstappen finishes in the top three.',
+    ],
+    [
+      'Hadjar moans at Red Bull',
+      'medium',
+      'Hadjar complains about the car over Red Bull team radio.',
+    ],
+    [
+      'Albon moans at Williams',
+      'medium',
+      'Albon complains about the car over Williams team radio.',
+    ],
+    [
+      'Bortoleto moans at Audi',
+      'certain',
+      'Bortoleto complains about the car over Audi team radio.',
+    ],
+    [
+      'Norris moans at McLaren',
+      'medium',
+      'Norris complains about the car over McLaren team radio.',
+    ],
+    [
+      'Sainz moans at Williams',
+      'medium',
+      'Sainz complains about the car over Williams team radio.',
+    ],
+    ['Bortoleto on the podium', 'rare', 'Bortoleto finishes in the top three.'],
+    [
+      'Red Bull fumbles a stop',
+      'medium',
+      'A Red Bull pit stop goes wrong \u2014 slow, unsafe or a wheel not on.',
+    ],
+    [
+      'Safety car before lap 10',
+      'medium',
+      'Safety car or virtual safety car deployed on or before lap 10.',
+    ],
+    [
+      'Ferrari fumbles a stop',
+      'medium',
+      'A Ferrari pit stop goes wrong \u2014 slow, unsafe or a wheel not on.',
+    ],
+    ['Norris on the podium', 'certain', 'Norris finishes in the top three.'],
+    [
+      'Rain in the final stint',
+      'rare',
+      'Rain reaches the circuit after the last scheduled stops.',
+    ],
+    [
+      'A driver retires the car',
+      'certain',
+      'Any car stops for good, mechanical or otherwise.',
+    ],
+    [
+      'Piastri leads a lap',
+      'medium',
+      'Piastri crosses the line first at the end of any lap.',
+    ],
+    [
+      'Two cars touch at turn 1',
+      'certain',
+      'Any contact between two cars at turn 1, on any lap.',
+    ],
+    [
+      'Leclerc sets fastest lap',
+      'medium',
+      'Leclerc holds the fastest lap of the race at any point.',
+    ],
+    [
+      'A pit lane start',
+      'rare',
+      'Any car begins the race from the pit lane rather than the grid.',
+    ],
+    [
+      'Hamilton passes on track',
+      'medium',
+      'Hamilton completes an overtake on track.',
+    ],
+  ] as const
+).map(([label, tier, description]) => ({
+  label,
+  tier,
+  description,
+}));
 
 /**
  * The cap's worst plausible case: 28-30 characters *and* a word of 11-13. Every
  * long word here is real motorsport vocabulary a commentator says once a race, so
  * a variant that cannot render these is a variant that constrains #16's authoring.
+ *
+ * The descriptions are the other half of the stress. The committed pool's run to
+ * 64 characters, but several here are deliberately longer, because "clarifies
+ * exactly what people are looking for" is a harder brief than "reminds you what
+ * the label meant" — a list that only fits 64 would quietly cap the authoring.
  */
-const CAP_LABELS: [string, string][] = [
-  ['Verstappen investigation', 'medium'],
-  ['Stewards open investigation', 'certain'],
-  ['A driver is disqualified', 'rare'],
-  ['Hulkenberg is reprimanded', 'medium'],
-  ['Championship lead changes', 'rare'],
-  ['Championship maths on air', 'certain'],
-  ['Post-race investigation', 'medium'],
-  ['Leclerc is reprimanded', 'medium'],
-  ['Grid penalty for a Red Bull', 'medium'],
-  ['Unsafe release investigation', 'rare'],
-  ['Verstappen moans at Red Bull', 'medium'],
-  ['Hulkenberg moans at Audi', 'certain'],
-  ['Bortoleto on the podium', 'rare'],
-  ['Track limits investigation', 'certain'],
-  ['A reprimanded driver moans', 'medium'],
-  ['Safety car before lap 10', 'medium'],
-  ['Red Bull fumbles a stop', 'medium'],
-  ['Disqualified from the grid', 'rare'],
-  ['Championship rival retires', 'medium'],
-  ['Two cars touch at turn 1', 'certain'],
-  ['Rain in the final stint', 'rare'],
-  ['Hamilton passes on track', 'medium'],
-  ['Leclerc sets fastest lap', 'medium'],
-  ['A pit lane start', 'certain'],
-];
+const CAP_LABELS: MockSquare[] = (
+  [
+    [
+      'Verstappen investigation',
+      'medium',
+      'The stewards announce they are looking at Verstappen \u2014 noted, under investigation, or summoned. Any session, not only the race.',
+    ],
+    [
+      'Stewards open investigation',
+      'certain',
+      'Any driver, any incident: the stewards confirm an investigation is under way. The announcement counts, not the verdict.',
+    ],
+    [
+      'A driver is disqualified',
+      'rare',
+      'A classified finisher is removed from the results, or a car is excluded before the start. Post-race technical DSQs count.',
+    ],
+    [
+      'Hulkenberg is reprimanded',
+      'medium',
+      'Hulkenberg is given a reprimand specifically \u2014 not a fine, not a grid drop, not a time penalty.',
+    ],
+    [
+      'Championship lead changes',
+      'rare',
+      'The drivers\u2019 championship lead passes to a different driver, on the road or after the flag.',
+    ],
+    [
+      'Championship maths on air',
+      'certain',
+      'A commentator works through points permutations out loud \u2014 \u201cif it finishes like this, then\u2026\u201d',
+    ],
+    [
+      'Post-race investigation',
+      'medium',
+      'The stewards keep something open after the chequered flag, so the result is provisional.',
+    ],
+    [
+      'Leclerc is reprimanded',
+      'medium',
+      'Leclerc specifically, and a reprimand specifically rather than any other penalty.',
+    ],
+    [
+      'Grid penalty for a Red Bull',
+      'medium',
+      'Either Red Bull car drops grid places \u2014 a component, a gearbox, or impeding in qualifying.',
+    ],
+    [
+      'Unsafe release investigation',
+      'rare',
+      'A car is let out of its box into traffic and the stewards look at it. The investigation counts even if no penalty follows.',
+    ],
+    [
+      'Verstappen moans at Red Bull',
+      'medium',
+      'Verstappen complains about the car over team radio. Grumbling counts; a plain question does not.',
+    ],
+    [
+      'Hulkenberg moans at Audi',
+      'certain',
+      'Hulkenberg complains about the car over Audi team radio.',
+    ],
+    [
+      'Bortoleto on the podium',
+      'rare',
+      'Bortoleto finishes in the top three, as classified after any penalties.',
+    ],
+    [
+      'Track limits investigation',
+      'certain',
+      'A track limits breach is announced as under investigation. A deleted lap on its own is not enough.',
+    ],
+    [
+      'A reprimanded driver moans',
+      'medium',
+      'Any driver carrying a reprimand from this weekend complains on the radio afterwards.',
+    ],
+    [
+      'Safety car before lap 10',
+      'medium',
+      'Safety car or virtual safety car deployed on or before lap 10.',
+    ],
+    [
+      'Red Bull fumbles a stop',
+      'medium',
+      'A Red Bull pit stop goes wrong \u2014 slow, unsafe, or a wheel not on.',
+    ],
+    [
+      'Disqualified from the grid',
+      'rare',
+      'A car is excluded before the start and begins from the pit lane, or not at all.',
+    ],
+    [
+      'Championship rival retires',
+      'medium',
+      'Anyone in the top three of the standings fails to finish, whatever the cause.',
+    ],
+    [
+      'Two cars touch at turn 1',
+      'certain',
+      'Any contact between two cars at turn 1, on any lap \u2014 a nudge counts, no damage needed.',
+    ],
+    [
+      'Rain in the final stint',
+      'rare',
+      'Rain reaches the circuit after the last scheduled stops, wherever on the track.',
+    ],
+    [
+      'Hamilton passes on track',
+      'medium',
+      'Hamilton completes an overtake on track. A place gained in the pits or by a retirement does not count.',
+    ],
+    [
+      'Leclerc sets fastest lap',
+      'medium',
+      'Leclerc holds the fastest lap of the race at any point \u2014 it need not still stand at the flag.',
+    ],
+    [
+      'A pit lane start',
+      'certain',
+      'Any car begins the race from the pit lane rather than its grid slot.',
+    ],
+  ] as const
+).map(([label, tier, description]) => ({
+  label,
+  tier,
+  description,
+}));
 
 /**
  * `noUncheckedIndexedAccess` is on across this repo, and everything indexed below
@@ -97,11 +306,9 @@ function at<T>(list: readonly T[], index: number): T {
 function cardFor(set: LabelSet): CardSquare[] {
   const labels = set === 'cap' ? CAP_LABELS : REAL_LABELS;
 
-  return labels.map(([label, tier], index) => ({
+  return labels.map((square, index) => ({
     id: `proto.v1:square_${index}`,
-    label,
-    description: `${label} — the long-press prose, which on the real card is a title attribute and not a layout concern.`,
-    tier,
+    ...square,
   }));
 }
 
