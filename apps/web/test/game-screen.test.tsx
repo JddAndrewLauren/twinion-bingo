@@ -156,6 +156,12 @@ function stubRoom({
     retractedElsewhere: (seq: number) => {
       state.marks = state.marks.filter((mark) => mark.seq !== seq);
     },
+    /**
+     * The row the log holds for a square — the seq a test needs when it wants to
+     * replay this browser's own CALL back at it, the way the stream really does.
+     */
+    markFor: (squareId: string) =>
+      state.marks.find((mark) => mark.squareId === squareId),
   };
 }
 
@@ -680,8 +686,21 @@ describe('taking a call back', () => {
        * window would then never close. Flush first, then advance, then wait.
        */
       await act(async () => {});
+
+      /**
+       * Nine seconds in, the window is still open. Without this the test would
+       * pass for any window at all — a regression shortening it to a tenth of a
+       * second would still end with the Undo gone, and criterion 1 is the one
+       * criterion that names a duration.
+       */
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(15_000);
+        await vi.advanceTimersByTimeAsync(9_000);
+      });
+      expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined();
+
+      // And past ten, it is shut.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6_000);
       });
 
       await waitFor(() =>
@@ -707,6 +726,66 @@ describe('taking a call back', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  /**
+   * The bottom slot is shared, and sharing it must not cost #8's criterion that a
+   * call is credited by name on every device. A credit's four seconds run whether
+   * or not it is on screen, so a hidden one is a dropped one — and a restart, the
+   * very thing the undo window exists for, is several spotters in a few seconds.
+   */
+  it('still credits another spotter while your own undo window is open', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    await screen.findByRole('button', { name: 'Undo' });
+
+    room.calledElsewhere('f1.v1:t:7', host.id);
+    act(() =>
+      stream().emit({
+        seq: 5000,
+        kind: 'CALL',
+        actorPlayerId: host.id,
+        squareId: 'f1.v1:t:7',
+      }),
+    );
+
+    // The credit is not swallowed by the undo row...
+    expect(await screen.findByText('Ash spotted Square 7')).toBeDefined();
+    // ...and the credit does not cut the window short either.
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined();
+  });
+
+  /**
+   * The one credit that is a duplicate rather than news: your own call comes back
+   * on the stream like everyone else's, and the undo row one line below is already
+   * naming it.
+   */
+  it('does not credit your own call underneath the undo row naming it', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    await screen.findByRole('button', { name: 'Undo' });
+
+    const mine = room.markFor('f1.v1:t:5');
+    expect(mine).toBeDefined();
+
+    act(() =>
+      stream().emit({
+        seq: mine!.seq,
+        kind: 'CALL',
+        actorPlayerId: guest.id,
+        squareId: 'f1.v1:t:5',
+      }),
+    );
+
+    expect(screen.queryByText('Bea spotted Square 5')).toBeNull();
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined();
   });
 
   it('leaves the call alone when the confirmation is declined', async () => {

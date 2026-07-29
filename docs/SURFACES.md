@@ -55,6 +55,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast pinned to the bottom crediting the spotter by name, **covering no part of the card**, and wrapping rather than overflowing on a long name plus a 30-character label |
 | Game — host deck sheet | `/r/:code`, a live game, joined as the host, sheet open | All 40 deck rows, called ones telling apart from uncalled at a glance, **the amber admin chrome distinguishing the sheet from the host's own card**, and the toggle back to the card reachable |
 | Game — undo toast     | `/r/:code`, within 10s of **your own** call      | The toast pinned to the bottom naming the square you called with the **Undo** button beside it — the button on the toast rather than below it, thumb-sized, and neither the label nor the button overflowing on a 30-character label; **covering no part of the card**. The host's own call from the deck sheet opens the same window, so the toast has to sit over the sheet without hiding a row's Call affordance |
+| Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still bottom-pinned, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling |
 
 ### Known-unverified claims inherited from #7
@@ -114,6 +115,11 @@ than stubbed):
 - **Game — marked card** re-checked because a mark this player may correct is now an *enabled*
   button rather than a disabled one. No visual change fell out of that — the classes are the same
   either way — and no cell clipped at any viewport.
+- **Game — credit over undo** passes at all four viewports, added in review round 1 when the bottom
+  slot stopped being winner-takes-all. Measured with a real remote call arriving over SSE while the
+  local undo window was open, not simulated: two 52–58px rows, the credit above and the undo below,
+  tops at 557/609 at `phone-small` against a card ending at 395. Both unclipped, neither wider than
+  the viewport, and the Undo button still hit-testable under the credit.
 - **Game — host deck sheet** re-checked after the rebase onto #10, because a host calling from the
   sheet now opens the undo window and lands D8's toast on a screen that never carried one. Passes at
   all four: the toast overlays the list (which is right — the sheet is a long scroller, not the card

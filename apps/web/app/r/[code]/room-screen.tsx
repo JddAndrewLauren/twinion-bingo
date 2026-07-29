@@ -415,40 +415,50 @@ export function RoomScreen({
         )}
         {callFailed && <p role="alert">Could not call that square.</p>}
         {retractFailed && <p role="alert">Could not take that call back.</p>}
-        {undo !== null ? (
-          /**
-           * D8's fast path. It replaces the spotter toast rather than stacking
-           * above it, because the only call it can be about is the one this phone
-           * just made — and that call's own credit toast would be saying the same
-           * thing twice, in the one place the card must stay uncovered.
-           */
-          <div
-            role="status"
-            className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md items-center justify-between gap-3 rounded-t bg-emerald-800 p-3 text-emerald-50"
-          >
-            <span>Called {labelFor(game, undo.squareId)}</span>
-            <button
-              type="button"
-              onClick={() => void retract(undo)}
-              className="shrink-0 rounded border border-emerald-200 px-3 py-1 font-semibold"
-            >
-              Undo
-            </button>
+        {/**
+         * The bottom slot, which two different pieces of news share: #8's credit
+         * for whoever spotted a call, and D8's undo for the call this phone just
+         * made. They stack rather than take turns, because they are not about the
+         * same event — hiding one behind the other would drop a remote spotter's
+         * credit entirely, since its four seconds run whether or not it is on
+         * screen.
+         *
+         * The single exception is the credit for the very call the undo row is
+         * already naming: your own tap, announced twice, one line apart. That one
+         * is a duplicate rather than news, so it is the only thing suppressed —
+         * matched by `seq`, so it is exactly that row and nothing near it.
+         */}
+        {(undo !== null || toast !== null) && (
+          <div className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md flex-col gap-1">
+            {toast !== null && toast.id !== undo?.seq && (
+              /**
+               * `status` rather than `alert`: a call is news, not a problem, and
+               * an assertive live region would interrupt a screen reader
+               * mid-square. Pinned to the bottom so it never covers the card.
+               */
+              <p
+                role="status"
+                className="rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
+              >
+                {toast.text}
+              </p>
+            )}
+            {undo !== null && (
+              <div
+                role="status"
+                className="flex items-center justify-between gap-3 rounded-t bg-emerald-800 p-3 text-emerald-50"
+              >
+                <span>Called {labelFor(game, undo.squareId)}</span>
+                <button
+                  type="button"
+                  onClick={() => void retract(undo)}
+                  className="shrink-0 rounded border border-emerald-200 px-3 py-1 font-semibold"
+                >
+                  Undo
+                </button>
+              </div>
+            )}
           </div>
-        ) : (
-          toast !== null && (
-            /**
-             * `status` rather than `alert`: a call is news, not a problem, and an
-             * assertive live region would interrupt a screen reader mid-square.
-             * Pinned to the bottom so it never covers the card being read.
-             */
-            <p
-              role="status"
-              className="fixed inset-x-0 bottom-0 mx-auto max-w-md rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
-            >
-              {toast.text}
-            </p>
-          )
         )}
         {confirming !== null && (
           /**
