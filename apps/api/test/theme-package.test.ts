@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { composeThemeId, loadPools } from '@twinion-bingo/theme';
-import { themesRoot } from '../src/games/pools.js';
+import { defaultThemeId, themesRoot } from '../src/games/pools.js';
 
 /**
  * The guard for #32. `@twinion-bingo/theme` shipped raw TypeScript with no build
@@ -16,7 +16,9 @@ describe('the theme package, as apps/api consumes it', () => {
 
   it('reads the committed pools from the themes folder the API ships with', () => {
     const pools = loadPools(themesRoot());
-    const f1 = pools.get('f1.v1');
+    // Resolved through the manifest rather than spelled out, so a poolVersion
+    // bump does not make this guard fail about the version instead of the import.
+    const f1 = pools.get(defaultThemeId());
 
     expect(f1?.freeCentre).toBe('LIGHTS OUT');
     expect(f1?.squares.length).toBeGreaterThan(0);

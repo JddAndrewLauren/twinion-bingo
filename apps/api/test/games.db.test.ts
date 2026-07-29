@@ -13,6 +13,7 @@ import {
   composeDeck,
   dealCard,
 } from '../src/games/deck.js';
+import { defaultThemeId } from '../src/games/pools.js';
 import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
 
 const db = createDb(testDatabaseUrl ?? 'postgres://unused');
@@ -27,7 +28,7 @@ const fixture = JSON.parse(
   readFileSync(joinPath(import.meta.dirname, 'fixtures/pool-180.json'), 'utf8'),
 ) as Pool;
 
-const pools = new Map<string, Pool>([['f1.v1', fixture]]);
+const pools = new Map<string, Pool>([[defaultThemeId(), fixture]]);
 
 const app = createApp({
   allowedOrigins: ['http://localhost:3000'],
@@ -312,7 +313,7 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
     const thin = createApp({
       allowedOrigins: ['http://localhost:3000'],
       db,
-      pools: new Map([['f1.v1', { ...fixture, squares: fixture.squares.slice(0, 20) }]]),
+      pools: new Map([[defaultThemeId(), { ...fixture, squares: fixture.squares.slice(0, 20) }]]),
     });
 
     const host = await createRoom('Host');
