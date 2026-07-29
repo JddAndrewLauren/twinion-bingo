@@ -9,6 +9,17 @@ packages/theme    pool:build — expands a theme folder into its square pool (D9
 themes/           one folder per theme, generated pool committed (D10)
 ```
 
+## What works today
+
+A host creates a room and gets a four-character code and a share link; anyone opening the link
+joins by name and appears on the roster. The room's state is an append-only log
+(`bingo.room_events`), streamed to every device over SSE at `GET /rooms/:code/stream` and
+resumable with `Last-Event-ID`, so a phone that slept through twenty minutes reconnects and gets
+exactly the rows it missed. Theme folders expand into committed square pools via `pool:build`.
+
+Not built yet: starting a game, dealing cards, and calling squares — see the open issues off the
+master plan (#1).
+
 ## Local development
 
 ```bash
@@ -33,7 +44,13 @@ Gates, all run by CI on push:
 pnpm typecheck
 pnpm lint
 pnpm test
+pnpm build
 ```
+
+CI runs two more jobs the commands above do not cover: `image` builds `apps/api/Dockerfile` from
+the repo root (the deploy path, which is the only place it has ever broken), and `db` applies the
+migration chain twice against an ephemeral service container and then runs the truncating suites
+with `TEST_DATABASE_URL` set — see **Database** below.
 
 ## Database
 

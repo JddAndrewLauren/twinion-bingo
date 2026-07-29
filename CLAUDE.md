@@ -17,6 +17,12 @@ The five canonical triage roles, each label string equal to its name. See `docs/
 
 Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+### Visual surfaces
+
+Layout claims are gated against `docs/SURFACES.md` — the screen inventory and the viewport matrix
+(`phone-small`, `phone`, `ipad-11-portrait`, `ipad-11-landscape`). Write acceptance criteria against
+a named viewport, and add a row when a screen lands.
+
 
 # CLAUDE.md
 
