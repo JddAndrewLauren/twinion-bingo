@@ -18,6 +18,18 @@ export const LABEL_MAX_CHARS = 30;
 
 const PLACEHOLDER = /\{([^}]*)\}/g;
 
+/**
+ * A theme's id as everything outside the theme folder spells it: the manifest's
+ * `id` and `poolVersion` joined. Square ids carry it as their namespace and
+ * `rooms.theme_id` stores it, so the format lives here and nowhere else.
+ */
+export function composeThemeId(meta: {
+  id: string;
+  poolVersion: string;
+}): string {
+  return `${meta.id}.${meta.poolVersion}`;
+}
+
 /** Fields of an entity that are not pairings to another entity type. */
 const RESERVED_ENTITY_FIELDS = new Set(['key', 'name', 'tier']);
 
@@ -103,7 +115,7 @@ function expandTemplate(
 
   const where = `template "${template.id}" (entity "${entity.key}")`;
   return {
-    id: `${meta.id}.${meta.poolVersion}:${template.id}:${entity.key}`,
+    id: `${composeThemeId(meta)}:${template.id}:${entity.key}`,
     label: expand(template.label, expansions.names, where, errors),
     description: expand(template.description, expansions.names, where, errors),
     tier: rule,
@@ -115,7 +127,7 @@ function expandTemplate(
 
 function handcraftedSquare(square: HandcraftedSquare, meta: ThemeMeta): PoolSquare {
   return {
-    id: `${meta.id}.${meta.poolVersion}:hand:${square.key}`,
+    id: `${composeThemeId(meta)}:hand:${square.key}`,
     label: square.label,
     description: square.description,
     tier: square.tier,

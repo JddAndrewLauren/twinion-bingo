@@ -9,6 +9,27 @@ packages/theme    pool:build — expands a theme folder into its square pool (D9
 themes/           one folder per theme, generated pool committed (D10)
 ```
 
+## What works today
+
+A host creates a room and gets a four-character code and a share link; anyone opening the link
+joins by name and appears on the roster. The room's state is an append-only log
+(`bingo.room_events`), streamed to every device over SSE at `GET /rooms/:code/stream` and
+resumable with `Last-Event-ID`, so a phone that slept through twenty minutes reconnects and gets
+exactly the rows it missed. Theme folders expand into committed square pools via `pool:build`.
+
+The host starts a game at `POST /rooms/:code/games`: the server draws the room's ~40-square deck
+from the theme pool, deals every player a 24-square card from that one deck, and appends
+`GAME_STARTED` — so every connected phone renders its own card off the stream it was already
+holding. The draw is seeded and the seed stored, so a deal can be reproduced from the row. Cards
+hold `square_ids` and nothing else: marks are derived from the call log, never stored.
+
+**The deck cannot be drawn from the F1 theme yet.** D6's quotas are hard constraints, and the
+committed 47-square starter pool cannot meet them — starting a game answers 503 with the shortfall
+until #16 authors the pool to ~180 squares. `docs/adr/0002-deck-composition-hard-quotas.md` has the
+arithmetic and why it fails loudly rather than degrading.
+
+Not built yet: calling squares and the win ladder — see the open issues off the master plan (#1).
+
 ## Local development
 
 ```bash
@@ -27,13 +48,26 @@ editing any theme folder — see `themes/README.md`:
 pnpm pool:build     # rewrites themes/*/pool.generated.json
 ```
 
-Gates, all run by CI on push:
+The API reads those committed pools off disk at boot to draw decks from — from `themes/` at the
+repo root by default, resolved relative to the running module rather than to `cwd`, and overridable
+with `THEMES_ROOT`. The image gets its own copy at `/repo/themes`.
+
+Gates, all run by CI on push. **`pnpm build` comes first**, not last: `apps/api` imports
+`@twinion-bingo/theme`, whose `exports` resolve to its emitted `dist/`, so typechecking, linting
+and testing the API all need the theme package built. On a fresh clone a bare `pnpm test` fails to
+resolve the import until it has been.
 
 ```bash
+pnpm build
 pnpm typecheck
 pnpm lint
 pnpm test
 ```
+
+CI runs two more jobs the commands above do not cover: `image` builds `apps/api/Dockerfile` from
+the repo root (the deploy path, which is the only place it has ever broken), and `db` applies the
+migration chain twice against an ephemeral service container and then runs the truncating suites
+with `TEST_DATABASE_URL` set — see **Database** below.
 
 ## Database
 

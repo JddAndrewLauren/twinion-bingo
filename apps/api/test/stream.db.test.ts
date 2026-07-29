@@ -2,7 +2,11 @@ import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/client.js';
-import { eventsAfterQuery } from '../src/rooms/events.js';
+import {
+  SETTLE_MS,
+  eventsAfterQuery,
+  readEventsAfter,
+} from '../src/rooms/events.js';
 import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
 
 /** Runs against the ephemeral local Postgres the README's two commands set up. */
@@ -162,6 +166,32 @@ describe.skipIf(noTestDatabase)('the room stream', () => {
     expect(missing.status).toBe(404);
   });
 
+  /**
+   * `cors.test.ts` proves the stream route sits under the CORS middleware on its
+   * 400 path. This is the other half: that the header survives on the response
+   * that actually matters, the long-lived 200 `text/event-stream`. Hono's cors
+   * middleware sets headers after the handler returns, and `streamSSE` returns
+   * while the body is still open — so the two interacting correctly is a real
+   * property, not an obvious one.
+   */
+  it('carries the allow-origin header on the open stream itself', async () => {
+    const host = await createRoom('Host');
+
+    const res = await app.request(`/rooms/${host.code}/stream`, {
+      headers: { Origin: 'http://localhost:3000' },
+    });
+
+    try {
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/event-stream');
+      expect(res.headers.get('access-control-allow-origin')).toBe(
+        'http://localhost:3000',
+      );
+    } finally {
+      await res.body?.cancel();
+    }
+  });
+
   it('keeps a quiet stream open with a :ping comment', async () => {
     const host = await createRoom('Host');
 
@@ -236,6 +266,135 @@ describe.skipIf(noTestDatabase)('resuming with Last-Event-ID', () => {
 
     expect([...seen, ...eventIds(afterDrop)]).toEqual(eventIds(neverDropped));
     expect(eventIds(neverDropped)).toEqual(await logSeqs(host.code));
+  });
+});
+
+/**
+ * The settle window is the whole reason the resume query has a third predicate,
+ * and #8 builds a first-to-spot race directly on top of it — so what it does and
+ * what it does *not* do both need to be pinned. `events.ts` documents the shape
+ * honestly; these tests are that document made executable, so that a later
+ * change to `SETTLE_MS`, to the predicate, or to `at`'s default cannot quietly
+ * strengthen or weaken the claim #8 inherits.
+ */
+describe.skipIf(noTestDatabase)('the settle window', () => {
+  beforeEach(truncate);
+
+  /** Long enough that a row appended at `now()` has certainly become eligible. */
+  const pastTheWindow = () =>
+    new Promise((resolve) => setTimeout(resolve, SETTLE_MS + 100));
+
+  /**
+   * Appends a row with `at` set explicitly, because `at` — not the insert's own
+   * wall-clock moment — is what the filter compares. `ageMs` is how old the row
+   * claims to be.
+   */
+  async function appendAged(
+    code: string,
+    actorPlayerId: string,
+    ageMs: number,
+    seq?: number,
+  ): Promise<number> {
+    const columns =
+      seq === undefined
+        ? sql`(room_code, actor_player_id, kind, at)`
+        : sql`(seq, room_code, actor_player_id, kind, at)`;
+    const leading = seq === undefined ? sql`` : sql`${seq},`;
+
+    const rows = await db.execute<{ seq: string }>(
+      sql`INSERT INTO bingo.room_events ${columns}
+          VALUES (${leading} ${code}, ${actorPlayerId}::uuid, 'PLAYER_JOINED',
+                  now() - make_interval(secs => ${ageMs} / 1000.0))
+          RETURNING seq`,
+    );
+
+    return Number([...rows][0]!.seq);
+  }
+
+  it('withholds a row until it is older than the settle window', async () => {
+    const host = await createRoom('Host');
+
+    // Start from a cursor past the join row, so the only row in play is the one
+    // this test appends and the timing under test is only its own.
+    await pastTheWindow();
+    const cursor = (await logSeqs(host.code)).at(-1)!;
+    expect(await readEventsAfter(db, host.code, cursor)).toEqual([]);
+
+    const fresh = await appendAged(host.code, host.player.id, 0);
+
+    expect(await readEventsAfter(db, host.code, cursor)).toEqual([]);
+
+    await pastTheWindow();
+
+    expect(
+      (await readEventsAfter(db, host.code, cursor)).map((event) => event.seq),
+    ).toEqual([fresh]);
+  });
+
+  /**
+   * The limitation, stated as a test. `at` is `defaultNow()` — `now()` is the
+   * *transaction start* time — so the grace a row actually gets is 250ms minus
+   * whatever its transaction spent before the insert. A transaction that was
+   * already older than the window when it inserted gets no grace at all.
+   */
+  it('measures the window from `at`, not from when the row was inserted', async () => {
+    const host = await createRoom('Host');
+
+    await pastTheWindow();
+    const cursor = (await logSeqs(host.code)).at(-1)!;
+
+    const backdated = await appendAged(
+      host.code,
+      host.player.id,
+      SETTLE_MS + 50,
+    );
+
+    // No wait: the row is eligible the instant it lands.
+    expect(
+      (await readEventsAfter(db, host.code, cursor)).map((event) => event.seq),
+    ).toEqual([backdated]);
+  });
+
+  /**
+   * And the consequence: the cursor only moves forward, so a row that becomes
+   * visible *after* the cursor passed its `seq` is lost for good. This is the
+   * gap `events.ts` refuses to claim it closes, and closing it is #8's problem
+   * (a `clock_timestamp()` default on `at`, or a cursor that will not advance
+   * past an unfilled gap).
+   *
+   * **When #8 lands, this test should be inverted** — the skipped row becoming
+   * deliverable is the fix, and this assertion is what will notice.
+   */
+  it('steps over a lower-seq row that only becomes eligible later', async () => {
+    const host = await createRoom('Host');
+
+    await pastTheWindow();
+    const cursor = (await logSeqs(host.code)).at(-1)!;
+
+    // The fast writer, two seqs ahead: the slow writer already took `cursor + 1`
+    // from the sequence but has not committed yet.
+    const ahead = await appendAged(
+      host.code,
+      host.player.id,
+      SETTLE_MS + 50,
+      cursor + 2,
+    );
+
+    const delivered = await readEventsAfter(db, host.code, cursor);
+    expect(delivered.map((event) => event.seq)).toEqual([ahead]);
+
+    // The slow writer finally commits, holding the seq it reserved earlier.
+    const skipped = await appendAged(
+      host.code,
+      host.player.id,
+      SETTLE_MS + 50,
+      cursor + 1,
+    );
+
+    // It is in the log...
+    expect(await logSeqs(host.code)).toContain(skipped);
+    // ...and the stream will never send it, because the cursor is already past.
+    expect(await readEventsAfter(db, host.code, ahead)).toEqual([]);
   });
 });
 

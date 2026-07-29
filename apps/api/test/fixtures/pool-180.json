@@ -1,0 +1,1627 @@
+{
+  "themeId": "fixture",
+  "poolVersion": "v1",
+  "freeCentre": "LIGHTS OUT",
+  "squares": [
+    {
+      "id": "fixture.v1:hand:h01",
+      "label": "Hand-written moment 01",
+      "description": "A hand-written square, number 1 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h01",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h02",
+      "label": "Hand-written moment 02",
+      "description": "A hand-written square, number 2 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h02",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h03",
+      "label": "Hand-written moment 03",
+      "description": "A hand-written square, number 3 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h03",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h04",
+      "label": "Hand-written moment 04",
+      "description": "A hand-written square, number 4 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h04",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h05",
+      "label": "Hand-written moment 05",
+      "description": "A hand-written square, number 5 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h05",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h06",
+      "label": "Hand-written moment 06",
+      "description": "A hand-written square, number 6 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h06",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h07",
+      "label": "Hand-written moment 07",
+      "description": "A hand-written square, number 7 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h07",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h08",
+      "label": "Hand-written moment 08",
+      "description": "A hand-written square, number 8 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h08",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h09",
+      "label": "Hand-written moment 09",
+      "description": "A hand-written square, number 9 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h09",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h10",
+      "label": "Hand-written moment 10",
+      "description": "A hand-written square, number 10 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h10",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h11",
+      "label": "Hand-written moment 11",
+      "description": "A hand-written square, number 11 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h11",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h12",
+      "label": "Hand-written moment 12",
+      "description": "A hand-written square, number 12 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h12",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h13",
+      "label": "Hand-written moment 13",
+      "description": "A hand-written square, number 13 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h13",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h14",
+      "label": "Hand-written moment 14",
+      "description": "A hand-written square, number 14 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h14",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h15",
+      "label": "Hand-written moment 15",
+      "description": "A hand-written square, number 15 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h15",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h16",
+      "label": "Hand-written moment 16",
+      "description": "A hand-written square, number 16 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h16",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h17",
+      "label": "Hand-written moment 17",
+      "description": "A hand-written square, number 17 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h17",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h18",
+      "label": "Hand-written moment 18",
+      "description": "A hand-written square, number 18 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h18",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h19",
+      "label": "Hand-written moment 19",
+      "description": "A hand-written square, number 19 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h19",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h20",
+      "label": "Hand-written moment 20",
+      "description": "A hand-written square, number 20 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h20",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h21",
+      "label": "Hand-written moment 21",
+      "description": "A hand-written square, number 21 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h21",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h22",
+      "label": "Hand-written moment 22",
+      "description": "A hand-written square, number 22 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h22",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h23",
+      "label": "Hand-written moment 23",
+      "description": "A hand-written square, number 23 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h23",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h24",
+      "label": "Hand-written moment 24",
+      "description": "A hand-written square, number 24 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h24",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h25",
+      "label": "Hand-written moment 25",
+      "description": "A hand-written square, number 25 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h25",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h26",
+      "label": "Hand-written moment 26",
+      "description": "A hand-written square, number 26 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h26",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h27",
+      "label": "Hand-written moment 27",
+      "description": "A hand-written square, number 27 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h27",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h28",
+      "label": "Hand-written moment 28",
+      "description": "A hand-written square, number 28 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h28",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h29",
+      "label": "Hand-written moment 29",
+      "description": "A hand-written square, number 29 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h29",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h30",
+      "label": "Hand-written moment 30",
+      "description": "A hand-written square, number 30 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h30",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h31",
+      "label": "Hand-written moment 31",
+      "description": "A hand-written square, number 31 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h31",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h32",
+      "label": "Hand-written moment 32",
+      "description": "A hand-written square, number 32 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h32",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h33",
+      "label": "Hand-written moment 33",
+      "description": "A hand-written square, number 33 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h33",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h34",
+      "label": "Hand-written moment 34",
+      "description": "A hand-written square, number 34 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h34",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h35",
+      "label": "Hand-written moment 35",
+      "description": "A hand-written square, number 35 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h35",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h36",
+      "label": "Hand-written moment 36",
+      "description": "A hand-written square, number 36 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h36",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h37",
+      "label": "Hand-written moment 37",
+      "description": "A hand-written square, number 37 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h37",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h38",
+      "label": "Hand-written moment 38",
+      "description": "A hand-written square, number 38 of 40.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h38",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h39",
+      "label": "Hand-written moment 39",
+      "description": "A hand-written square, number 39 of 40.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h39",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:hand:h40",
+      "label": "Hand-written moment 40",
+      "description": "A hand-written square, number 40 of 40.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "hand:h40",
+      "templateId": null
+    },
+    {
+      "id": "fixture.v1:t01:e01",
+      "label": "Driver 01 does thing 01",
+      "description": "Template t01 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e01",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e02",
+      "label": "Driver 02 does thing 01",
+      "description": "Template t01 expanded for entity e02.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e02",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e03",
+      "label": "Driver 03 does thing 01",
+      "description": "Template t01 expanded for entity e03.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e03",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e04",
+      "label": "Driver 04 does thing 01",
+      "description": "Template t01 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e04",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e05",
+      "label": "Driver 05 does thing 01",
+      "description": "Template t01 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e05",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e06",
+      "label": "Driver 06 does thing 01",
+      "description": "Template t01 expanded for entity e06.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e06",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e07",
+      "label": "Driver 07 does thing 01",
+      "description": "Template t01 expanded for entity e07.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e07",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e08",
+      "label": "Driver 08 does thing 01",
+      "description": "Template t01 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e08",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e09",
+      "label": "Driver 09 does thing 01",
+      "description": "Template t01 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e09",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t01:e10",
+      "label": "Driver 10 does thing 01",
+      "description": "Template t01 expanded for entity e10.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e10",
+      "templateId": "t01"
+    },
+    {
+      "id": "fixture.v1:t02:e01",
+      "label": "Driver 01 does thing 02",
+      "description": "Template t02 expanded for entity e01.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e01",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e02",
+      "label": "Driver 02 does thing 02",
+      "description": "Template t02 expanded for entity e02.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e02",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e03",
+      "label": "Driver 03 does thing 02",
+      "description": "Template t02 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e03",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e04",
+      "label": "Driver 04 does thing 02",
+      "description": "Template t02 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e04",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e05",
+      "label": "Driver 05 does thing 02",
+      "description": "Template t02 expanded for entity e05.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e05",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e06",
+      "label": "Driver 06 does thing 02",
+      "description": "Template t02 expanded for entity e06.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e06",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e07",
+      "label": "Driver 07 does thing 02",
+      "description": "Template t02 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e07",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e08",
+      "label": "Driver 08 does thing 02",
+      "description": "Template t02 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e08",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e09",
+      "label": "Driver 09 does thing 02",
+      "description": "Template t02 expanded for entity e09.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e09",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t02:e10",
+      "label": "Driver 10 does thing 02",
+      "description": "Template t02 expanded for entity e10.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e10",
+      "templateId": "t02"
+    },
+    {
+      "id": "fixture.v1:t03:e01",
+      "label": "Driver 01 does thing 03",
+      "description": "Template t03 expanded for entity e01.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e01",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e02",
+      "label": "Driver 02 does thing 03",
+      "description": "Template t03 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e02",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e03",
+      "label": "Driver 03 does thing 03",
+      "description": "Template t03 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e03",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e04",
+      "label": "Driver 04 does thing 03",
+      "description": "Template t03 expanded for entity e04.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e04",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e05",
+      "label": "Driver 05 does thing 03",
+      "description": "Template t03 expanded for entity e05.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e05",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e06",
+      "label": "Driver 06 does thing 03",
+      "description": "Template t03 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e06",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e07",
+      "label": "Driver 07 does thing 03",
+      "description": "Template t03 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e07",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e08",
+      "label": "Driver 08 does thing 03",
+      "description": "Template t03 expanded for entity e08.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e08",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e09",
+      "label": "Driver 09 does thing 03",
+      "description": "Template t03 expanded for entity e09.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e09",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t03:e10",
+      "label": "Driver 10 does thing 03",
+      "description": "Template t03 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e10",
+      "templateId": "t03"
+    },
+    {
+      "id": "fixture.v1:t04:e01",
+      "label": "Driver 01 does thing 04",
+      "description": "Template t04 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e01",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e02",
+      "label": "Driver 02 does thing 04",
+      "description": "Template t04 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e02",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e03",
+      "label": "Driver 03 does thing 04",
+      "description": "Template t04 expanded for entity e03.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e03",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e04",
+      "label": "Driver 04 does thing 04",
+      "description": "Template t04 expanded for entity e04.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e04",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e05",
+      "label": "Driver 05 does thing 04",
+      "description": "Template t04 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e05",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e06",
+      "label": "Driver 06 does thing 04",
+      "description": "Template t04 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e06",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e07",
+      "label": "Driver 07 does thing 04",
+      "description": "Template t04 expanded for entity e07.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e07",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e08",
+      "label": "Driver 08 does thing 04",
+      "description": "Template t04 expanded for entity e08.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e08",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e09",
+      "label": "Driver 09 does thing 04",
+      "description": "Template t04 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e09",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t04:e10",
+      "label": "Driver 10 does thing 04",
+      "description": "Template t04 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e10",
+      "templateId": "t04"
+    },
+    {
+      "id": "fixture.v1:t05:e01",
+      "label": "Driver 01 does thing 05",
+      "description": "Template t05 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e01",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e02",
+      "label": "Driver 02 does thing 05",
+      "description": "Template t05 expanded for entity e02.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e02",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e03",
+      "label": "Driver 03 does thing 05",
+      "description": "Template t05 expanded for entity e03.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e03",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e04",
+      "label": "Driver 04 does thing 05",
+      "description": "Template t05 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e04",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e05",
+      "label": "Driver 05 does thing 05",
+      "description": "Template t05 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e05",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e06",
+      "label": "Driver 06 does thing 05",
+      "description": "Template t05 expanded for entity e06.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e06",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e07",
+      "label": "Driver 07 does thing 05",
+      "description": "Template t05 expanded for entity e07.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e07",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e08",
+      "label": "Driver 08 does thing 05",
+      "description": "Template t05 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e08",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e09",
+      "label": "Driver 09 does thing 05",
+      "description": "Template t05 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e09",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t05:e10",
+      "label": "Driver 10 does thing 05",
+      "description": "Template t05 expanded for entity e10.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e10",
+      "templateId": "t05"
+    },
+    {
+      "id": "fixture.v1:t06:e01",
+      "label": "Driver 01 does thing 06",
+      "description": "Template t06 expanded for entity e01.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e01",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e02",
+      "label": "Driver 02 does thing 06",
+      "description": "Template t06 expanded for entity e02.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e02",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e03",
+      "label": "Driver 03 does thing 06",
+      "description": "Template t06 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e03",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e04",
+      "label": "Driver 04 does thing 06",
+      "description": "Template t06 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e04",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e05",
+      "label": "Driver 05 does thing 06",
+      "description": "Template t06 expanded for entity e05.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e05",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e06",
+      "label": "Driver 06 does thing 06",
+      "description": "Template t06 expanded for entity e06.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e06",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e07",
+      "label": "Driver 07 does thing 06",
+      "description": "Template t06 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e07",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e08",
+      "label": "Driver 08 does thing 06",
+      "description": "Template t06 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e08",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e09",
+      "label": "Driver 09 does thing 06",
+      "description": "Template t06 expanded for entity e09.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e09",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t06:e10",
+      "label": "Driver 10 does thing 06",
+      "description": "Template t06 expanded for entity e10.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e10",
+      "templateId": "t06"
+    },
+    {
+      "id": "fixture.v1:t07:e01",
+      "label": "Driver 01 does thing 07",
+      "description": "Template t07 expanded for entity e01.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e01",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e02",
+      "label": "Driver 02 does thing 07",
+      "description": "Template t07 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e02",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e03",
+      "label": "Driver 03 does thing 07",
+      "description": "Template t07 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e03",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e04",
+      "label": "Driver 04 does thing 07",
+      "description": "Template t07 expanded for entity e04.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e04",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e05",
+      "label": "Driver 05 does thing 07",
+      "description": "Template t07 expanded for entity e05.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e05",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e06",
+      "label": "Driver 06 does thing 07",
+      "description": "Template t07 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e06",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e07",
+      "label": "Driver 07 does thing 07",
+      "description": "Template t07 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e07",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e08",
+      "label": "Driver 08 does thing 07",
+      "description": "Template t07 expanded for entity e08.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e08",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e09",
+      "label": "Driver 09 does thing 07",
+      "description": "Template t07 expanded for entity e09.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e09",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t07:e10",
+      "label": "Driver 10 does thing 07",
+      "description": "Template t07 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e10",
+      "templateId": "t07"
+    },
+    {
+      "id": "fixture.v1:t08:e01",
+      "label": "Driver 01 does thing 08",
+      "description": "Template t08 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e01",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e02",
+      "label": "Driver 02 does thing 08",
+      "description": "Template t08 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e02",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e03",
+      "label": "Driver 03 does thing 08",
+      "description": "Template t08 expanded for entity e03.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e03",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e04",
+      "label": "Driver 04 does thing 08",
+      "description": "Template t08 expanded for entity e04.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e04",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e05",
+      "label": "Driver 05 does thing 08",
+      "description": "Template t08 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e05",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e06",
+      "label": "Driver 06 does thing 08",
+      "description": "Template t08 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e06",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e07",
+      "label": "Driver 07 does thing 08",
+      "description": "Template t08 expanded for entity e07.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e07",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e08",
+      "label": "Driver 08 does thing 08",
+      "description": "Template t08 expanded for entity e08.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e08",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e09",
+      "label": "Driver 09 does thing 08",
+      "description": "Template t08 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e09",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t08:e10",
+      "label": "Driver 10 does thing 08",
+      "description": "Template t08 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam1:e10",
+      "templateId": "t08"
+    },
+    {
+      "id": "fixture.v1:t09:e01",
+      "label": "Driver 01 does thing 09",
+      "description": "Template t09 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e01",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e02",
+      "label": "Driver 02 does thing 09",
+      "description": "Template t09 expanded for entity e02.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e02",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e03",
+      "label": "Driver 03 does thing 09",
+      "description": "Template t09 expanded for entity e03.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e03",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e04",
+      "label": "Driver 04 does thing 09",
+      "description": "Template t09 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e04",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e05",
+      "label": "Driver 05 does thing 09",
+      "description": "Template t09 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e05",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e06",
+      "label": "Driver 06 does thing 09",
+      "description": "Template t09 expanded for entity e06.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e06",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e07",
+      "label": "Driver 07 does thing 09",
+      "description": "Template t09 expanded for entity e07.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e07",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e08",
+      "label": "Driver 08 does thing 09",
+      "description": "Template t09 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e08",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e09",
+      "label": "Driver 09 does thing 09",
+      "description": "Template t09 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e09",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t09:e10",
+      "label": "Driver 10 does thing 09",
+      "description": "Template t09 expanded for entity e10.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam2:e10",
+      "templateId": "t09"
+    },
+    {
+      "id": "fixture.v1:t10:e01",
+      "label": "Driver 01 does thing 10",
+      "description": "Template t10 expanded for entity e01.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e01",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e02",
+      "label": "Driver 02 does thing 10",
+      "description": "Template t10 expanded for entity e02.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e02",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e03",
+      "label": "Driver 03 does thing 10",
+      "description": "Template t10 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e03",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e04",
+      "label": "Driver 04 does thing 10",
+      "description": "Template t10 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e04",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e05",
+      "label": "Driver 05 does thing 10",
+      "description": "Template t10 expanded for entity e05.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e05",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e06",
+      "label": "Driver 06 does thing 10",
+      "description": "Template t10 expanded for entity e06.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e06",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e07",
+      "label": "Driver 07 does thing 10",
+      "description": "Template t10 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e07",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e08",
+      "label": "Driver 08 does thing 10",
+      "description": "Template t10 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e08",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e09",
+      "label": "Driver 09 does thing 10",
+      "description": "Template t10 expanded for entity e09.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e09",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t10:e10",
+      "label": "Driver 10 does thing 10",
+      "description": "Template t10 expanded for entity e10.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam3:e10",
+      "templateId": "t10"
+    },
+    {
+      "id": "fixture.v1:t11:e01",
+      "label": "Driver 01 does thing 11",
+      "description": "Template t11 expanded for entity e01.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e01",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e02",
+      "label": "Driver 02 does thing 11",
+      "description": "Template t11 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e02",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e03",
+      "label": "Driver 03 does thing 11",
+      "description": "Template t11 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e03",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e04",
+      "label": "Driver 04 does thing 11",
+      "description": "Template t11 expanded for entity e04.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e04",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e05",
+      "label": "Driver 05 does thing 11",
+      "description": "Template t11 expanded for entity e05.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e05",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e06",
+      "label": "Driver 06 does thing 11",
+      "description": "Template t11 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e06",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e07",
+      "label": "Driver 07 does thing 11",
+      "description": "Template t11 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e07",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e08",
+      "label": "Driver 08 does thing 11",
+      "description": "Template t11 expanded for entity e08.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e08",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e09",
+      "label": "Driver 09 does thing 11",
+      "description": "Template t11 expanded for entity e09.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e09",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t11:e10",
+      "label": "Driver 10 does thing 11",
+      "description": "Template t11 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam4:e10",
+      "templateId": "t11"
+    },
+    {
+      "id": "fixture.v1:t12:e01",
+      "label": "Driver 01 does thing 12",
+      "description": "Template t12 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e01",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e02",
+      "label": "Driver 02 does thing 12",
+      "description": "Template t12 expanded for entity e02.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e02",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e03",
+      "label": "Driver 03 does thing 12",
+      "description": "Template t12 expanded for entity e03.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e03",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e04",
+      "label": "Driver 04 does thing 12",
+      "description": "Template t12 expanded for entity e04.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e04",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e05",
+      "label": "Driver 05 does thing 12",
+      "description": "Template t12 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e05",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e06",
+      "label": "Driver 06 does thing 12",
+      "description": "Template t12 expanded for entity e06.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e06",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e07",
+      "label": "Driver 07 does thing 12",
+      "description": "Template t12 expanded for entity e07.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e07",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e08",
+      "label": "Driver 08 does thing 12",
+      "description": "Template t12 expanded for entity e08.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e08",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e09",
+      "label": "Driver 09 does thing 12",
+      "description": "Template t12 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e09",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t12:e10",
+      "label": "Driver 10 does thing 12",
+      "description": "Template t12 expanded for entity e10.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam5:e10",
+      "templateId": "t12"
+    },
+    {
+      "id": "fixture.v1:t13:e01",
+      "label": "Driver 01 does thing 13",
+      "description": "Template t13 expanded for entity e01.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e01",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e02",
+      "label": "Driver 02 does thing 13",
+      "description": "Template t13 expanded for entity e02.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e02",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e03",
+      "label": "Driver 03 does thing 13",
+      "description": "Template t13 expanded for entity e03.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e03",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e04",
+      "label": "Driver 04 does thing 13",
+      "description": "Template t13 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e04",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e05",
+      "label": "Driver 05 does thing 13",
+      "description": "Template t13 expanded for entity e05.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e05",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e06",
+      "label": "Driver 06 does thing 13",
+      "description": "Template t13 expanded for entity e06.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e06",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e07",
+      "label": "Driver 07 does thing 13",
+      "description": "Template t13 expanded for entity e07.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e07",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e08",
+      "label": "Driver 08 does thing 13",
+      "description": "Template t13 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e08",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e09",
+      "label": "Driver 09 does thing 13",
+      "description": "Template t13 expanded for entity e09.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e09",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t13:e10",
+      "label": "Driver 10 does thing 13",
+      "description": "Template t13 expanded for entity e10.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam6:e10",
+      "templateId": "t13"
+    },
+    {
+      "id": "fixture.v1:t14:e01",
+      "label": "Driver 01 does thing 14",
+      "description": "Template t14 expanded for entity e01.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e01",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e02",
+      "label": "Driver 02 does thing 14",
+      "description": "Template t14 expanded for entity e02.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e02",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e03",
+      "label": "Driver 03 does thing 14",
+      "description": "Template t14 expanded for entity e03.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e03",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e04",
+      "label": "Driver 04 does thing 14",
+      "description": "Template t14 expanded for entity e04.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e04",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e05",
+      "label": "Driver 05 does thing 14",
+      "description": "Template t14 expanded for entity e05.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e05",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e06",
+      "label": "Driver 06 does thing 14",
+      "description": "Template t14 expanded for entity e06.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e06",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e07",
+      "label": "Driver 07 does thing 14",
+      "description": "Template t14 expanded for entity e07.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e07",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e08",
+      "label": "Driver 08 does thing 14",
+      "description": "Template t14 expanded for entity e08.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e08",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e09",
+      "label": "Driver 09 does thing 14",
+      "description": "Template t14 expanded for entity e09.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e09",
+      "templateId": "t14"
+    },
+    {
+      "id": "fixture.v1:t14:e10",
+      "label": "Driver 10 does thing 14",
+      "description": "Template t14 expanded for entity e10.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroup": "fam0:e10",
+      "templateId": "t14"
+    }
+  ]
+}

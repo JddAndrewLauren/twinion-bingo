@@ -25,13 +25,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # First, not last: @twinion-bingo/theme resolves to its emitted dist/, so
+      # typechecking, linting and testing apps/api all need it built.
+      - run: pnpm build
+
       - run: pnpm typecheck
 
       - run: pnpm lint
 
       - run: pnpm test
-
-      - run: pnpm build
 
   # The image build is the other thing no test covers, and the only time it has
   # broken it broke during a deploy. Build only, from the repo root as the build
@@ -80,6 +82,9 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # apps/api imports the theme package, which ships emitted JS.
+      - run: pnpm --filter @twinion-bingo/theme build
 
       - run: pnpm --filter @twinion-bingo/api db:migrate
 

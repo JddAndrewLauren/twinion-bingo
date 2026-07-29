@@ -37,7 +37,7 @@ export type RoomEvent = {
  * scope here), or a cursor that does not advance past an unfilled gap. That is
  * #8's problem, and #8 should not inherit the stronger claim.
  */
-const SETTLE_MS = 250;
+export const SETTLE_MS = 250;
 
 /** A cap so a two-hour room's backlog arrives in pages rather than one write. */
 const PAGE_SIZE = 500;

@@ -78,6 +78,37 @@ describe('cross-origin access', () => {
     expect(res.headers.get('access-control-allow-origin')).toBeNull();
   });
 
+  /**
+   * The SSE route is the one the browser holds open for two hours, and it is the
+   * one whose CORS failure is silent: `EventSource` reports a bare `error` event
+   * with no status and no message, so a missing header looks like a network
+   * blip. Both of these reach the stream route rather than `/health` — the 400
+   * shape check runs before the route touches the database, which is why they
+   * belong here rather than in the DB-backed suite.
+   */
+  it('lets the web app open the room stream from the browser', async () => {
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
+
+    const res = await app.request('/rooms/ABC0/stream', {
+      headers: { Origin: 'https://twinion-bingo-web.vercel.app' },
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.headers.get('access-control-allow-origin')).toBe(
+      'https://twinion-bingo-web.vercel.app',
+    );
+  });
+
+  it('refuses to let a foreign origin open the room stream', async () => {
+    const app = createApp({ allowedOrigins, db: unconnectedDb() });
+
+    const res = await app.request('/rooms/ABC0/stream', {
+      headers: { Origin: 'https://evil.example' },
+    });
+
+    expect(res.headers.get('access-control-allow-origin')).toBeNull();
+  });
+
   it('answers the preflight a JSON POST triggers', async () => {
     const app = createApp({ allowedOrigins, db: unconnectedDb() });
 
