@@ -56,12 +56,22 @@ pointing at a square that no longer exists. Every fault in a run is reported tog
 
 ## The one rule the build does not enforce
 
-**No unbreakable run in a label over 10 characters** — a word, or a word with its punctuation
-attached. The 30-character cap is about the whole label; this is about a single token, and it is
-the tighter constraint. A card cell stops growing at ~77px while its text does not, so an 11-character
-word overflows *horizontally* on `ipad-11-*`. That is a live defect, tracked as #47, and until it is
-fixed the pool works around it: see the reading in `docs/SURFACES.md`. Count the quote marks and the
-exclamation mark — `Dangerous!"` is eleven.
+**No unbreakable run in a label over 10 characters.** The 30-character cap is about the whole label;
+this is about a single run inside it, and it is the tighter constraint. A card cell stops growing at
+~77px while its text does not, so an 11-character run overflows *horizontally* on `ipad-11-*`. That
+is a live defect, tracked as #47, and until it is fixed the pool works around it: see the reading in
+`docs/SURFACES.md`.
+
+An **unbreakable run** is the text between one wrap opportunity and the next, which is not the same
+as a word:
+
+- A **space** breaks.
+- A **hyphen** breaks, after it — a browser may wrap `Re-Explained` as `Re-` / `Explained`, so that
+  label's longest run is 9, not 12. Same for `5-Second` and `A-List`.
+- **Punctuation hanging off a word does not break.** Count the quote marks, the exclamation mark and
+  the full stop as part of the run they touch: `Dangerous!"` is eleven, and so is over the line.
+
+So the measurement is: split each label on whitespace and hyphens, and take the longest piece.
 
 ## Status
 

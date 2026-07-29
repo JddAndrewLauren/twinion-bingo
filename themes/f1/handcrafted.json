@@ -219,7 +219,7 @@
     },
     {
       "key": "engineer_were_looking",
-      "label": "Engineer: \"We're Looking\"",
+      "label": "Engineer Says \"We're Looking\"",
       "description": "The classic stalling answer: \"we're looking into it\", \"we'll come back to you\".",
       "tier": "certain",
       "exclusivityGroup": "radio:stalling"
@@ -310,7 +310,7 @@
     },
     {
       "key": "stewards_baffle_booth",
-      "label": "Ruling Baffles the Booth",
+      "label": "Steward Decision Baffles Booth",
       "description": "Commentary is openly confused by a stewards' ruling.",
       "tier": "medium",
       "exclusivityGroup": "broadcast:steward_confusion"
@@ -465,7 +465,7 @@
     {
       "key": "orange_smoke",
       "label": "Orange Smoke in Grandstand",
-      "description": "Verstappen fans light flares or smoke in the grandstand.",
+      "description": "Verstappen fans light flares/smoke. Track-dependent — strongest in Europe.",
       "tier": "medium",
       "exclusivityGroup": "crowd:orange_smoke"
     },
