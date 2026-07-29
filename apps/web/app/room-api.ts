@@ -25,10 +25,30 @@ export type Game = {
   freeCentre: string;
   /** This player's 24 earnable squares; null for a browser holding no token. */
   card: CardSquare[] | null;
+  /**
+   * Which of `card`'s square ids are marked. Derived server-side from the call
+   * log on every read and stored nowhere — so this is always the whole truth,
+   * never a patch to apply on top of one, which is what makes a phone that slept
+   * through a stint come back to exactly the card everyone else is looking at.
+   */
+  marks: string[];
+  /**
+   * How far down the room's log `marks` accounts for, in stream event ids. Held
+   * next to the stream this browser opens: a frame above it is news, a frame at
+   * or below it is replay the snapshot already includes.
+   */
+  streamedThroughSeq: number;
 };
 
 /** The fields of a `room_events` row the web app reads; a frame carries more. */
-export type RoomEvent = { seq: number; kind: string };
+export type RoomEvent = {
+  seq: number;
+  kind: string;
+  /** Who did it, named against the roster to credit a call's spotter. */
+  actorPlayerId?: string;
+  /** The square a CALL is about; null on the kinds that are not about one. */
+  squareId?: string | null;
+};
 
 /** Undefined rather than a throw: an unknown code is a normal thing to type. */
 export async function fetchRoster(
@@ -97,6 +117,38 @@ export async function startGame(
   if (!res.ok) throw new Error(`starting a game in ${code} failed: ${res.status}`);
 
   return (await res.json()) as Game;
+}
+
+/**
+ * Tap a square you hold and it marks for everyone holding it (D1). Nothing comes
+ * back that the screen renders: the square marks because the next read of the
+ * game says so, on this phone by the same path as on everyone else's.
+ *
+ * A 409-shaped race is not a failure here — the API answers a losing tap with the
+ * call that won, so the only errors left are a square that is not on this card
+ * and an API that could not be reached.
+ */
+export async function callSquare(
+  apiUrl: string,
+  gameId: string,
+  squareId: string,
+  token: string,
+): Promise<void> {
+  const res = await fetch(
+    `${apiUrl}/games/${encodeURIComponent(gameId)}/call`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ square_id: squareId }),
+    },
+  );
+
+  if (!res.ok) {
+    throw new Error(`calling ${squareId} failed: ${res.status}`);
+  }
 }
 
 /**

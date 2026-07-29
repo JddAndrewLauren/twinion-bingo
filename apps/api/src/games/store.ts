@@ -1,8 +1,11 @@
 import { randomBytes } from 'node:crypto';
 import type { Pool } from '@twinion-bingo/theme';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, notExists } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { Db } from '../db/client.js';
+import { isUniqueViolation } from '../db/errors.js';
 import { cards, games, players, roomEvents, rooms } from '../db/schema.js';
+import { settledHeadSeq } from '../rooms/events.js';
 import { RoomNotFound } from '../rooms/store.js';
 import { composeDeck, dealCard } from './deck.js';
 import { poolFor } from './pools.js';
@@ -22,6 +25,19 @@ export class GameAlreadyLive extends Error {
   }
 }
 
+/**
+ * Call scope is card-only for players (D7): a mark is monotonically good for you,
+ * so under card-only calling you always call the moment you spot it. Opening
+ * calling to the whole deck would pay you to stay quiet about a square you do not
+ * hold. The host's unrestricted deck sheet is a separate slice.
+ */
+export class NotOnYourCard extends Error {
+  constructor(squareId: string) {
+    super(`square ${squareId} is not on your card`);
+    this.name = 'NotOnYourCard';
+  }
+}
+
 /** A card as it renders: the square's prose, plus the theme's free centre. */
 export type CardSquare = {
   id: string;
@@ -37,6 +53,29 @@ export type GameView = {
   freeCentre: string;
   /** This player's 24 earnable squares, or null for someone not in the room. */
   card: CardSquare[] | null;
+  /**
+   * Which of `card`'s squares are marked, computed here and stored nowhere: the
+   * card's square ids intersected with the game's live CALLs. Sending the derived
+   * answer rather than the log is also what makes a reconnecting device exact —
+   * it re-reads the whole truth instead of accumulating frames it might have
+   * missed.
+   */
+  marks: string[];
+  /**
+   * How far down the room's log these marks account for, in stream event ids. A
+   * device holds it next to the stream it opens: a frame above this is news, a
+   * frame at or below it is replay the snapshot already includes.
+   */
+  streamedThroughSeq: number;
+};
+
+/** The row a call resolved to, whether this request wrote it or lost the race. */
+export type CallResult = {
+  seq: number;
+  squareId: string;
+  actorPlayerId: string;
+  /** False when another device's identical call was already in the log. */
+  appended: boolean;
 };
 
 /**
@@ -127,6 +166,10 @@ export async function startGame(
     state: 'live',
     freeCentre: pool.freeCentre,
     card: mine === undefined ? null : describeCard(pool, mine.squareIds),
+    // A game one transaction old has no calls, and the empty list is the derived
+    // answer rather than a placeholder for one.
+    marks: [],
+    streamedThroughSeq: await settledHeadSeq(db, code),
   };
 }
 
@@ -170,7 +213,166 @@ export async function readGame(
     state: game.state,
     freeCentre: pool.freeCentre,
     card: hand === undefined ? null : describeCard(pool, hand.squareIds),
+    marks:
+      hand === undefined ? [] : await markedSquares(db, game.id, hand.squareIds),
+    streamedThroughSeq: await settledHeadSeq(db, code),
   };
+}
+
+/**
+ * The one formula the whole design follows from:
+ *
+ *     marks(player) = card.square_ids ∩ {CALLs not superseded by a RETRACT}
+ *
+ * Computed on every read and written down nowhere. That is what buys free
+ * reconnect, correct late joiners and cheap corrections — a stored mark would be
+ * a second description of what is marked, and the two would eventually disagree.
+ *
+ * The order is the card's, not the log's, so a caller can line marks up against
+ * the cells it already has.
+ */
+export async function markedSquares(
+  db: Db,
+  gameId: string,
+  squareIds: string[],
+): Promise<string[]> {
+  const called = await calledSquares(db, gameId);
+
+  return squareIds.filter((id) => called.has(id));
+}
+
+/**
+ * The game's live calls. A RETRACT names the CALL it supersedes by `target_seq`
+ * (D8), so the correction is an appended row and the call it undoes stays in the
+ * log — deleting it would break `Last-Event-ID` replay for every device that had
+ * already seen it.
+ */
+async function calledSquares(db: Db, gameId: string): Promise<Set<string>> {
+  const retraction = alias(roomEvents, 'retraction');
+
+  const rows = await db
+    .select({ squareId: roomEvents.squareId })
+    .from(roomEvents)
+    .where(
+      and(
+        eq(roomEvents.gameId, gameId),
+        eq(roomEvents.kind, 'CALL'),
+        notExists(
+          db
+            .select({ seq: retraction.seq })
+            .from(retraction)
+            .where(
+              and(
+                eq(retraction.kind, 'RETRACT'),
+                eq(retraction.targetSeq, roomEvents.seq),
+              ),
+            ),
+        ),
+      ),
+    );
+
+  return new Set(
+    rows
+      .map((row) => row.squareId)
+      .filter((id): id is string => id !== null),
+  );
+}
+
+/**
+ * First-to-spot calls it for everyone (D1). One appended CALL row is the whole
+ * write: every card holding that square marks because the derivation says so, and
+ * every device finds out from the stream it is already holding.
+ *
+ * Two phones tapping the same square in the same tick both get here. The partial
+ * unique index on `(game_id, square_id) WHERE kind = 'CALL'` makes exactly one of
+ * them a row and the other a 23505, and the loser is handed the winning row —
+ * because from the player's side nothing went wrong: the square they spotted is
+ * marked, which is all they were asking for.
+ */
+export async function callSquare(
+  db: Db,
+  gameId: string,
+  playerId: string,
+  squareId: string,
+): Promise<CallResult> {
+  const [hand] = await db
+    .select({ squareIds: cards.squareIds, roomCode: games.roomCode })
+    .from(cards)
+    .innerJoin(games, eq(games.id, cards.gameId))
+    .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+
+  if (hand === undefined) throw new NotOnYourCard(squareId);
+  if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
+
+  try {
+    const [appended] = await db
+      .insert(roomEvents)
+      .values({
+        roomCode: hand.roomCode,
+        gameId,
+        actorPlayerId: playerId,
+        kind: 'CALL',
+        squareId,
+      })
+      .returning({ seq: roomEvents.seq });
+
+    if (appended === undefined) throw new Error('appending CALL added no row');
+
+    return {
+      seq: Number(appended.seq),
+      squareId,
+      actorPlayerId: playerId,
+      appended: true,
+    };
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+
+    return readCall(db, gameId, squareId);
+  }
+}
+
+/** The CALL already in the log for this square — the winner of a tied race. */
+async function readCall(
+  db: Db,
+  gameId: string,
+  squareId: string,
+): Promise<CallResult> {
+  const [existing] = await db
+    .select({ seq: roomEvents.seq, actorPlayerId: roomEvents.actorPlayerId })
+    .from(roomEvents)
+    .where(
+      and(
+        eq(roomEvents.gameId, gameId),
+        eq(roomEvents.kind, 'CALL'),
+        eq(roomEvents.squareId, squareId),
+      ),
+    );
+
+  if (existing === undefined) {
+    throw new Error(
+      `CALL for ${squareId} conflicted with a row that is not there`,
+    );
+  }
+
+  return {
+    seq: Number(existing.seq),
+    squareId,
+    actorPlayerId: existing.actorPlayerId,
+    appended: false,
+  };
+}
+
+/** The room a game belongs to, which is what scopes a player's token to it. */
+export async function roomCodeForGame(
+  db: Db,
+  gameId: string,
+): Promise<string | undefined> {
+  const [game] = await db
+    .select({ roomCode: games.roomCode })
+    .from(games)
+    .where(eq(games.id, gameId));
+
+  return game?.roomCode;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, lt, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, lt, max, sql } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
 import { roomEvents, rooms } from '../db/schema.js';
 
@@ -78,6 +78,33 @@ export function eventsAfterQuery(db: Db, code: string, afterSeq: number) {
     )
     .orderBy(asc(roomEvents.seq))
     .limit(PAGE_SIZE);
+}
+
+/**
+ * The highest `seq` the stream would already have delivered — the same horizon
+ * `eventsAfterQuery` reads up to, hold-back included.
+ *
+ * A device that has just read a snapshot needs this to tell a frame announcing
+ * something new from a frame replaying something the snapshot already accounted
+ * for. On a first connection `Last-Event-ID` is absent and the room's whole log
+ * arrives at once, so without a horizon every call ever made looks live.
+ *
+ * It has to be the *settled* head rather than `max(seq)`: matching the stream's
+ * own cut-off is what makes "the stream will deliver this row as new" and "this
+ * row is above the horizon" the same statement.
+ */
+export async function settledHeadSeq(db: Db, code: string): Promise<number> {
+  const [head] = await db
+    .select({ seq: max(roomEvents.seq) })
+    .from(roomEvents)
+    .where(
+      and(
+        eq(roomEvents.roomCode, code),
+        lt(roomEvents.at, sql`now() - ${`${SETTLE_MS} milliseconds`}::interval`),
+      ),
+    );
+
+  return head?.seq === null || head?.seq === undefined ? 0 : Number(head.seq);
 }
 
 export async function readEventsAfter(

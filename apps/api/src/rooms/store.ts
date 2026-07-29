@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { and, asc, eq } from 'drizzle-orm';
 import type { Db } from '../db/client.js';
+import { isUniqueViolation } from '../db/errors.js';
 import { players, roomEvents, rooms } from '../db/schema.js';
 import { defaultThemeId } from '../games/pools.js';
 import { generateRoomCode } from './codes.js';
@@ -174,26 +175,4 @@ async function addPlayer(
     .where(eq(players.id, inserted.id));
 
   return { code, token, player: { id: inserted.id, name, joinSeq } };
-}
-
-/**
- * Postgres reports a duplicate room code as SQLSTATE 23505. Drizzle wraps driver
- * errors, so the code can sit a few links down the `cause` chain.
- */
-function isUniqueViolation(error: unknown): boolean {
-  let current: unknown = error;
-
-  for (let depth = 0; depth < 5 && current !== null && current !== undefined; depth += 1) {
-    if (
-      typeof current === 'object' &&
-      'code' in current &&
-      current.code === '23505'
-    ) {
-      return true;
-    }
-
-    current = (current as { cause?: unknown }).cause;
-  }
-
-  return false;
 }
