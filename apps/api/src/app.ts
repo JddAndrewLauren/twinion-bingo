@@ -23,7 +23,7 @@ export function createApp(config: AppConfig) {
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
-  app.route('/', createRoomRoutes(config.db));
+  app.route('/', createRoomRoutes(config.db, pools));
   app.route('/', createGameRoutes(config.db, pools));
   app.route('/', createStreamRoutes(config.db, config.streamTimings));
 

@@ -1,8 +1,10 @@
 import { randomBytes } from 'node:crypto';
+import type { Pool } from '@twinion-bingo/theme';
 import { and, asc, eq } from 'drizzle-orm';
-import type { Db } from '../db/client.js';
+import type { Db, Tx } from '../db/client.js';
 import { isUniqueViolation } from '../db/errors.js';
 import { players, roomEvents, rooms } from '../db/schema.js';
+import { dealLateJoinCard } from '../games/late-join.js';
 import { defaultThemeId } from '../games/pools.js';
 import { generateRoomCode } from './codes.js';
 
@@ -17,8 +19,6 @@ const DEFAULT_THEME_ID = defaultThemeId();
 const CODE_ATTEMPTS = 8;
 
 const MAX_NAME_LENGTH = 24;
-
-type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export type Player = { id: string; name: string; joinSeq: number };
 
@@ -81,8 +81,14 @@ export async function createRoom(db: Db, name: string): Promise<JoinResult> {
   );
 }
 
+/**
+ * Joining mid-game deals the newcomer in rather than parking them in a lobby the
+ * room has already left, so the join and the deal are one transaction — see
+ * `dealLateJoinCard`.
+ */
 export async function joinRoom(
   db: Db,
+  pools: Map<string, Pool>,
   code: string,
   name: string,
 ): Promise<JoinResult> {
@@ -94,7 +100,11 @@ export async function joinRoom(
 
     if (room === undefined) throw new RoomNotFound(code);
 
-    return addPlayer(tx, code, name);
+    const joined = await addPlayer(tx, code, name);
+
+    await dealLateJoinCard(tx, pools, code, joined.player.id);
+
+    return joined;
   });
 }
 
