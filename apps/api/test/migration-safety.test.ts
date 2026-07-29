@@ -25,6 +25,25 @@ describe('drizzle config isolation', () => {
   it('keeps its own migration output directory', () => {
     expect(config.out).toBe('./drizzle');
   });
+
+  /**
+   * The other half of the isolation guarantee, and the half that is easy to lose
+   * because it lives in a different file. `schemaFilter` governs what drizzle-kit
+   * *diffs*; it says nothing about where the migrator journals what it applied,
+   * which defaults to a `drizzle` schema that twinion's chain in this shared
+   * database would also claim. Two projects sharing one `__drizzle_migrations`
+   * table is worse than no isolation, so `migrate()` is passed
+   * `migrationsSchema: 'bingo'` — asserted against the source because
+   * `migrate.ts` is a script that runs its migration on import.
+   */
+  it('journals applied migrations inside the bingo schema', () => {
+    const migrator = readFileSync(
+      fileURLToPath(new URL('../src/db/migrate.ts', import.meta.url)),
+      'utf8',
+    );
+
+    expect(migrator).toMatch(/migrationsSchema:\s*'bingo'/);
+  });
 });
 
 describe('emitted migration SQL', () => {
