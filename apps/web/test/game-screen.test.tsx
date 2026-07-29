@@ -7,6 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PrizeAward, TimelineEntry } from '../app/room-api';
 import { RoomScreen } from '../app/r/[code]/room-screen';
 import { FakeEventSource } from './fake-event-source';
 
@@ -52,6 +53,10 @@ function stubRoom({
   you,
   liveFromTheStart = false,
   marks = [],
+  inheritedMarks = [],
+  prizes = [],
+  timeline = [],
+  gameState = 'live',
   streamedThroughSeq = 2,
   deck = false,
 }: {
@@ -59,6 +64,11 @@ function stubRoom({
   liveFromTheStart?: boolean;
   /** What the server's derivation already says is marked when this phone arrives. */
   marks?: Mark[];
+  /** The square ids among those called before this player joined — greyed. */
+  inheritedMarks?: string[];
+  prizes?: PrizeAward[];
+  timeline?: TimelineEntry[];
+  gameState?: string;
   /** How far down the log those marks account for — the toast's replay horizon. */
   streamedThroughSeq?: number;
   /**
@@ -72,7 +82,7 @@ function stubRoom({
 
   const view = () => ({
     id: 'game-id',
-    state: 'live',
+    state: gameState,
     freeCentre: 'LIGHTS OUT',
     card,
     deck: deck
@@ -86,6 +96,14 @@ function stubRoom({
         }
       : null,
     marks: [...state.marks],
+    inheritedMarks,
+    prizes,
+    // Raw mark count, which is what the API derives; the stub keeps it in step.
+    standings: [
+      { playerId: host.id, name: host.name, marks: state.marks.length },
+      { playerId: guest.id, name: guest.name, marks: 0 },
+    ],
+    timeline,
     streamedThroughSeq,
   });
 
@@ -863,5 +881,219 @@ describe('taking a call back', () => {
         screen.getByRole('button', { name: 'Square 7' }).getAttribute('aria-pressed'),
       ).toBe('false'),
     );
+  });
+});
+
+/** A mark as the API derives it: the square, and the CALL row that marked it. */
+const markOf = (index: number, seq: number, by = guest.id) => ({
+  squareId: `f1.v1:t:${index}`,
+  seq,
+  actorPlayerId: by,
+});
+
+/**
+ * The log-derived views: the ladder, the standings and the timeline. All three
+ * arrive with every read of the game, so nothing here is state the screen has to
+ * keep in step — which is the same reason a reconnect needs no catch-up path.
+ */
+describe('prizes, standings and the timeline', () => {
+  const prizes = [
+    { seq: 20, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' },
+    { seq: 31, prizeKind: 'TWO_LINES', playerId: host.id, name: 'Ash' },
+  ];
+
+  it('names each rung of the ladder and who won it, in order', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, prizes });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const list = (await screen.findByText('Prizes')).parentElement!;
+    expect(
+      [...list.querySelectorAll('li')].map((item) => item.textContent),
+    ).toEqual(['first line — Bea', 'two lines — Ash']);
+  });
+
+  it('ranks the room by raw mark count', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [markOf(1, 101), markOf(2, 102)],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const list = (await screen.findByText('Standings')).parentElement!;
+    expect(
+      [...list.querySelectorAll('li')].map((item) => item.textContent),
+    ).toEqual(['Ash2', 'Bea0']);
+  });
+
+  it('calls the standings final once the full house has closed the game', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, gameState: 'done' });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(await screen.findByText('Final standings')).toBeDefined();
+  });
+
+  /**
+   * Elapsed game time, not lap numbers, and newest first — what just happened is
+   * what a phone held at arm's length needs to see without scrolling.
+   */
+  it('stamps every call with elapsed time and credits its spotter', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      timeline: [
+        { seq: 8, squareId: 'f1.v1:t:3', elapsed: '+04:02', playerId: host.id, name: 'Ash' },
+        { seq: 14, squareId: 'f1.v1:t:9', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const list = (await screen.findByText('Timeline')).parentElement!;
+    expect(
+      [...list.querySelectorAll('li')].map((item) => item.textContent),
+    ).toEqual(['+42:10Bea spotted Square 9', '+04:02Ash spotted Square 3']);
+  });
+
+  /**
+   * Not a secrecy measure — the stream already ships `squareId` to every device.
+   * This is consistency with the spotter toast, and not shipping the whole deck
+   * to a client that holds 24 of it.
+   */
+  it('does not name a called square whose prose this device was not given', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      timeline: [
+        { seq: 8, squareId: 'f1.v1:t:999', elapsed: '+11:00', playerId: guest.id, name: 'Bea' },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const list = (await screen.findByText('Timeline')).parentElement!;
+    expect(
+      [...list.querySelectorAll('li')].map((item) => item.textContent),
+    ).toEqual(['+11:00Bea spotted a square']);
+  });
+});
+
+/**
+ * The greyed-line rule. A late joiner's card is correct for free — the same
+ * derivation everyone else's runs — but the marks it walked in on claim nothing,
+ * and the card has to say so before the prize goes elsewhere rather than after.
+ */
+describe('a late joiner`s card', () => {
+  it('greys the marks that were already there when they arrived', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [markOf(0, 101, host.id), markOf(1, 102, host.id), markOf(5, 103, guest.id)],
+      inheritedMarks: ['f1.v1:t:0', 'f1.v1:t:1'],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const grid = await screen.findByLabelText('Your card');
+
+    // All three read as marked; only the two they walked in on are greyed.
+    expect(grid.querySelectorAll('[aria-pressed="true"]')).toHaveLength(3);
+
+    const greyed = [...grid.querySelectorAll('[data-inherited="true"]')];
+    expect(greyed.map((cell) => cell.textContent)).toEqual([
+      'Square 0',
+      'Square 1',
+    ]);
+    // Greyed, not green — the earned one keeps the emerald the room reads as a win.
+    expect(greyed.every((cell) => cell.className.includes('emerald'))).toBe(false);
+    expect(
+      screen
+        .getByRole('button', { name: 'Square 5' })
+        .className.includes('emerald'),
+    ).toBe(true);
+  });
+
+  /**
+   * Greying is about who may win with a mark, not who may correct it. D8's
+   * retract paths compose with it rather than being overridden by it.
+   */
+  it('still lets the caller take back an inherited call of their own', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [markOf(0, 101, guest.id)],
+      inheritedMarks: ['f1.v1:t:0'],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const cell = await screen.findByRole('button', { name: 'Square 0' });
+    expect(cell.getAttribute('data-inherited')).toBe('true');
+    expect((cell as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('leaves an all-green card for someone who was here at lights out', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [markOf(0, 101, host.id)],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const grid = await screen.findByLabelText('Your card');
+    expect(grid.querySelectorAll('[data-inherited="true"]')).toHaveLength(0);
+  });
+});
+
+/**
+ * The disconnect criterion, on the client side of it. A first connection sends
+ * no `Last-Event-ID`, so the room's whole log replays at once — and prizes,
+ * standings and the timeline have to come back identical rather than
+ * accumulating a second copy of everything they already showed.
+ */
+describe('a replayed log', () => {
+  it('leaves the prizes, standings and timeline exactly as they were', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [markOf(7, 12)],
+      streamedThroughSeq: 12,
+      prizes: [{ seq: 11, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' }],
+      timeline: [
+        { seq: 12, squareId: 'f1.v1:t:7', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const read = async () => {
+      const panel = (await screen.findByText('Timeline')).parentElement!.parentElement!;
+
+      return [...panel.querySelectorAll('li')].map((item) => item.textContent);
+    };
+
+    const before = await read();
+    expect(before).toEqual([
+      'first line — Bea',
+      'Ash1',
+      'Bea0',
+      '+42:10Bea spotted Square 7',
+    ]);
+
+    // The replay of the very call the snapshot already accounts for.
+    act(() =>
+      stream().emit({
+        seq: 12,
+        kind: 'CALL',
+        actorPlayerId: guest.id,
+        squareId: 'f1.v1:t:7',
+      }),
+    );
+
+    await waitFor(async () => expect(await read()).toEqual(before));
   });
 });

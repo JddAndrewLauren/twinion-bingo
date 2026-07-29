@@ -1,3 +1,4 @@
+import type { Pool } from '@twinion-bingo/theme';
 import { Hono } from 'hono';
 import { bearerToken } from '../bearer.js';
 import type { Db } from '../db/client.js';
@@ -12,7 +13,7 @@ import {
   RoomNotFound,
 } from './store.js';
 
-export function createRoomRoutes(db: Db) {
+export function createRoomRoutes(db: Db, pools: Map<string, Pool>) {
   const routes = new Hono();
 
   routes.post('/rooms', async (c) => {
@@ -30,7 +31,7 @@ export function createRoomRoutes(db: Db) {
     if (name === undefined) return c.json({ error: 'name is required' }, 400);
 
     try {
-      return c.json(await joinRoom(db, code, name), 201);
+      return c.json(await joinRoom(db, pools, code, name), 201);
     } catch (error) {
       if (error instanceof RoomNotFound) {
         return c.json({ error: 'no room with that code' }, 404);

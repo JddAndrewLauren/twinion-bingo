@@ -1,14 +1,31 @@
 import { randomBytes } from 'node:crypto';
 import type { Pool } from '@twinion-bingo/theme';
-import { and, asc, desc, eq, notExists } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
-import type { Db } from '../db/client.js';
+import { and, asc, desc, eq } from 'drizzle-orm';
+import type { Db, Tx } from '../db/client.js';
 import { isUniqueViolation } from '../db/errors.js';
 import { cards, games, players, roomEvents, rooms } from '../db/schema.js';
 import { settledHeadSeq } from '../rooms/events.js';
 import { RoomNotFound } from '../rooms/store.js';
+import {
+  callsBySquare,
+  claimableSquares,
+  liveCalls,
+  type Mark,
+} from './calls.js';
 import { composeDeck, dealCard } from './deck.js';
 import { poolFor } from './pools.js';
+import {
+  readHands,
+  readPrizes,
+  settleWinLadder,
+  standings,
+  timeline,
+  type PrizeAward,
+  type Standing,
+  type TimelineEntry,
+} from './prizes.js';
+
+export type { Mark } from './calls.js';
 
 /** Only the host starts a game (D6); everyone else's start button is not shown. */
 export class NotHost extends Error {
@@ -47,6 +64,19 @@ export class NotInDeck extends Error {
   constructor(squareId: string) {
     super(`square ${squareId} is not in this game's deck`);
     this.name = 'NotInDeck';
+  }
+}
+
+/**
+ * The full house ends the session (D5), and a finished game takes no more
+ * writes — neither a call nor a correction. Checked under the same `FOR UPDATE`
+ * lock the ladder settles under, so a tap arriving in the same tick as the
+ * winning one is refused rather than landing after the standings went final.
+ */
+export class GameNotLive extends Error {
+  constructor(state: string) {
+    super(`this game is ${state}, not live`);
+    this.name = 'GameNotLive';
   }
 }
 
@@ -109,22 +139,28 @@ export type GameView = {
    */
   marks: Mark[];
   /**
+   * The square ids in `marks` this player cannot claim with: calls that landed
+   * before they joined. Empty for anyone who was in the room when the game
+   * started, which is everybody in the ordinary case.
+   *
+   * It is sent so the card can grey them. A line already complete when a late
+   * joiner arrived is theirs to look at and not to win with, and a cell that
+   * looked exactly like an earned one would make that rule arrive as a surprise
+   * at the moment the prize went elsewhere.
+   */
+  inheritedMarks: string[];
+  /** The win ladder as the log recorded it: who won which rung, in order (D5). */
+  prizes: PrizeAward[];
+  /** Every player by raw mark count, derived on read like everything else. */
+  standings: Standing[];
+  /** The race timeline: live calls, elapsed stamps, and who spotted each. */
+  timeline: TimelineEntry[];
+  /**
    * How far down the room's log these marks account for, in stream event ids. A
    * device holds it next to the stream it opens: a frame above this is news, a
    * frame at or below it is replay the snapshot already includes.
    */
   streamedThroughSeq: number;
-};
-
-/**
- * A marked square, and the CALL row that marked it. The seq is what a retraction
- * names (D8), and the actor is what decides which of D8's three paths a device
- * may offer: your own call, or anyone's if you are the host.
- */
-export type Mark = {
-  squareId: string;
-  seq: number;
-  actorPlayerId: string;
 };
 
 /** The row a call resolved to, whether this request wrote it or lost the race. */
@@ -184,7 +220,7 @@ export async function startGame(
   const deck = composeDeck(pool, seed);
 
   const roster = await db
-    .select({ id: players.id })
+    .select({ id: players.id, name: players.name })
     .from(players)
     .where(eq(players.roomCode, code))
     .orderBy(asc(players.joinSeq));
@@ -237,9 +273,22 @@ export async function startGame(
     // Whoever got this far is the host — `NotHost` is thrown above otherwise — so
     // the deck sheet comes back with the deal rather than waiting for a re-read.
     deck: { squares: describeCard(pool, deck.map((square) => square.id)), called: [] },
-    // A game one transaction old has no calls, and the empty list is the derived
-    // answer rather than a placeholder for one.
+    // A game one transaction old has no calls, so every one of these is the
+    // derived answer rather than a placeholder for one — the standings included,
+    // which is the whole roster on nothing.
     marks: [],
+    inheritedMarks: [],
+    prizes: [],
+    standings: standings(
+      dealt.map((hand) => ({
+        playerId: hand.playerId,
+        name: roster.find((player) => player.id === hand.playerId)!.name,
+        joinSeq: 0,
+        squareIds: hand.squareIds,
+      })),
+      [],
+    ),
+    timeline: [],
     streamedThroughSeq: await settledHeadSeq(db, code),
   };
 }
@@ -261,6 +310,7 @@ export async function readGame(
       id: games.id,
       themeId: games.themeId,
       state: games.state,
+      startedAt: games.startedAt,
       deck: games.deck,
       hostPlayerId: rooms.hostPlayerId,
     })
@@ -274,14 +324,6 @@ export async function readGame(
 
   const pool = poolFor(pools, game.themeId);
 
-  const [hand] =
-    playerId === undefined
-      ? []
-      : await db
-          .select({ squareIds: cards.squareIds })
-          .from(cards)
-          .where(and(eq(cards.gameId, game.id), eq(cards.playerId, playerId)));
-
   /**
    * The one formula the whole design follows from:
    *
@@ -291,7 +333,8 @@ export async function readGame(
    * reconnect, correct late joiners and cheap corrections — a stored mark would
    * be a second description of what is marked, and the two would eventually
    * disagree. The deck sheet's called state is the same intersection taken
-   * against the deck instead of a card, so both come off one read of the log.
+   * against the deck instead of a card, and the prizes, standings and timeline
+   * below are the same log read again — so all of them come off one query.
    *
    * The order is the card's (and the deck's), not the log's, so a caller can line
    * the answer up against the cells it already has.
@@ -299,8 +342,37 @@ export async function readGame(
    * A mark carries the CALL row that made it, not just the square id, because a
    * correction has to name that row by `seq` and a device cannot learn a seq
    * anywhere else (D8). The deck sheet wants only the ids, so it takes the keys.
+   *
+   * Reading all of it here rather than accumulating any of it is what makes the
+   * disconnect criterion hold with no catch-up path: a device that slept through
+   * a stint re-reads the whole derived answer instead of replaying its way to one.
    */
-  const called = await calledSquares(db, game.id);
+  const [calls, hands, prizes, streamedThroughSeq] = await Promise.all([
+    liveCalls(db, game.id),
+    readHands(db, game.id),
+    readPrizes(db, game.id),
+    settledHeadSeq(db, code),
+  ]);
+
+  const called = callsBySquare(calls);
+  const hand = hands.find((candidate) => candidate.playerId === playerId);
+
+  const marks =
+    hand === undefined
+      ? []
+      : hand.squareIds
+          .map((id) => called.get(id))
+          .filter((mark): mark is Mark => mark !== undefined);
+
+  /**
+   * Win detection counts only calls at or after this player's `join_seq`, so a
+   * mark they walked in on is theirs to look at and not to win with. The card
+   * greys exactly this set.
+   */
+  const claimable =
+    hand === undefined
+      ? new Set<string>()
+      : claimableSquares(hand.squareIds, calls, hand.joinSeq);
 
   return {
     id: game.id,
@@ -314,72 +386,15 @@ export async function readGame(
             called: game.deck.filter((id) => called.has(id)),
           }
         : null,
-    marks:
-      hand === undefined
-        ? []
-        : hand.squareIds
-            .map((id) => called.get(id))
-            .filter((mark): mark is Mark => mark !== undefined),
-    streamedThroughSeq: await settledHeadSeq(db, code),
+    marks,
+    inheritedMarks: marks
+      .map((mark) => mark.squareId)
+      .filter((id) => !claimable.has(id)),
+    prizes,
+    standings: standings(hands, calls),
+    timeline: timeline(hands, calls, game.startedAt),
+    streamedThroughSeq,
   };
-}
-
-/**
- * The game's live calls, each keyed by the square it marked and carrying the row
- * that marked it. A RETRACT names the CALL it supersedes by `target_seq` (D8), so
- * the correction is an appended row and the call it undoes stays in the log —
- * deleting it would break `Last-Event-ID` replay for every device that had
- * already seen it.
- *
- * The call's `seq` and actor come back with it because a correction needs both:
- * `POST /games/:id/retract` names the CALL by `seq`, and whether a device may
- * offer that correction at all turns on who made it.
- */
-async function calledSquares(
-  db: Db,
-  gameId: string,
-): Promise<Map<string, Mark>> {
-  const retraction = alias(roomEvents, 'retraction');
-
-  const rows = await db
-    .select({
-      seq: roomEvents.seq,
-      squareId: roomEvents.squareId,
-      actorPlayerId: roomEvents.actorPlayerId,
-    })
-    .from(roomEvents)
-    .where(
-      and(
-        eq(roomEvents.gameId, gameId),
-        eq(roomEvents.kind, 'CALL'),
-        notExists(
-          db
-            .select({ seq: retraction.seq })
-            .from(retraction)
-            .where(
-              and(
-                eq(retraction.kind, 'RETRACT'),
-                eq(retraction.targetSeq, roomEvents.seq),
-              ),
-            ),
-        ),
-      ),
-    );
-
-  return new Map(
-    rows
-      .filter((row): row is typeof row & { squareId: string } =>
-        row.squareId !== null,
-      )
-      .map((row) => [
-        row.squareId,
-        {
-          squareId: row.squareId,
-          seq: Number(row.seq),
-          actorPlayerId: row.actorPlayerId,
-        },
-      ]),
-  );
 }
 
 /**
@@ -397,6 +412,9 @@ async function calledSquares(
  * from the deck sheet, and everything downstream of the scope check is the same
  * row, the same fanout and the same credit. That includes losing the race — a
  * host calling a square a player already called is handed the winning row too.
+ *
+ * The row and the prizes it earns are appended together, under a lock on the
+ * game — see the transaction below.
  */
 export async function callSquare(
   db: Db,
@@ -429,30 +447,60 @@ export async function callSquare(
   }
 
   try {
-    const [appended] = await db
-      .insert(roomEvents)
-      .values({
-        roomCode: game.roomCode,
-        gameId,
-        actorPlayerId: playerId,
-        kind: 'CALL',
+    return await db.transaction(async (tx) => {
+      await assertLive(tx, gameId);
+
+      const [appended] = await tx
+        .insert(roomEvents)
+        .values({
+          roomCode: game.roomCode,
+          gameId,
+          actorPlayerId: playerId,
+          kind: 'CALL',
+          squareId,
+        })
+        .returning({ seq: roomEvents.seq });
+
+      if (appended === undefined) throw new Error('appending CALL added no row');
+
+      // Same transaction as the call that earned them: a prize written
+      // afterwards could be lost to a crash, and unlike a mark it is not
+      // recomputed on the next read, so there would be nothing to heal it.
+      await settleWinLadder(tx, game.roomCode, gameId);
+
+      return {
+        seq: Number(appended.seq),
         squareId,
-      })
-      .returning({ seq: roomEvents.seq });
-
-    if (appended === undefined) throw new Error('appending CALL added no row');
-
-    return {
-      seq: Number(appended.seq),
-      squareId,
-      actorPlayerId: playerId,
-      appended: true,
-    };
+        actorPlayerId: playerId,
+        appended: true,
+      };
+    });
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
 
     return readCall(db, gameId, squareId);
   }
+}
+
+/**
+ * Locks the game row and refuses anything but a live game — the check and the
+ * lock in one statement, because they are the same concern.
+ *
+ * `FOR UPDATE` serialises a single game's writes, which is what lets the ladder
+ * read "has this rung been won yet" and act on the answer: two concurrent calls
+ * each finding a rung unclaimed would award it twice. It also makes the state
+ * check exact rather than advisory, for the call and the retraction alike. A
+ * room is six phones, so the contention this costs is nothing.
+ */
+async function assertLive(tx: Tx, gameId: string): Promise<void> {
+  const [game] = await tx
+    .select({ state: games.state })
+    .from(games)
+    .where(eq(games.id, gameId))
+    .for('update');
+
+  if (game === undefined) throw new Error(`no game with id ${gameId}`);
+  if (game.state !== 'live') throw new GameNotLive(game.state);
 }
 
 /** The CALL already in the log for this square — the winner of a tied race. */
@@ -500,9 +548,17 @@ async function readCall(
  *
  * A call that is already retracted is not retracted twice. There is no unique
  * index to make that airtight and a duplicate RETRACT would derive the same
- * marks anyway, so this is about the timeline #11 reads out of the log, which
- * should not say the same call was taken back twice because two thumbs landed
- * together.
+ * marks anyway, so this is about the timeline read out of the log, which should
+ * not say the same call was taken back twice because two thumbs landed together.
+ *
+ * A finished game takes no correction either, under the same lock a call takes.
+ * The full house is a one-way door and PRIZE rows are appended facts rather than
+ * derived ones: retracting the winning call would leave the log asserting a full
+ * house that its own calls no longer support, in a game already refusing the
+ * calls that could rebuild it. Refusing keeps the log self-consistent, and the
+ * room's way forward is a new game rather than a rewritten finished one — the
+ * alternative, reopening a `done` game, means reversing appended prizes, which
+ * is a design change and not a correction.
  */
 export async function retractCall(
   db: Db,
@@ -556,26 +612,32 @@ export async function retractCall(
     };
   }
 
-  const [appended] = await db
-    .insert(roomEvents)
-    .values({
-      roomCode: target.roomCode,
-      gameId,
+  const squareId = target.squareId;
+
+  return db.transaction(async (tx) => {
+    await assertLive(tx, gameId);
+
+    const [appended] = await tx
+      .insert(roomEvents)
+      .values({
+        roomCode: target.roomCode,
+        gameId,
+        actorPlayerId: playerId,
+        kind: 'RETRACT',
+        targetSeq: BigInt(targetSeq),
+      })
+      .returning({ seq: roomEvents.seq });
+
+    if (appended === undefined) throw new Error('appending RETRACT added no row');
+
+    return {
+      seq: Number(appended.seq),
+      targetSeq,
+      squareId,
       actorPlayerId: playerId,
-      kind: 'RETRACT',
-      targetSeq: BigInt(targetSeq),
-    })
-    .returning({ seq: roomEvents.seq });
-
-  if (appended === undefined) throw new Error('appending RETRACT added no row');
-
-  return {
-    seq: Number(appended.seq),
-    targetSeq,
-    squareId: target.squareId,
-    actorPlayerId: playerId,
-    appended: true,
-  };
+      appended: true,
+    };
+  });
 }
 
 /** The room a game belongs to, which is what scopes a player's token to it. */

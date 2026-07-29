@@ -49,6 +49,25 @@ export type CallResult = {
   appended: boolean;
 };
 
+/** A rung of the win ladder, as the log recorded it: who won what, and when. */
+export type PrizeAward = {
+  seq: number;
+  prizeKind: string;
+  playerId: string;
+  name: string;
+};
+
+export type Standing = { playerId: string; name: string; marks: number };
+
+export type TimelineEntry = {
+  seq: number;
+  squareId: string;
+  /** Elapsed game time, `+42:10` — wall-clock since the host started it. */
+  elapsed: string;
+  playerId: string;
+  name: string;
+};
+
 export type Game = {
   id: string;
   state: string;
@@ -65,6 +84,17 @@ export type Game = {
    * through a stint come back to exactly the card everyone else is looking at.
    */
   marks: Mark[];
+  /**
+   * The square ids in `marks` this player cannot claim with: calls that landed
+   * before they joined. Empty for everyone who was here at lights out.
+   */
+  inheritedMarks: string[];
+  /** The win ladder as the log recorded it, in the order it was climbed. */
+  prizes: PrizeAward[];
+  /** Every player by raw mark count, derived server-side on every read. */
+  standings: Standing[];
+  /** The race timeline: live calls with elapsed stamps and their spotter. */
+  timeline: TimelineEntry[];
   /**
    * How far down the room's log `marks` accounts for, in stream event ids. Held
    * next to the stream this browser opens: a frame above it is news, a frame at

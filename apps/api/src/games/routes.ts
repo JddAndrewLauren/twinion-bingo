@@ -10,6 +10,7 @@ import {
   callSquare,
   CallNotFound,
   GameAlreadyLive,
+  GameNotLive,
   NotHost,
   NotInDeck,
   NotOnYourCard,
@@ -136,6 +137,13 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
       if (error instanceof NotInDeck) {
         return c.json({ error: "that square is not in this game's deck" }, 403);
       }
+      /**
+       * The full house closed the session (D5). 409 rather than 403: nothing is
+       * wrong with who is asking or what they tapped, the game is simply over.
+       */
+      if (error instanceof GameNotLive) {
+        return c.json({ error: 'this game has finished' }, 409);
+      }
       throw error;
     }
   });
@@ -188,6 +196,13 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
           { error: 'only the caller or the host can retract that call' },
           403,
         );
+      }
+      /**
+       * The full house closed the session (D5). 409 rather than 403: nothing is
+       * wrong with who is asking or what they tapped, the game is simply over.
+       */
+      if (error instanceof GameNotLive) {
+        return c.json({ error: 'this game has finished' }, 409);
       }
       throw error;
     }

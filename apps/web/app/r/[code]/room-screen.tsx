@@ -17,6 +17,7 @@ import {
 } from '../../room-api';
 import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
+import { Results } from './results';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
@@ -403,6 +404,7 @@ export function RoomScreen({
             card={game.card}
             freeCentre={game.freeCentre}
             marks={game.marks}
+            inheritedMarks={game.inheritedMarks}
             onCall={call}
             canRetract={canRetract}
             onRetract={setConfirming}
@@ -415,6 +417,7 @@ export function RoomScreen({
         )}
         {callFailed && <p role="alert">Could not call that square.</p>}
         {retractFailed && <p role="alert">Could not take that call back.</p>}
+        <Results game={game} />
         {/**
          * The bottom slot, which two different pieces of news share: #8's credit
          * for whoever spotted a call, and D8's undo for the call this phone just
