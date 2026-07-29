@@ -13,7 +13,7 @@ import {
   dealCard,
   type Deck,
 } from '../src/games/deck.js';
-import { loadPoolRegistry, poolFor, themesRoot } from '../src/games/pools.js';
+import { defaultThemeId, loadPoolRegistry, poolFor, themesRoot } from '../src/games/pools.js';
 
 /**
  * The pool #7's numbers were written against does not exist yet — #16 authors the
@@ -199,7 +199,7 @@ describe('composing a deck', () => {
  * will notice: it should start failing, and become a passing composition test.
  */
 describe('composing a deck from the real F1 pool', () => {
-  const f1 = poolFor(loadPoolRegistry(themesRoot()), 'f1.v1');
+  const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
 
   it('refuses, naming the quotas the starter pool cannot reach', () => {
     expect(() => composeDeck(f1, 'seed-one')).toThrow(DeckCompositionError);

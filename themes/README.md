@@ -25,12 +25,12 @@ its name must be another entity type and its value that entity's `key`.
 
 ```json
 {
-  "team": [{ "key": "MCL", "name": "McLaren", "tier": "frontrunner" }],
-  "driver": [{ "key": "NOR", "name": "Norris", "tier": "frontrunner", "team": "MCL" }]
+  "team": [{ "key": "MCL", "name": "McLaren", "tier": "podium" }],
+  "driver": [{ "key": "NOR", "name": "Norris", "tier": "podium", "team": "MCL" }]
 }
 ```
 
-Entity tiers (`frontrunner`, `midfield`, ...) are the theme's own vocabulary. Square tiers are
+Entity tiers (F1's are `podium`, `points`, `field`) are the theme's own vocabulary. Square tiers are
 always `certain` / `medium` / `rare`, because deck composition depends on them.
 
 ## templates.json

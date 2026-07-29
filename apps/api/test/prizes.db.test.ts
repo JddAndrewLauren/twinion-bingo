@@ -7,6 +7,7 @@ import { createApp } from '../src/app.js';
 import { createDb } from '../src/db/client.js';
 import { CARD_SQUARES } from '../src/games/deck.js';
 import { LINES } from '../src/games/lines.js';
+import { defaultThemeId } from '../src/games/pools.js';
 import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
 
 const db = createDb(testDatabaseUrl ?? 'postgres://unused');
@@ -19,7 +20,7 @@ const fixture = JSON.parse(
 const app = createApp({
   allowedOrigins: ['http://localhost:3000'],
   db,
-  pools: new Map<string, Pool>([['f1.v1', fixture]]),
+  pools: new Map<string, Pool>([[defaultThemeId(), fixture]]),
 });
 
 type Joined = {
