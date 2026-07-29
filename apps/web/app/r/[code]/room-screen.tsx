@@ -1,19 +1,58 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { readToken, storeToken } from '../../player-token';
 import {
+  callSquare,
   fetchGame,
   fetchRoster,
   joinRoom,
   startGame,
   subscribeToRoomEvents,
   type Game,
+  type RoomEvent,
   type Roster,
 } from '../../room-api';
 import { CardGrid } from './card-grid';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
+
+/** Long enough to read who spotted it, short enough not to sit over the card. */
+const TOAST_MS = 4000;
+
+/**
+ * The credit half of D1. Spotting is what the game rewards, so a call says who
+ * spotted it on every device — the spotter's own included, where it doubles as
+ * the confirmation that their tap reached the room.
+ *
+ * The square is named only when it is one this player holds. A device knows the
+ * prose for its own 24 squares and no others, and handing it the rest of the deck
+ * so a toast could name them would leak the sheet that is the host's alone.
+ *
+ * Undefined for anything that is not a call, and for an actor the roster has not
+ * caught up with yet — an anonymous toast credits nobody, which is the one thing
+ * this is for.
+ */
+function spotterCredit(
+  event: RoomEvent,
+  roster: Roster | null,
+  game: Game | null,
+): string | undefined {
+  if (event.kind !== 'CALL') return undefined;
+
+  const who = roster?.players.find(
+    (player) => player.id === event.actorPlayerId,
+  );
+  if (who === undefined) return undefined;
+
+  const square = game?.card?.find(
+    (candidate) => candidate.id === event.squareId,
+  );
+
+  return square === undefined
+    ? `${who.name} spotted a square`
+    : `${who.name} spotted ${square.label}`;
+}
 
 export function RoomScreen({
   apiUrl,
@@ -32,8 +71,25 @@ export function RoomScreen({
   const [joinFailed, setJoinFailed] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startFailed, setStartFailed] = useState(false);
+  const [callFailed, setCallFailed] = useState(false);
+  const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
+  /**
+   * The game read has to have landed once before the stream opens, because the
+   * snapshot is what tells the toast which frames are news — see the stream
+   * effect. A room with no game yet counts as landed; that is the lobby, not a
+   * pending read.
+   */
+  const [gameLoaded, setGameLoaded] = useState(false);
+
+  /**
+   * The stream callback is registered once and would otherwise close over the
+   * first render's roster and game forever, so the two things it has to look
+   * things up in are held in refs rather than read from state.
+   */
+  const rosterRef = useRef<Roster | null>(null);
+  const gameRef = useRef<Game | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +101,7 @@ export function RoomScreen({
           setLoad('missing');
           return;
         }
+        rosterRef.current = found;
         setRoster(found);
         setLoad('ready');
       })
@@ -70,9 +127,14 @@ export function RoomScreen({
 
     fetchGame(apiUrl, code, readToken(code))
       .then((found) => {
-        if (!cancelled) setGame(found ?? null);
+        if (cancelled) return;
+        gameRef.current = found ?? null;
+        setGame(found ?? null);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setGameLoaded(true);
+      });
 
     return () => {
       cancelled = true;
@@ -86,13 +148,32 @@ export function RoomScreen({
    * roster is; the delay is because a connection replays the log it missed in
    * one burst, and the roster only needs reading once at the end of one.
    */
-  const streaming = load === 'ready';
+  const streaming = load === 'ready' && gameLoaded;
   useEffect(() => {
     if (!streaming) return;
 
     let settle: ReturnType<typeof setTimeout> | undefined;
 
-    const unsubscribe = subscribeToRoomEvents(apiUrl, code, () => {
+    /**
+     * The snapshot the toast is judged against, frozen when the stream opens. A
+     * first connection sends no `Last-Event-ID`, so the room's entire log arrives
+     * at once — every call ever made would announce itself as if it had just
+     * happened. Anything at or below this horizon is already in the marks that
+     * are on screen, so it is replay, not news.
+     *
+     * It stays put across `EventSource`'s own reconnects on purpose: calls made
+     * while a phone was asleep really are news to that phone.
+     */
+    const horizon = gameRef.current?.streamedThroughSeq ?? 0;
+
+    const unsubscribe = subscribeToRoomEvents(apiUrl, code, (event) => {
+      const credit =
+        event.seq > horizon
+          ? spotterCredit(event, rosterRef.current, gameRef.current)
+          : undefined;
+
+      if (credit !== undefined) setToast({ id: event.seq, text: credit });
+
       clearTimeout(settle);
       settle = setTimeout(() => setReload((count) => count + 1), 50);
     });
@@ -102,6 +183,15 @@ export function RoomScreen({
       unsubscribe();
     };
   }, [apiUrl, code, streaming]);
+
+  /** One toast at a time, replaced by the next call and gone on its own after. */
+  useEffect(() => {
+    if (toast === null) return;
+
+    const timer = setTimeout(() => setToast(null), TOAST_MS);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   async function submitName(event: React.FormEvent) {
     event.preventDefault();
@@ -127,11 +217,33 @@ export function RoomScreen({
     setStartFailed(false);
 
     try {
-      setGame(await startGame(apiUrl, code, token));
+      const started = await startGame(apiUrl, code, token);
+      gameRef.current = started;
+      setGame(started);
     } catch {
       setStartFailed(true);
     } finally {
       setStarting(false);
+    }
+  }
+
+  /**
+   * Tapping a square you hold calls it for everyone holding it. Re-reading the
+   * game rather than marking the cell locally keeps one description of what is
+   * marked — the derived one — so the spotter's own phone converges by exactly
+   * the path every other phone does, just a poll sooner.
+   */
+  async function call(squareId: string) {
+    const token = readToken(code);
+    if (token === undefined || game === null) return;
+
+    setCallFailed(false);
+
+    try {
+      await callSquare(apiUrl, game.id, squareId, token);
+      setReload((count) => count + 1);
+    } catch {
+      setCallFailed(true);
     }
   }
 
@@ -168,7 +280,26 @@ export function RoomScreen({
     return (
       <div className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">Room {code}</h1>
-        <CardGrid card={game.card} freeCentre={game.freeCentre} />
+        <CardGrid
+          card={game.card}
+          freeCentre={game.freeCentre}
+          marks={game.marks}
+          onCall={call}
+        />
+        {callFailed && <p role="alert">Could not call that square.</p>}
+        {toast !== null && (
+          /**
+           * `status` rather than `alert`: a call is news, not a problem, and an
+           * assertive live region would interrupt a screen reader mid-square.
+           * Pinned to the bottom so it never covers the card being read.
+           */
+          <p
+            role="status"
+            className="fixed inset-x-0 bottom-0 mx-auto max-w-md rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
+          >
+            {toast.text}
+          </p>
+        )}
       </div>
     );
   }

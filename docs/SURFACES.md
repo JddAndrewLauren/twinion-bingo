@@ -51,6 +51,8 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Room — unreachable    | `/r/:code` with the API down                     | Distinguishable from "missing" at a glance                                                                                |
 | Room — host lobby     | `/r/:code`, joined as the host, no game yet      | The **Start game** button below the roster, reachable without scrolling past the share link                                |
 | Game — card           | `/r/:code`, a live game, this player dealt in    | The **5x5 card**: 25 square cells, the free centre reading "LIGHTS OUT", and every label legible and unclipped in its cell |
+| Game — marked card    | `/r/:code`, a live game with squares called      | Marked cells telling apart from unmarked ones at a glance, and still unclipped — a marked label is bolder, so a label that fit unmarked has to be re-checked marked |
+| Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast pinned to the bottom crediting the spotter by name, **covering no part of the card**, and wrapping rather than overflowing on a long name plus a 30-character label |
 
 ### Known-unverified claims inherited from #7
 
@@ -65,6 +67,18 @@ will bring. Until then, verified by hand at the exact sizes:
   labels proves nothing; pick the pool's longest and confirm it neither clips nor pushes its cell.
 - **`ipad-11-landscape`**, where the grid has width to spare and the risk inverts: cells growing
   wide enough that the card stops reading as a square block.
+
+**Settled by #8's gate run** (Playwright, `page.setViewportSize`, all four viewports, three card
+states each, with a per-cell `scrollHeight`/`scrollWidth` assertion rather than an eyeball):
+
+- No cell clipped at any viewport, marked or unmarked, and no page scrolled horizontally.
+- The labels were the 30-character cap rather than the committed pool's 28-character longest, so the
+  worst case the cap permits is what passed — not merely the worst case that exists today. The
+  committed F1 pool cannot compose a deck until #16, so the run used a synthetic 180-square pool
+  carrying the real pool's labels plus three padded to the cap.
+- At `ipad-11-landscape` the grid does not spread: `max-w-md` on the page holds it to a 400px square
+  block, so the inverted risk above does not bite. What it leaves instead is a small card in a wide
+  viewport with a lot of empty space — a layout question for #14's two-pane work, not a defect.
 
 ### Known-unverified claims inherited from #4
 

@@ -28,7 +28,12 @@ export class FakeEventSource {
     this.closed = true;
   }
 
-  emit(event: { seq: number; kind: string }) {
+  emit(event: {
+    seq: number;
+    kind: string;
+    actorPlayerId?: string;
+    squareId?: string | null;
+  }) {
     const message = new MessageEvent('message', { data: JSON.stringify(event) });
     for (const listener of this.listeners) listener(message);
   }

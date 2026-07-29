@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { bearerToken } from '../bearer.js';
 import type { Db } from '../db/client.js';
+import { readJson } from '../json-body.js';
 import { normalizeRoomCode } from './codes.js';
 import {
   createRoom,
@@ -62,16 +63,4 @@ export function createRoomRoutes(db: Db) {
   });
 
   return routes;
-}
-
-/** A body that is absent or not JSON is a missing name, not a crash. */
-async function readJson(request: Request): Promise<Record<string, unknown>> {
-  try {
-    const body: unknown = await request.json();
-    return typeof body === 'object' && body !== null
-      ? (body as Record<string, unknown>)
-      : {};
-  } catch {
-    return {};
-  }
 }
