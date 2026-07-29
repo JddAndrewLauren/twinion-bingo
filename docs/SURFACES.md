@@ -49,6 +49,22 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Room — loading        | `/r/:code` before the roster resolves            | The single-line state does not shift the layout when it resolves                                                          |
 | Room — missing        | `/r/:code` with an unknown code                  | "No room has the code XXXX." reads as an answer, not an error page                                                        |
 | Room — unreachable    | `/r/:code` with the API down                     | Distinguishable from "missing" at a glance                                                                                |
+| Room — host lobby     | `/r/:code`, joined as the host, no game yet      | The **Start game** button below the roster, reachable without scrolling past the share link                                |
+| Game — card           | `/r/:code`, a live game, this player dealt in    | The **5x5 card**: 25 square cells, the free centre reading "LIGHTS OUT", and every label legible and unclipped in its cell |
+
+### Known-unverified claims inherited from #7
+
+The card grid is the tightest layout in the project and the one that most needs the gate Playwright
+will bring. Until then, verified by hand at the exact sizes:
+
+- **The 5x5 grid at `phone-small`.** Cells are `aspect-square` in a `grid-cols-5` with `gap-1`, so a
+  cell is roughly 68 CSS px at 375 wide. Labels run to 30 characters (`LABEL_MAX_CHARS`, set by this
+  very constraint), and the font size is a `clamp()` on viewport width rather than a breakpoint —
+  which is the thing to distrust, because clamp cannot know how many lines a label wraps to.
+- **The longest label in the pool, not a representative one.** A gate that captures a card of short
+  labels proves nothing; pick the pool's longest and confirm it neither clips nor pushes its cell.
+- **`ipad-11-landscape`**, where the grid has width to spare and the risk inverts: cells growing
+  wide enough that the card stops reading as a square block.
 
 ### Known-unverified claims inherited from #4
 

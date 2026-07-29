@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { isOriginAllowed, type AppConfig } from './config.js';
+import { createGameRoutes } from './games/routes.js';
+import { loadPoolRegistry } from './games/pools.js';
 import { createRoomRoutes } from './rooms/routes.js';
 import { createStreamRoutes } from './rooms/stream.js';
 
@@ -8,6 +10,8 @@ export type { AppConfig };
 
 export function createApp(config: AppConfig) {
   const app = new Hono();
+  // Committed files that cannot change under a running process, so once.
+  const pools = config.pools ?? loadPoolRegistry();
 
   app.use(
     '*',
@@ -20,6 +24,7 @@ export function createApp(config: AppConfig) {
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
   app.route('/', createRoomRoutes(config.db));
+  app.route('/', createGameRoutes(config.db, pools));
   app.route('/', createStreamRoutes(config.db, config.streamTimings));
 
   return app;

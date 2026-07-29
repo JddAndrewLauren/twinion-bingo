@@ -1,3 +1,4 @@
+import type { Pool } from '@twinion-bingo/theme';
 import type { Db } from './db/client.js';
 import type { StreamTimings } from './rooms/stream.js';
 
@@ -5,6 +6,12 @@ export type AppConfig = {
   /** Origins allowed to call this API from a browser, plus their Vercel previews. */
   allowedOrigins: string[];
   db: Db;
+  /**
+   * The theme pools decks are drawn from, keyed by theme id. Defaults to the
+   * committed ones under `themes/`; the deck tests supply a pool large enough to
+   * satisfy D6's quotas, which the F1 starter pool is not (#16).
+   */
+  pools?: Map<string, Pool>;
   /** Poll and heartbeat periods for the SSE stream; the defaults are the real ones. */
   streamTimings?: Partial<StreamTimings>;
 };
