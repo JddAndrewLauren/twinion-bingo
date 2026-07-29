@@ -22,12 +22,19 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export const NAME = 'D14 as written — slim bar + swipe-up sheet';
 
-export function VariantA({ labels }: { labels: LabelSet }) {
-  const game = mockGame(labels);
+export function VariantA({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
   const [sheet, setSheet] = useState(false);
 

@@ -36,12 +36,19 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export const NAME = 'C + list (iPad: tabbed right column, list first)';
 
-export function VariantC1({ labels }: { labels: LabelSet }) {
-  const game = mockGame(labels);
+export function VariantC1({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
 
   /** The phone's two whole-screen surfaces. */

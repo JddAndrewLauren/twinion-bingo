@@ -31,12 +31,19 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export const NAME = 'Two surfaces, no overlays — tabs / true 50-50 split';
 
-export function VariantC({ labels }: { labels: LabelSet }) {
-  const game = mockGame(labels);
+export function VariantC({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
   const [tab, setTab] = useState<'card' | 'race'>('card');
 

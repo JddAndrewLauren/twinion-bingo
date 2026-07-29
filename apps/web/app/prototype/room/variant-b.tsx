@@ -31,12 +31,19 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export const NAME = 'The card is the screen — pill + full-screen overlay';
 
-export function VariantB({ labels }: { labels: LabelSet }) {
-  const game = mockGame(labels);
+export function VariantB({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
   const [open, setOpen] = useState(false);
 

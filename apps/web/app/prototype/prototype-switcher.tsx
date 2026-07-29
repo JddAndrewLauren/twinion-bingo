@@ -40,6 +40,7 @@ export function PrototypeSwitcher({
   const params = useSearchParams();
 
   const labels = params.get('labels') === 'real' ? 'real' : 'cap';
+  const stage = params.get('stage') === 'start' ? 'start' : 'mid';
   /**
    * Open on arrival so the controls are discoverable, shut as soon as a variant is
    * chosen so the pill stops covering the thing it was chosen to show.
@@ -60,6 +61,17 @@ export function PrototypeSwitcher({
   function toggleLabels() {
     const query = new URLSearchParams(params.toString());
     query.set('labels', labels === 'cap' ? 'real' : 'cap');
+    router.replace(`?${query.toString()}`);
+  }
+
+  /**
+   * Lights out against mid-race. It belongs on the bar rather than in the URL alone
+   * because the list's worst case is 24 rows, and 24 rows only exist before anything
+   * has been called.
+   */
+  function toggleStage() {
+    const query = new URLSearchParams(params.toString());
+    query.set('stage', stage === 'mid' ? 'start' : 'mid');
     router.replace(`?${query.toString()}`);
   }
 
@@ -137,6 +149,13 @@ export function PrototypeSwitcher({
               className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
             >
               {labels === 'cap' ? 'at cap' : 'real pool'}
+            </button>
+            <button
+              type="button"
+              onClick={toggleStage}
+              className={`${TARGET} rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+            >
+              {stage === 'mid' ? 'mid-race' : 'lights out'}
             </button>
             <button
               type="button"

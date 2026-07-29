@@ -16,14 +16,21 @@
 
 import { CShell } from './variant-c-shell';
 import { LookingForRows } from './looking-for';
-import type { LabelSet } from './mock-state';
+import type { LabelSet, Stage } from './mock-state';
 
 export const NAME = 'C + labels always, prose one at a time';
 
-export function VariantC2({ labels }: { labels: LabelSet }) {
+export function VariantC2({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
   return (
     <CShell
       labels={labels}
+      stage={stage}
       belowCard={(game) => <LookingForRows game={game} />}
     />
   );

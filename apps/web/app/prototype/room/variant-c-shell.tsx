@@ -20,17 +20,20 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export function CShell({
   labels,
+  stage,
   /** The "what am I looking for" element, directly under the card. */
   belowCard,
 }: {
   labels: LabelSet;
+  stage: Stage;
   belowCard: (game: ReturnType<typeof mockGame>) => React.ReactNode;
 }) {
-  const game = mockGame(labels);
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
   const [tab, setTab] = useState<'card' | 'race'>('card');
 

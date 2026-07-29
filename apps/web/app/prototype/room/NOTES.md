@@ -31,6 +31,9 @@ token — it is mock state end to end.
 - `?labels=cap` (default) — plausible labels **at** the 30-character cap whose longest words are
   11-13 characters: `investigation`, `championship`, `disqualified`, `reprimanded`.
 - `?labels=real` — the committed 47-square pool's own longest labels, longest word 10. The control.
+- `?stage=start` (bar: **lights out**) — nothing called, so the list is all **24** rows. This is the
+  list's worst case *and* the only state where the longest descriptions are on screen at all, because
+  the list carries open squares and `mid` has already marked the squares whose prose runs longest.
 
 **Judge on `cap`.** `real` is what is on screen today; `cap` is what #16 will author.
 
@@ -162,10 +165,30 @@ than silently skipped.
 
 ## Verdict
 
-_To be filled in after the hardware pass, then recorded on #12 and this folder deleted._
+**C1 is settled**, for both form factors, and its two layouts differ on purpose:
 
-- **Phone layout (C1 / C2 / C3, or C with no list):**
-- **iPad layout (and whether landscape gets its own):**
-- **Label cap — does <=30 hold, or tighten to what:**
-- **`description` — is there a cap, and does #16's brief change:**
-- **Anything to steal from a losing variant:**
+- **Phone / portrait iPad** — Card | Race tabs; the list is one collapsible block under the card,
+  shut by default.
+- **Landscape iPad** — the card alone on the left; the right column tabbed **Looking for** / **Race**,
+  opening on *Looking for*.
+
+**`description` gets the longer form.** Licence granted for disambiguating prose well past the
+committed pool's 64-character maximum. Evidenced at `stage=start` across all three viewports: 24 rows,
+longest description **127 characters**, median 90, wrapping to two or three lines, **zero rows
+overflowing** and no page scrolling horizontally. So the working cap is ~130 rather than 64, and
+#16's brief becomes "say exactly what counts", not "remind the reader what the label meant".
+
+*Correction to what was first reported on this: the round that granted the licence had only ever
+shown descriptions up to 98 characters, because the 121-132 character ones sit on squares that the
+mid-race mock had already marked and the list only carries open squares. `?stage=start` was added to
+put them on screen, and they pass. The licence now rests on the 127 that was actually rendered.*
+
+**Still open — the one thing that keeps #12 unclosed:**
+
+- **Label cap.** Not judged on hardware yet. Nothing *clips* at 30 characters at any viewport once
+  the `cqw` sizing lands (see finding 1), so the cap needs no tightening for layout reasons. Whether
+  8px type in a 73px cell *reads* at arm's length with a car moving is the open question, and it is
+  the last acceptance criterion on #12.
+
+**Cleanup:** this folder stays until #13 and #14 have folded the decision in — it is the reference for
+building the real screen. Deleting `apps/web/app/prototype/` is part of #14's done-ness.

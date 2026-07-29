@@ -24,6 +24,18 @@ import type { CardSquare, Game, Roster } from '../../room-api';
 export type LabelSet = 'cap' | 'real';
 
 /**
+ * How far into the game the mock sits.
+ *
+ * - `mid` — twelve of twenty-four called, one line and two-lines already won.
+ * - `start` — lights out: nothing called, so the "what am I looking for" list is all
+ *   **24** rows, which is its worst case and the one the list has to survive. It is
+ *   also the only state in which the longest descriptions are visible at all, since
+ *   the list carries open squares and the longest prose sits on squares that `mid`
+ *   has already marked.
+ */
+export type Stage = 'mid' | 'start';
+
+/**
  * A square as the pool actually carries it (D4): a `label` of <=30 characters for
  * the cell, and a `description` that says exactly what counts. The "what am I
  * looking for" list is what makes the second one load-bearing rather than a
@@ -368,14 +380,17 @@ const ELAPSED = [
 const nameOf = (id: string) =>
   PLAYERS.find((player) => player.id === id)?.name ?? 'Someone';
 
-export function mockGame(set: LabelSet): Game {
+export function mockGame(set: LabelSet, stage: Stage = 'mid'): Game {
   const card = cardFor(set);
+  const started = stage === 'mid';
 
-  const marks = MARKED.map(([index, actor], order) => ({
-    squareId: at(card, index).id,
-    seq: 100 + order,
-    actorPlayerId: actor,
-  }));
+  const marks = !started
+    ? []
+    : MARKED.map(([index, actor], order) => ({
+        squareId: at(card, index).id,
+        seq: 100 + order,
+        actorPlayerId: actor,
+      }));
 
   return {
     id: 'g-proto',
@@ -404,44 +419,58 @@ export function mockGame(set: LabelSet): Game {
       called: marks.map((mark) => mark.squareId),
     },
     marks,
-    inheritedMarks: MARKED.filter(([index]) => INHERITED.has(index)).map(
-      ([index]) => at(card, index).id,
-    ),
-    prizes: [
-      { seq: 140, prizeKind: 'LINE', playerId: 'p3', name: nameOf('p3') },
-      {
-        seq: 152,
-        prizeKind: 'TWO_LINES',
-        playerId: 'p2',
-        name: nameOf('p2'),
-      },
-      {
-        seq: 152,
-        prizeKind: 'TWO_LINES',
-        playerId: 'p5',
-        name: nameOf('p5'),
-      },
-    ],
-    standings: [
-      { playerId: 'p2', name: nameOf('p2'), marks: 14 },
-      { playerId: 'p3', name: nameOf('p3'), marks: 13 },
-      { playerId: 'p1', name: nameOf('p1'), marks: 12 },
-      { playerId: 'p5', name: nameOf('p5'), marks: 11 },
-      { playerId: 'p4', name: nameOf('p4'), marks: 9 },
-      { playerId: 'p6', name: nameOf('p6'), marks: 7 },
-    ],
+    inheritedMarks: !started
+      ? []
+      : MARKED.filter(([index]) => INHERITED.has(index)).map(
+          ([index]) => at(card, index).id,
+        ),
+    prizes: !started
+      ? []
+      : [
+          { seq: 140, prizeKind: 'LINE', playerId: 'p3', name: nameOf('p3') },
+          {
+            seq: 152,
+            prizeKind: 'TWO_LINES',
+            playerId: 'p2',
+            name: nameOf('p2'),
+          },
+          {
+            seq: 152,
+            prizeKind: 'TWO_LINES',
+            playerId: 'p5',
+            name: nameOf('p5'),
+          },
+        ],
+    standings: !started
+      ? PLAYERS.map((player) => ({
+          playerId: player.id,
+          name: player.name,
+          marks: 0,
+        }))
+      : [
+          { playerId: 'p2', name: nameOf('p2'), marks: 14 },
+          { playerId: 'p3', name: nameOf('p3'), marks: 13 },
+          { playerId: 'p1', name: nameOf('p1'), marks: 12 },
+          { playerId: 'p5', name: nameOf('p5'), marks: 11 },
+          { playerId: 'p4', name: nameOf('p4'), marks: 9 },
+          { playerId: 'p6', name: nameOf('p6'), marks: 7 },
+        ],
     /**
      * Twelve rows, a third of them naming a deck-only square this device cannot
      * put prose to. Oldest first — `Results` reverses it.
      */
-    timeline: MARKED.map(([index, actor], order) => ({
-      seq: 100 + order,
-      squareId:
-        order % 3 === 2 ? `proto.v1:deck_only_${order}` : at(card, index).id,
-      elapsed: at(ELAPSED, order),
-      playerId: actor,
-      name: nameOf(actor),
-    })),
+    timeline: !started
+      ? []
+      : MARKED.map(([index, actor], order) => ({
+          seq: 100 + order,
+          squareId:
+            order % 3 === 2
+              ? `proto.v1:deck_only_${order}`
+              : at(card, index).id,
+          elapsed: at(ELAPSED, order),
+          playerId: actor,
+          name: nameOf(actor),
+        })),
     streamedThroughSeq: 160,
   };
 }

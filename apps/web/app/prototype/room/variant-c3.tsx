@@ -31,14 +31,21 @@ import {
   mockBottomSlot,
   mockGame,
   type LabelSet,
+  type Stage,
 } from './mock-state';
 
 export const NAME = 'C + a third surface (list gets its own tab / iPad column)';
 
 type Tab = 'card' | 'looking' | 'race';
 
-export function VariantC3({ labels }: { labels: LabelSet }) {
-  const game = mockGame(labels);
+export function VariantC3({
+  labels,
+  stage,
+}: {
+  labels: LabelSet;
+  stage: Stage;
+}) {
+  const game = mockGame(labels, stage);
   const slot = mockBottomSlot(labels);
   const [tab, setTab] = useState<Tab>('card');
 

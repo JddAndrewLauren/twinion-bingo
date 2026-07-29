@@ -23,7 +23,7 @@ import { VariantC, NAME as NAME_C } from './variant-c';
 import { VariantC1, NAME as NAME_C1 } from './variant-c1';
 import { VariantC2, NAME as NAME_C2 } from './variant-c2';
 import { VariantC3, NAME as NAME_C3 } from './variant-c3';
-import type { LabelSet } from './mock-state';
+import type { LabelSet, Stage } from './mock-state';
 
 const VARIANTS = ['A', 'B', 'C', 'C1', 'C2', 'C3'];
 
@@ -49,15 +49,22 @@ function Variants() {
   const asked = params.get('variant') ?? 'C1';
   const variant = VARIANTS.includes(asked) ? asked : 'C1';
   const labels: LabelSet = params.get('labels') === 'real' ? 'real' : 'cap';
+  /**
+   * `?stage=start` is lights out: nothing called, so the list is all 24 rows — its
+   * worst case, and the only state where the longest descriptions are on screen at
+   * all, since the list carries open squares and `mid` has already marked the
+   * squares whose prose runs longest.
+   */
+  const stage: Stage = params.get('stage') === 'start' ? 'start' : 'mid';
 
   return (
     <>
-      {variant === 'A' && <VariantA labels={labels} />}
-      {variant === 'B' && <VariantB labels={labels} />}
-      {variant === 'C' && <VariantC labels={labels} />}
-      {variant === 'C1' && <VariantC1 labels={labels} />}
-      {variant === 'C2' && <VariantC2 labels={labels} />}
-      {variant === 'C3' && <VariantC3 labels={labels} />}
+      {variant === 'A' && <VariantA labels={labels} stage={stage} />}
+      {variant === 'B' && <VariantB labels={labels} stage={stage} />}
+      {variant === 'C' && <VariantC labels={labels} stage={stage} />}
+      {variant === 'C1' && <VariantC1 labels={labels} stage={stage} />}
+      {variant === 'C2' && <VariantC2 labels={labels} stage={stage} />}
+      {variant === 'C3' && <VariantC3 labels={labels} stage={stage} />}
       <PrototypeSwitcher
         variants={VARIANTS}
         current={variant}
