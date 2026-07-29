@@ -6,10 +6,25 @@
  * Deliberately loud and deliberately not part of any design being judged. Hidden
  * outside development, so a stray merge cannot ship it: a prototype route is
  * throwaway, but a bar that escaped into production would be a defect.
+ *
+ * **Built for a thumb, because this is judged on a phone.** The first cut of this
+ * bar was a pair of 22x24px chevrons plus arrow-key shortcuts, which on real
+ * hardware is nothing you can hit and no keyboard to hit it with — the switcher
+ * was unusable on the only devices that matter. So:
+ *
+ * - Every target is at least 44x44, which is Apple's documented minimum.
+ * - The variants are named buttons rather than a cycle. Direct selection beats
+ *   stepping when comparing three things, and it removes the guess about which way
+ *   an arrow goes.
+ * - Arrow keys still work, for the desktop pass where they are convenient. They are
+ *   no longer the only way through.
  */
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+/** Apple's minimum, and the reason the first cut of this bar did not work. */
+const TARGET = 'min-h-11 min-w-11';
 
 export function PrototypeSwitcher({
   variants,
@@ -26,13 +41,15 @@ export function PrototypeSwitcher({
 
   const labels = params.get('labels') === 'real' ? 'real' : 'cap';
 
-  function go(step: number) {
-    const at = variants.indexOf(current);
-    const next =
-      variants[(at + step + variants.length) % variants.length] ?? current;
+  function show(variant: string) {
     const query = new URLSearchParams(params.toString());
-    query.set('variant', next);
+    query.set('variant', variant);
     router.replace(`?${query.toString()}`);
+  }
+
+  function step(by: number) {
+    const at = variants.indexOf(current);
+    show(variants[(at + by + variants.length) % variants.length] ?? current);
   }
 
   function toggleLabels() {
@@ -41,7 +58,7 @@ export function PrototypeSwitcher({
     router.replace(`?${query.toString()}`);
   }
 
-  // Arrow keys cycle too, except while something is being typed into.
+  // Still here for the desktop pass, but no longer the only way through.
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
@@ -51,8 +68,8 @@ export function PrototypeSwitcher({
         target?.isContentEditable === true;
       if (typing) return;
 
-      if (event.key === 'ArrowLeft') go(-1);
-      if (event.key === 'ArrowRight') go(1);
+      if (event.key === 'ArrowLeft') step(-1);
+      if (event.key === 'ArrowRight') step(1);
     }
 
     window.addEventListener('keydown', onKey);
@@ -67,37 +84,43 @@ export function PrototypeSwitcher({
       undo row and whether those cover the card is one of the things being judged —
       a switcher sitting on top of them would hide the evidence.
     */
-    <div className="fixed bottom-32 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full bg-fuchsia-600 px-2 py-1.5 text-xs font-semibold text-white shadow-lg shadow-black/50">
-      <button
-        type="button"
-        onClick={() => go(-1)}
-        aria-label="Previous variant"
-        className="px-2 py-1"
-      >
-        ◂
-      </button>
-      <span className="max-w-[52vw] truncate">
-        {current} — {name}
-      </span>
-      <button
-        type="button"
-        onClick={() => go(1)}
-        aria-label="Next variant"
-        className="px-2 py-1"
-      >
-        ▸
-      </button>
-      {/*
-        The second control, because #12 has to decide about D4's <=30 char cap as
-        well as about layout, and the two are the same judgement made twice.
-      */}
-      <button
-        type="button"
-        onClick={toggleLabels}
-        className="ml-1 rounded-full bg-black/30 px-2 py-1"
-      >
-        {labels === 'cap' ? 'labels: at cap' : 'labels: real pool'}
-      </button>
+    <div className="fixed inset-x-0 bottom-28 z-50 flex justify-center px-2">
+      <div className="flex max-w-full flex-col gap-1 rounded-2xl bg-fuchsia-600 p-2 text-white shadow-lg shadow-black/50">
+        {/* What is on screen, on its own line so it never squeezes a target. */}
+        <p className="truncate px-1 text-center text-[11px] font-semibold">
+          {current} — {name}
+        </p>
+
+        <div className="flex items-center gap-1">
+          {variants.map((variant) => (
+            <button
+              key={variant}
+              type="button"
+              onClick={() => show(variant)}
+              aria-pressed={variant === current}
+              className={`${TARGET} flex-1 rounded-xl px-3 text-base font-bold ${
+                variant === current
+                  ? 'bg-white text-fuchsia-700'
+                  : 'bg-black/25 text-white'
+              }`}
+            >
+              {variant}
+            </button>
+          ))}
+
+          {/*
+            The second control, because #12 has to decide about D4's <=30 char cap
+            as well as about layout, and the two are the same judgement made twice.
+          */}
+          <button
+            type="button"
+            onClick={toggleLabels}
+            className={`${TARGET} ml-1 rounded-xl bg-black/25 px-3 text-xs font-semibold`}
+          >
+            {labels === 'cap' ? 'at cap' : 'real pool'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

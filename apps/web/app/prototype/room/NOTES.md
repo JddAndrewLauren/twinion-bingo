@@ -24,12 +24,20 @@ pnpm --filter @twinion-bingo/web dev
 Then `http://<your-lan-ip>:3000/prototype/room` on the actual hardware. No API, no database, no
 token — it is mock state end to end.
 
-- `?variant=A|B|C`, or the arrow keys, or the fuchsia bar at the bottom.
+- The fuchsia bar at the bottom has an **A / B / C** button each — tap one. Arrow keys work too, on
+  desktop. Or set `?variant=A|B|C` by hand.
 - `?labels=cap` (default) — plausible labels **at** the 30-character cap whose longest words are
   11-13 characters: `investigation`, `championship`, `disqualified`, `reprimanded`.
 - `?labels=real` — the committed 47-square pool's own longest labels, longest word 10. The control.
 
 **Judge on `cap`.** `real` is what is on screen today; `cap` is what #16 will author.
+
+### If the switcher does nothing
+
+It must be `pnpm ... dev`. The bar is gated on `NODE_ENV !== 'production'`, so under `next build && next
+start` it renders as nothing at all and the variants are only reachable by editing `?variant=` in the
+address bar. That gate is deliberate — it is what stops a stray merge shipping the bar — but it does
+mean a production build looks like a broken prototype.
 
 ## The variants
 
