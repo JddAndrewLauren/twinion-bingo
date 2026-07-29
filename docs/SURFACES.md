@@ -215,9 +215,31 @@ before treating them as settled:
 ## Status of the toolchain
 
 **Playwright is not yet a devDependency of this repo** — the gate above is specified but not yet
-runnable, and no CI job runs it. Adding it belongs to **#12** (prototype the room screen on phone
-and iPad), which is the first issue that needs it and will know more about the harness than this
-file does. Until then the matrix and the screen inventory are still the contract: an issue can
+runnable, and no CI job runs it. Adding it belongs to **#13 / #14**, which are the first issues that
+build a real screen to gate.
+
+It was previously assigned to #12. **#12 settled without it, deliberately.** That issue prototyped
+the room screen on a throwaway route and verified it with Playwright installed into a scratch
+directory outside the repo — because a route with a deletion date is the wrong thing to hang the
+repo's permanent visual gate off, and a harness that only ever ran against mock state would have
+proved nothing about the real card.
+
+That decision has a cost worth naming here, since this file exists to prevent exactly it: #12's
+recorded measurements **cannot be reproduced**, because the scripts lived in a session-scoped
+scratch directory that has since been wiped. The conclusions are sound and were confirmed on real
+hardware; the numbers behind them are unrepeatable. A gate in the repo is what makes the difference,
+and that is #13 / #14's to add.
+
+Two things learned there that whoever adds the harness should not rediscover:
+
+- **Drive it, do not read it.** Three defects were invisible to code review and immediate under a
+  browser: 22x24px tap targets, a `fixed inset-x-0` wrapper swallowing taps across its full width,
+  and `cqw` silently falling back to viewport units. Use `.tap()` under a device profile with
+  `hasTouch`, not `.click()` in a desktop viewport.
+- **Measure the rendered text, not `scrollWidth`.** See the caution on the per-cell assertion above;
+  #47 carries the full account, including that `scrollWidth` cannot see a transform.
+
+Until the harness lands, the matrix and the screen inventory are still the contract: an issue can
 write acceptance criteria against a named viewport, and whoever verifies does it manually at that
 exact size rather than at whatever their window happens to be.
 
