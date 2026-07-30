@@ -50,11 +50,12 @@ hand-crafted squares. Marks are derived from these ids, so they must stay stable
 
 ## The build fails loudly on
 
-a label over 30 characters, a duplicate id, a template referencing an unknown entity type or
+a label over 30 characters, an unbreakable run over 10 characters (below), a duplicate id, a
+template referencing an unknown entity type or
 placeholder, an entity paired to a missing entity, a template missing a tier rule, and an override
 pointing at a square that no longer exists. Every fault in a run is reported together.
 
-## The one rule the build does not enforce
+## The tighter rule: unbreakable runs
 
 **No unbreakable run in a label over 10 characters.** The 30-character cap is about the whole label;
 this is about a single run inside it, and it is the tighter constraint. A card cell stops growing at
@@ -71,7 +72,10 @@ as a word:
 - **Punctuation hanging off a word does not break.** Count the quote marks, the exclamation mark and
   the full stop as part of the run they touch: `Dangerous!"` is eleven, which is over the line.
 
-So the measurement is: split each label on whitespace and hyphens, and take the longest piece.
+So the measurement is: split each label on whitespace and hyphens, and take the longest piece. A
+hyphen ends the piece it breaks after, so it counts towards that piece's length. The build applies
+this measurement itself (`RUN_MAX_CHARS` in `packages/theme`), so a label that breaks the rule fails
+`pnpm pool:build` rather than reaching a card.
 
 ## Status
 
