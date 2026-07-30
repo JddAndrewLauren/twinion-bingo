@@ -5,21 +5,22 @@ import { describe, expect, it } from 'vitest';
 import {
   CARD_SQUARES,
   DECK_SIZE,
-  DeckCompositionError,
   MAX_PER_TEMPLATE,
+  MAX_RARE_PER_CARD,
+  MIN_CERTAIN_PER_CARD,
   SOURCE_QUOTA,
   TIER_QUOTA,
   composeDeck,
   dealCard,
   type Deck,
 } from '../src/games/deck.js';
-import { loadPoolRegistry, poolFor, themesRoot } from '../src/games/pools.js';
+import { defaultThemeId, loadPoolRegistry, poolFor, themesRoot } from '../src/games/pools.js';
 
 /**
- * The pool #7's numbers were written against does not exist yet — #16 authors the
- * F1 pool to ~180 squares, and the committed one is a 47-square starter. So the
- * quotas are proved against a committed synthetic pool of that size, and the real
- * pool gets its own test proving the composer refuses it loudly.
+ * The quotas are proved against a committed synthetic pool rather than against the
+ * real F1 one, because the real pool is authored copy: its counts move every time
+ * a square is written, and these tests exist to pin numbers. The real pool gets its
+ * own test below, asserting only that it can supply a deck at all.
  *
  * The fixture is committed rather than generated in a `beforeAll` on purpose: a
  * pool that changed shape between runs would make every count below unstable,
@@ -71,6 +72,11 @@ describe("D6's composition, as numbers", () => {
     expect(SOURCE_QUOTA).toEqual({ handcrafted: 24, generated: 16 });
     expect(MAX_PER_TEMPLATE).toBe(3);
     expect(CARD_SQUARES).toBe(24);
+  });
+
+  it('bounds one card at 5 rare and 6 certain, the ruling of 2026-07-29', () => {
+    expect(MAX_RARE_PER_CARD).toBe(5);
+    expect(MIN_CERTAIN_PER_CARD).toBe(6);
   });
 
   it('splits the deck exactly, by tier and by source alike', () => {
@@ -193,32 +199,224 @@ describe('composing a deck', () => {
 });
 
 /**
- * Option C, made executable. The committed F1 pool cannot supply this deck, and
- * the composer says so in numbers rather than degrading silently — the numbers
- * being the whole reason #7 was quarantined. When #16 lands, this test is what
- * will notice: it should start failing, and become a passing composition test.
+ * The other half of option C. This test was written to fail loudly while the
+ * committed F1 pool was a 47-square starter that could not reach D6's quotas, and
+ * to flip once #16 authored the pool for real — which #58 did. What it pins now is
+ * that the committed artefact, not only the synthetic fixture, satisfies every
+ * quota the composer refuses to bend.
  */
 describe('composing a deck from the real F1 pool', () => {
-  const f1 = poolFor(loadPoolRegistry(themesRoot()), 'f1.v1');
+  const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
 
-  it('refuses, naming the quotas the starter pool cannot reach', () => {
-    expect(() => composeDeck(f1, 'seed-one')).toThrow(DeckCompositionError);
+  it('composes a deck meeting every tier and source quota', () => {
+    const deck = composeDeck(f1, 'seed-one');
 
-    let message = '';
-    try {
-      composeDeck(f1, 'seed-one');
-    } catch (error) {
-      message = (error as Error).message;
-    }
-
-    // 13 certain wanted, and the cap of 3 per template leaves fewer selectable
-    // than the 8 the pool holds; 24 hand-crafted wanted against 5.
-    expect(message).toContain('13 certain squares');
-    expect(message).toContain('24 handcrafted squares');
+    expect(deck).toHaveLength(DECK_SIZE);
+    expect(tiersOf(deck)).toEqual(TIER_QUOTA);
+    expect(sourcesOf(deck)).toEqual(SOURCE_QUOTA);
   });
 
-  it('is a shortfall in the pool, not in the composer: the fixture composes', () => {
-    expect(composeDeck(fixture, 'seed-one')).toHaveLength(DECK_SIZE);
+  it('deals a full card from it, one square per exclusivity group', () => {
+    const deck = composeDeck(f1, 'seed-one');
+    const card = dealCard(deck, 'seed-one', 'player-a');
+    const groups = deck
+      .filter((square) => card.includes(square.id))
+      .map((square) => square.exclusivityGroup);
+
+    expect(card).toHaveLength(CARD_SQUARES);
+    expect(new Set(groups).size).toBe(CARD_SQUARES);
+  });
+
+  /**
+   * "Without straining" (#59), as something executable. One lucky seed proves the
+   * pool can be drawn from; it does not prove the pool is comfortable. A pool that
+   * only just reaches the quotas succeeds on some seeds and exhausts all 200 draw
+   * attempts on others, so the honest check is that every seed lands — and that a
+   * full six-player room deals out of the resulting deck.
+   */
+  it('composes and deals for every seed, not just a lucky one', () => {
+    for (let n = 0; n < 25; n += 1) {
+      const seed = `strain-${n}`;
+      const deck = composeDeck(f1, seed);
+
+      expect(tiersOf(deck)).toEqual(TIER_QUOTA);
+      expect(sourcesOf(deck)).toEqual(SOURCE_QUOTA);
+
+      for (const player of ['a', 'b', 'c', 'd', 'e', 'f']) {
+        expect(dealCard(deck, seed, `player-${player}`)).toHaveLength(CARD_SQUARES);
+      }
+    }
+  });
+});
+
+/**
+ * The card bounds, proved against the committed pool rather than the fixture.
+ * The fixture is synthetic and even-handed; the real pool is authored copy, with
+ * clustered exclusivity groups and an uneven tier spread, and it is the one cards
+ * are actually dealt from. A dealer that only shuffles passes every other test in
+ * this file and fails the first test here.
+ */
+describe('the card tier bounds, against the real F1 pool', () => {
+  const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
+  const PLAYERS = ['a', 'b', 'c', 'd', 'e', 'f'];
+  const SEEDS = 200;
+
+  /** Every card of a 200-seed, six-player room: 1200 cards, as tier counts. */
+  const cards: Record<SquareTier, number>[] = [];
+
+  for (let n = 0; n < SEEDS; n += 1) {
+    const seed = `bounds-${n}`;
+    const deck = composeDeck(f1, seed);
+    const byId = new Map(deck.map((square) => [square.id, square]));
+
+    for (const player of PLAYERS) {
+      const card = dealCard(deck, seed, `player-${player}`);
+
+      cards.push(tiersOf(card.map((id) => byId.get(id)!)));
+    }
+  }
+
+  /** The population's shape, for the failure message: how many cards held each count. */
+  const histogram = (tier: SquareTier) =>
+    Object.fromEntries(
+      [...new Set(cards.map((card) => card[tier]))]
+        .sort((a, b) => a - b)
+        .map((count) => [count, cards.filter((card) => card[tier] === count).length]),
+    );
+
+  it('never puts more than the cap of rare squares on a card', () => {
+    const worst = Math.max(...cards.map((card) => card.rare));
+
+    expect(worst, `rare per card: ${JSON.stringify(histogram('rare'))}`).toBeLessThanOrEqual(
+      MAX_RARE_PER_CARD,
+    );
+  });
+
+  it('never puts fewer than the floor of certain squares on a card', () => {
+    const worst = Math.min(...cards.map((card) => card.certain));
+
+    expect(
+      worst,
+      `certain per card: ${JSON.stringify(histogram('certain'))}`,
+    ).toBeGreaterThanOrEqual(MIN_CERTAIN_PER_CARD);
+  });
+
+  it('still deals 24 squares in 24 distinct groups under the bounds', () => {
+    const deck = composeDeck(f1, 'bounds-0');
+    const byId = new Map(deck.map((square) => [square.id, square]));
+
+    for (const player of PLAYERS) {
+      const card = dealCard(deck, 'bounds-0', `player-${player}`);
+      const groups = card.map((id) => byId.get(id)!.exclusivityGroup);
+
+      expect(card, `player ${player}`).toHaveLength(CARD_SQUARES);
+      expect(new Set(groups).size, `player ${player}`).toBe(CARD_SQUARES);
+    }
+
+    expect(cards).toHaveLength(SEEDS * PLAYERS.length);
+  });
+
+  it('deals the same card again for the same deck, seed and player', () => {
+    for (let n = 0; n < 5; n += 1) {
+      const seed = `bounds-${n}`;
+      const deck = composeDeck(f1, seed);
+
+      for (const player of PLAYERS) {
+        expect(dealCard(deck, seed, `player-${player}`), `${seed}/${player}`).toEqual(
+          dealCard(deck, seed, `player-${player}`),
+        );
+      }
+    }
+  });
+
+  /**
+   * The bounds hold above; this is the shape underneath them, and it is here so a
+   * dealer that satisfies the bounds by some degenerate route — always exactly the
+   * cap, or always the floor — is caught too. Both bounds bind often on the real
+   * pool: with 7 rare in 40 the cap is the common case, and the floor is reached
+   * on roughly one card in seven. The bands are wide because these are empirical
+   * numbers, not decisions; they exist to catch a collapse, not to pin a value.
+   */
+  it('spreads the tiers under the bounds rather than pinning them to it', () => {
+    const at = (tier: SquareTier, count: number) =>
+      cards.filter((card) => card[tier] === count).length / cards.length;
+    const mean = (tier: SquareTier) =>
+      cards.reduce((total, card) => total + card[tier], 0) / cards.length;
+    const shape = `rare ${JSON.stringify(histogram('rare'))}, certain ${JSON.stringify(histogram('certain'))}`;
+
+    // The cap binds, but a third of cards sit below it rather than all at it.
+    expect(at('rare', MAX_RARE_PER_CARD), shape).toBeGreaterThan(0.1);
+    expect(at('rare', MAX_RARE_PER_CARD), shape).toBeLessThan(0.6);
+    expect(mean('rare'), shape).toBeGreaterThan(2.5);
+    expect(mean('rare'), shape).toBeLessThan(4.5);
+
+    // The floor binds too, and cards routinely carry well over it.
+    expect(at('certain', MIN_CERTAIN_PER_CARD), shape).toBeGreaterThan(0.02);
+    expect(at('certain', MIN_CERTAIN_PER_CARD), shape).toBeLessThan(0.5);
+    expect(mean('certain'), shape).toBeGreaterThan(MIN_CERTAIN_PER_CARD);
+  });
+});
+
+/**
+ * The bounds are not a property of 13/20/7. Thirteen certain squares are plenty
+ * of squares and far too few groups if they cluster, so the deck that cannot be
+ * dealt within the bounds has to be refused where it is drawn, and the deal has
+ * to refuse a deck it is handed anyway.
+ */
+describe('refusing a deck the bounds cannot be met from', () => {
+  /** One square per group, tiers in the order given: a deck built to fail. */
+  function deckOf(tiers: readonly SquareTier[]): Deck {
+    return tiers.map((tier, index) => ({
+      id: `x.v1:t:${index}`,
+      label: `Square ${index}`,
+      description: 'A square.',
+      tier,
+      source: 'generated',
+      exclusivityGroup: `group-${index}`,
+      templateId: 't',
+    })) satisfies PoolSquare[];
+  }
+
+  function tiers(counts: Partial<Record<SquareTier, number>>): SquareTier[] {
+    return TIERS.flatMap((tier) =>
+      Array.from({ length: counts[tier] ?? 0 }, (): SquareTier => tier),
+    );
+  }
+
+  it('names the certain groups it is short of', () => {
+    const deck = deckOf(tiers({ certain: 5, medium: 35 }));
+
+    expect(() => dealCard(deck, 'seed-one', 'player-a')).toThrow(
+      /only 5 of its exclusivity groups hold a certain square, and a card needs 6/,
+    );
+  });
+
+  it('names the non-rare groups it is short of', () => {
+    const deck = deckOf(tiers({ certain: 18, rare: 22 }));
+
+    expect(() => dealCard(deck, 'seed-one', 'player-a')).toThrow(
+      /only 18 of its exclusivity groups hold a non-rare square, and a card capped at 5 rare needs 19/,
+    );
+  });
+
+  /**
+   * A pool that satisfies every quota the composer checks and still cannot yield
+   * a dealable deck: its certain squares are plentiful but sit in three groups,
+   * so no draw of thirteen of them can put six certain on a card.
+   */
+  it('refuses at the composer, not mid-game at the deal', () => {
+    const clustered: Pool = {
+      ...fixture,
+      squares: fixture.squares.map((square, index) =>
+        square.tier === 'certain'
+          ? { ...square, exclusivityGroup: `safety-car-${index % 3}` }
+          : square,
+      ),
+    };
+
+    expect(() => composeDeck(clustered, 'seed-one')).toThrow(
+      /at least 6 certain and at most 5 rare/,
+    );
   });
 });
 

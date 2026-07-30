@@ -63,10 +63,11 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
       /**
        * The theme's pool cannot supply a deck to D6's composition. That is a
        * content shortfall in the repo, not something this request did wrong and
-       * not something a retry fixes — the F1 pool is a 47-square starter until
-       * #16 authors it to ~180. The composer's arithmetic goes back in the body
-       * rather than only to the logs, because the operator reading it is the
-       * person who can fix it.
+       * not something a retry fixes — no committed pool is that thin today, so
+       * reaching here means a new or edited theme has not been authored up to
+       * the quotas. The composer's arithmetic goes back in the body rather than
+       * only to the logs, because the operator reading it is the person who can
+       * fix it.
        */
       if (error instanceof DeckCompositionError) {
         return c.json({ error: error.message }, 503);

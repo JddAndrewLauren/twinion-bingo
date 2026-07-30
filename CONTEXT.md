@@ -24,7 +24,7 @@ row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-
 
 ## Squares and where they come from
 
-**Pool** — a theme's whole authored body of squares (~180 at full size), committed to the repo as
+**Pool** — a theme's whole authored body of squares (F1's is 300 at `v2`), committed to the repo as
 folders under `themes/` (D9, D10). Not a runtime concept: nothing reads a pool during a race except
 the deck composer.
 
@@ -34,14 +34,24 @@ approximated (ADR-0002). `apps/api/src/games/deck.ts`.
 
 **Card** — the 24 squares one player is dealt from the room's deck, plus a free centre, laid out
 5×5 (D4). Dealt from the *deck*, never from the pool — the 24-of-40 overlap is what puts each square
-on ~3.6 of 6 cards, and it is the reason a call has anyone to matter to.
+on ~3.6 of 6 cards, and it is the reason a call has anyone to matter to. Bounded in its own right, on
+top of the deck's quotas: at most 5 *rare* and at least 6 *certain*, because the deck's tier mix does
+not reach a 24-square subset of it on its own.
 
 **Free centre** — the middle cell, theme-flavoured ("LIGHTS OUT"). Not a pool square and not
 "always marked": nothing has to happen for it to count, so lines through it are complete when their
 other four squares are (`apps/api/src/games/lines.ts`).
 
-**Tier** — `certain`, `medium`, `rare`. Pacing is governed by a card's rarity mix, not by pool size
-(D6).
+**Tier** — a square's per-race probability of being broadcast: `certain` ≈ fires most races, `medium`
+≈ roughly every other race, `rare` ≈ a few times a season. The TV broadcast is the evidence a call is
+judged against, so a tier is a claim about what the coverage shows, not about what happens on track.
+Pacing is governed by a card's rarity mix, not by pool size (D6).
+
+**Entity tier** — a theme's own ordinal plausibility rating for the people and teams in it; in F1,
+`podium` / `points` / `field`. Templates gate on it to decide whether a square exists for an entity at
+all, and at which *Tier* if it does — the same ambition is `certain` for one entity, `rare` for
+another, and absent for a third. Distinct from *Tier*: each theme names its own entity tiers, whereas
+square tiers are fixed game-wide vocabulary.
 
 ## Calling, and taking it back
 
