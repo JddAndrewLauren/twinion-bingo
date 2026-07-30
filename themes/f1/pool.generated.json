@@ -9,7 +9,7 @@
       "description": "Albon complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:ALB",
+      "exclusivityGroup": "radio_moan:ALB",
       "templateId": "driver_battery_moan"
     },
     {
@@ -18,7 +18,7 @@
       "description": "Alonso complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:ALO",
+      "exclusivityGroup": "radio_moan:ALO",
       "templateId": "driver_battery_moan"
     },
     {
@@ -27,7 +27,7 @@
       "description": "Antonelli complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:ANT",
+      "exclusivityGroup": "radio_moan:ANT",
       "templateId": "driver_battery_moan"
     },
     {
@@ -36,7 +36,7 @@
       "description": "Bearman complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:BEA",
+      "exclusivityGroup": "radio_moan:BEA",
       "templateId": "driver_battery_moan"
     },
     {
@@ -45,7 +45,7 @@
       "description": "Bortoleto complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:BOR",
+      "exclusivityGroup": "radio_moan:BOR",
       "templateId": "driver_battery_moan"
     },
     {
@@ -54,7 +54,7 @@
       "description": "Bottas complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:BOT",
+      "exclusivityGroup": "radio_moan:BOT",
       "templateId": "driver_battery_moan"
     },
     {
@@ -63,7 +63,7 @@
       "description": "Colapinto complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:COL",
+      "exclusivityGroup": "radio_moan:COL",
       "templateId": "driver_battery_moan"
     },
     {
@@ -72,7 +72,7 @@
       "description": "Gasly complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:GAS",
+      "exclusivityGroup": "radio_moan:GAS",
       "templateId": "driver_battery_moan"
     },
     {
@@ -81,7 +81,7 @@
       "description": "Hadjar complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:HAD",
+      "exclusivityGroup": "radio_moan:HAD",
       "templateId": "driver_battery_moan"
     },
     {
@@ -90,7 +90,7 @@
       "description": "Hamilton complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:HAM",
+      "exclusivityGroup": "radio_moan:HAM",
       "templateId": "driver_battery_moan"
     },
     {
@@ -99,7 +99,7 @@
       "description": "Hulkenberg complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:HUL",
+      "exclusivityGroup": "radio_moan:HUL",
       "templateId": "driver_battery_moan"
     },
     {
@@ -108,7 +108,7 @@
       "description": "Lawson complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:LAW",
+      "exclusivityGroup": "radio_moan:LAW",
       "templateId": "driver_battery_moan"
     },
     {
@@ -117,7 +117,7 @@
       "description": "Leclerc complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:LEC",
+      "exclusivityGroup": "radio_moan:LEC",
       "templateId": "driver_battery_moan"
     },
     {
@@ -126,7 +126,7 @@
       "description": "Lindblad complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:LIN",
+      "exclusivityGroup": "radio_moan:LIN",
       "templateId": "driver_battery_moan"
     },
     {
@@ -135,7 +135,7 @@
       "description": "Norris complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:NOR",
+      "exclusivityGroup": "radio_moan:NOR",
       "templateId": "driver_battery_moan"
     },
     {
@@ -144,7 +144,7 @@
       "description": "Ocon complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:OCO",
+      "exclusivityGroup": "radio_moan:OCO",
       "templateId": "driver_battery_moan"
     },
     {
@@ -153,7 +153,7 @@
       "description": "Pérez complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:PER",
+      "exclusivityGroup": "radio_moan:PER",
       "templateId": "driver_battery_moan"
     },
     {
@@ -162,7 +162,7 @@
       "description": "Piastri complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:PIA",
+      "exclusivityGroup": "radio_moan:PIA",
       "templateId": "driver_battery_moan"
     },
     {
@@ -171,7 +171,7 @@
       "description": "Russell complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:RUS",
+      "exclusivityGroup": "radio_moan:RUS",
       "templateId": "driver_battery_moan"
     },
     {
@@ -180,7 +180,7 @@
       "description": "Sainz complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:SAI",
+      "exclusivityGroup": "radio_moan:SAI",
       "templateId": "driver_battery_moan"
     },
     {
@@ -189,7 +189,7 @@
       "description": "Stroll complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:STR",
+      "exclusivityGroup": "radio_moan:STR",
       "templateId": "driver_battery_moan"
     },
     {
@@ -198,7 +198,7 @@
       "description": "Verstappen complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "battery_moan:VER",
+      "exclusivityGroup": "radio_moan:VER",
       "templateId": "driver_battery_moan"
     },
     {
@@ -2202,7 +2202,7 @@
     {
       "id": "f1.v2:hand:orange_smoke",
       "label": "Orange Smoke in Grandstand",
-      "description": "Verstappen fans light flares/smoke. Track-dependent — strongest in Europe.",
+      "description": "Verstappen fans light flares or smoke in the grandstand.",
       "tier": "medium",
       "source": "handcrafted",
       "exclusivityGroup": "crowd:orange_smoke",
@@ -2300,7 +2300,7 @@
     },
     {
       "id": "f1.v2:hand:rain_arrives",
-      "label": "Rain starts falling",
+      "label": "Rain Starts Falling",
       "description": "Rain reaches the circuit during the race, wherever on the track.",
       "tier": "medium",
       "source": "handcrafted",
@@ -2607,7 +2607,7 @@
     {
       "id": "f1.v2:team_slow_stop:ALP",
       "label": "Alpine slow pit stop",
-      "description": "A Alpine pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Alpine goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:ALP",
@@ -2616,7 +2616,7 @@
     {
       "id": "f1.v2:team_slow_stop:AMR",
       "label": "Aston Martin slow pit stop",
-      "description": "A Aston Martin pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Aston Martin goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:AMR",
@@ -2625,7 +2625,7 @@
     {
       "id": "f1.v2:team_slow_stop:AUD",
       "label": "Audi slow pit stop",
-      "description": "A Audi pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Audi goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:AUD",
@@ -2634,7 +2634,7 @@
     {
       "id": "f1.v2:team_slow_stop:CAD",
       "label": "Cadillac slow pit stop",
-      "description": "A Cadillac pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Cadillac goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:CAD",
@@ -2643,7 +2643,7 @@
     {
       "id": "f1.v2:team_slow_stop:FER",
       "label": "Ferrari slow pit stop",
-      "description": "A Ferrari pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Ferrari goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:FER",
@@ -2652,7 +2652,7 @@
     {
       "id": "f1.v2:team_slow_stop:HAA",
       "label": "Haas slow pit stop",
-      "description": "A Haas pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Haas goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:HAA",
@@ -2661,7 +2661,7 @@
     {
       "id": "f1.v2:team_slow_stop:MCL",
       "label": "McLaren slow pit stop",
-      "description": "A McLaren pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for McLaren goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:MCL",
@@ -2670,7 +2670,7 @@
     {
       "id": "f1.v2:team_slow_stop:MER",
       "label": "Mercedes slow pit stop",
-      "description": "A Mercedes pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Mercedes goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:MER",
@@ -2679,7 +2679,7 @@
     {
       "id": "f1.v2:team_slow_stop:RBL",
       "label": "Racing Bulls slow pit stop",
-      "description": "A Racing Bulls pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Racing Bulls goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:RBL",
@@ -2688,7 +2688,7 @@
     {
       "id": "f1.v2:team_slow_stop:RBR",
       "label": "Red Bull slow pit stop",
-      "description": "A Red Bull pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Red Bull goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:RBR",
@@ -2697,7 +2697,7 @@
     {
       "id": "f1.v2:team_slow_stop:WIL",
       "label": "Williams slow pit stop",
-      "description": "A Williams pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for Williams goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
       "exclusivityGroup": "slow_stop:WIL",

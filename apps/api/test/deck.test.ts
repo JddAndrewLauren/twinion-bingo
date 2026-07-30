@@ -219,6 +219,27 @@ describe('composing a deck from the real F1 pool', () => {
     expect(card).toHaveLength(CARD_SQUARES);
     expect(new Set(groups).size).toBe(CARD_SQUARES);
   });
+
+  /**
+   * "Without straining" (#59), as something executable. One lucky seed proves the
+   * pool can be drawn from; it does not prove the pool is comfortable. A pool that
+   * only just reaches the quotas succeeds on some seeds and exhausts all 200 draw
+   * attempts on others, so the honest check is that every seed lands — and that a
+   * full six-player room deals out of the resulting deck.
+   */
+  it('composes and deals for every seed, not just a lucky one', () => {
+    for (let n = 0; n < 25; n += 1) {
+      const seed = `strain-${n}`;
+      const deck = composeDeck(f1, seed);
+
+      expect(tiersOf(deck)).toEqual(TIER_QUOTA);
+      expect(sourcesOf(deck)).toEqual(SOURCE_QUOTA);
+
+      for (const player of ['a', 'b', 'c', 'd', 'e', 'f']) {
+        expect(dealCard(deck, seed, `player-${player}`)).toHaveLength(CARD_SQUARES);
+      }
+    }
+  });
 });
 
 describe('dealing a card', () => {
