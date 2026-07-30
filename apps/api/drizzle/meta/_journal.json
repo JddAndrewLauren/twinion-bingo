@@ -15,6 +15,13 @@
       "when": 1785281057904,
       "tag": "0001_room_events_resume_index",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785382647675,
+      "tag": "0002_call_lookup_indexes",
+      "breakpoints": true
     }
   ]
 }

@@ -8,7 +8,6 @@ import {
   pgSchema,
   text,
   timestamp,
-  uniqueIndex,
   uuid,
   varchar,
   type AnyPgColumn,
@@ -109,6 +108,17 @@ export const cards = bingo.table(
  * The append-only log, room-scoped rather than game-scoped so a single `seq`
  * orders roster changes and game events alike. `seq` is the SSE event id, which
  * makes Last-Event-ID replay one indexed query.
+ *
+ * Nothing here constrains a square to one CALL. Two players spotting the same
+ * event in the same tick are arbitrated by the lock `callSquare` already holds on
+ * the game row (ADR-0004), because whether a square is callable turns on whether
+ * a RETRACT supersedes its call — a property of a *second* row, which an index
+ * can only ever be blind to. The partial unique index that used to sit here read
+ * a retracted square as still called, making it a permanent dead end (#45).
+ *
+ * Two of the indexes below serve the query that replaced it. They are not
+ * constraints and enforce nothing: uniqueness lives in the lock now, and these
+ * only keep the read that decides it off a scan of the whole log.
  */
 export const roomEvents = bingo.table(
   'room_events',
@@ -130,18 +140,29 @@ export const roomEvents = bingo.table(
   },
   (table) => [
     /**
-     * Two players spotting the same event at the same moment race to insert the
-     * same CALL. The partial unique index makes the loser a constraint
-     * violation rather than a duplicate row, so the first writer wins.
-     */
-    uniqueIndex('room_events_call_unique')
-      .on(table.gameId, table.squareId)
-      .where(sql`kind = 'CALL'`),
-    /**
      * Every SSE resume is `WHERE room_code = ? AND seq > ?` in `seq` order. The
      * primary key alone would make that a scan over every room's tail, so the
      * one query the realtime spine runs on a loop gets its own index.
      */
     index('room_events_room_code_seq_idx').on(table.roomCode, table.seq),
+    /**
+     * The call path's own lookup: "does this square have a live call" runs on
+     * every call now rather than only on a lost race, and it runs while holding
+     * the game row's lock, so leaving it to a sequential scan would make each
+     * call's lock hold time grow with the whole log — which is never pruned.
+     *
+     * Deliberately not unique. That is the difference between this index and the
+     * one #45 removed: the same columns, none of the enforcement.
+     */
+    index('room_events_call_idx')
+      .on(table.gameId, table.squareId)
+      .where(sql`kind = 'CALL'`),
+    /**
+     * The other half of that lookup, and of every marks derivation: the anti-join
+     * that asks whether any RETRACT names a given CALL's `seq`.
+     */
+    index('room_events_target_seq_idx')
+      .on(table.targetSeq)
+      .where(sql`kind = 'RETRACT'`),
   ],
 );

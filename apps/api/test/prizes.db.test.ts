@@ -288,6 +288,50 @@ describe.skipIf(noTestDatabase)('the win ladder', () => {
     ]);
   });
 
+  /**
+   * Newly reachable once a retracted square is callable again (#45, ADR-0004):
+   * the rung is settled inside the transaction that appends the CALL, and the
+   * second CALL for a square is that same transaction. A line completed by a
+   * re-called square earns its prize exactly as one completed the first time.
+   */
+  it('settles the ladder for a re-called square, as for any other call', async () => {
+    const { host, gameId, card } = await soloGame();
+
+    const line = LINES[0]!.map((index) => card[index]!.id);
+    const last = line.at(-1)!;
+
+    for (const id of line.slice(0, -1)) {
+      expect((await call(gameId, id, host.token)).ok).toBe(true);
+    }
+
+    // Complete the line, take that call back, and complete it again.
+    const first = (await (await call(gameId, last, host.token)).json()) as {
+      seq: number;
+    };
+    expect((await prizeRows(host.code)).map((row) => row.prize_kind)).toEqual([
+      'LINE',
+    ]);
+
+    expect((await retract(gameId, first.seq, host.token)).status).toBe(201);
+
+    const again = await call(gameId, last, host.token);
+    expect(again.status).toBe(201);
+    expect((await again.json()) as { appended: boolean }).toMatchObject({
+      appended: true,
+    });
+
+    // The rung was already claimed, so it is not awarded twice — but the line is
+    // whole again, which is the part the dead-end bug made unreachable.
+    expect((await prizeRows(host.code)).map((row) => row.prize_kind)).toEqual([
+      'LINE',
+    ]);
+
+    const after = await view(host.code, host.token);
+    expect(after.marks.map((mark) => mark.squareId)).toEqual(
+      expect.arrayContaining(line),
+    );
+  });
+
   /** A live game still corrects freely — the guard is about `done`, not about D8. */
   it('still allows a correction while the game is live', async () => {
     const { host, gameId, card } = await soloGame();
