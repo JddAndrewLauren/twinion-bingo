@@ -1,7 +1,13 @@
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
 
 [scripts]
-setup = "set -e; pnpm install --frozen-lockfile; [ -f apps/api/.env ] || cp apps/api/.env.example apps/api/.env; [ -f apps/web/.env.local ] || cp apps/web/.env.example apps/web/.env.local"
+# `pnpm db:workspace` owns apps/api/.env now — it creates this workspace's own
+# database and writes both connection strings, so there is no `cp` guard for
+# that file. Cloud workspaces have no Docker, hence the CONDUCTOR_IS_LOCAL gate.
+setup = "set -e; pnpm install --frozen-lockfile; [ -f apps/web/.env.local ] || cp apps/web/.env.example apps/web/.env.local; if [ \"${CONDUCTOR_IS_LOCAL}\" != \"0\" ]; then pnpm db:workspace; fi"
+# Serialises Conductor-launched scripts only. It does nothing about a session
+# running `pnpm test` directly, which is how every cross-workspace truncation
+# happened — the per-workspace database is what covers that.
 run_mode = "nonconcurrent"
 
 [scripts.run.dev]
