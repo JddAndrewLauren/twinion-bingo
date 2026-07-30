@@ -114,7 +114,14 @@ export type Stage =
 
 export type Fixture = {
   /** Push a frame down the injected stream, as another phone's call would arrive. */
-  emit: (event: { seq: number; kind: string; actorPlayerId?: string; squareId?: string }) => Promise<void>;
+  emit: (event: {
+    seq: number;
+    kind: string;
+    actorPlayerId?: string;
+    squareId?: string;
+    /** The rung a PRIZE row carries, which is what a burst is fired for. */
+    prizeKind?: string;
+  }) => Promise<void>;
   /** The card square at a grid index, for a test that wants to name what it tapped. */
   square: (index: number) => CardSquare;
   /**

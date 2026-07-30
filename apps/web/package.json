@@ -12,6 +12,7 @@
     "gate": "playwright test"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "next": "^16.2.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
@@ -20,6 +21,7 @@
     "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.2",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

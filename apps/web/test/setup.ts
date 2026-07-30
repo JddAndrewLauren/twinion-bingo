@@ -1,5 +1,15 @@
-import { beforeEach } from 'vitest';
+import confetti from 'canvas-confetti';
+import { beforeEach, vi } from 'vitest';
 import { FakeEventSource } from './fake-event-source';
+import { FakeWakeLock } from './fake-wake-lock';
+
+/**
+ * `canvas-confetti` draws on a real 2D context, and jsdom implements no
+ * `getContext` at all — so the real module cannot run in this environment. What
+ * the tests are about is *whether* a burst was fired and how loud, which is
+ * exactly what a mock records.
+ */
+vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 
 /**
  * Node 26 exposes a global `localStorage` that is undefined unless the process
@@ -75,6 +85,26 @@ if (Range.prototype.getClientRects === undefined) {
     Object.assign([], { item: () => null }) as unknown as DOMRectList;
 }
 
+/**
+ * jsdom 30 ships no `matchMedia` at all, and the confetti asks it whether the
+ * device has been told to keep motion down before it fires — so without this the
+ * *first* prize of any test run throws rather than celebrating. Nothing matches,
+ * which is the truthful answer from an environment with no display preferences;
+ * a test that is about reduced motion says so by spying on this.
+ */
+if (globalThis.matchMedia === undefined) {
+  Object.defineProperty(globalThis, 'matchMedia', {
+    configurable: true,
+    value: (query: string) =>
+      ({
+        matches: false,
+        media: query,
+        addEventListener() {},
+        removeEventListener() {},
+      }) as unknown as MediaQueryList,
+  });
+}
+
 // Installed once, for the whole file, and never stubbed: see the note on the
 // class. Only the record of what was opened is per-test.
 Object.defineProperty(globalThis, 'EventSource', {
@@ -82,6 +112,15 @@ Object.defineProperty(globalThis, 'EventSource', {
   value: FakeEventSource,
 });
 
+// Same again, and for the same recorded reason — see the note on the class.
+Object.defineProperty(navigator, 'wakeLock', {
+  configurable: true,
+  value: new FakeWakeLock(),
+});
+
 beforeEach(() => {
   FakeEventSource.opened = [];
+  FakeWakeLock.requested = [];
+  FakeWakeLock.refuse = false;
+  vi.mocked(confetti).mockClear();
 });
