@@ -332,10 +332,9 @@ describe.skipIf(noTestDatabase)('the settle window', () => {
   });
 
   /**
-   * The limitation, stated as a test. `at` is `defaultNow()` — `now()` is the
-   * *transaction start* time — so the grace a row actually gets is 250ms minus
-   * whatever its transaction spent before the insert. A transaction that was
-   * already older than the window when it inserted gets no grace at all.
+   * The filter compares `at` and nothing else — not the moment the row landed.
+   * A row that arrives already claiming to be older than the window therefore
+   * gets no grace at all.
    */
   it('measures the window from `at`, not from when the row was inserted', async () => {
     const host = await createRoom('Host');
@@ -358,12 +357,10 @@ describe.skipIf(noTestDatabase)('the settle window', () => {
   /**
    * And the consequence: the cursor only moves forward, so a row that becomes
    * visible *after* the cursor passed its `seq` is lost for good. This is the
-   * gap `events.ts` refuses to claim it closes, and closing it is #8's problem
-   * (a `clock_timestamp()` default on `at`, or a cursor that will not advance
-   * past an unfilled gap).
-   *
-   * **When #8 lands, this test should be inverted** — the skipped row becoming
-   * deliverable is the fix, and this assertion is what will notice.
+   * residual the `clock_timestamp()` default does not reach — an out-of-order
+   * commit rather than a window that shrank with the transaction — and the gap
+   * `events.ts` refuses to claim it closes. Only a cursor that will not advance
+   * past an unfilled gap would invert this test.
    */
   it('steps over a lower-seq row that only becomes eligible later', async () => {
     const host = await createRoom('Host');
@@ -395,6 +392,81 @@ describe.skipIf(noTestDatabase)('the settle window', () => {
     expect(await logSeqs(host.code)).toContain(skipped);
     // ...and the stream will never send it, because the cursor is already past.
     expect(await readEventsAfter(db, host.code, ahead)).toEqual([]);
+  });
+
+  /**
+   * The mechanism the window's promise rests on. Compared *inside* the
+   * transaction, where `now()` is by definition the transaction's start, so the
+   * gap between the two clocks needs no timestamp parsing to read.
+   */
+  it('stamps `at` at the insert, not at its transaction’s start', async () => {
+    const host = await createRoom('Host');
+
+    const lagMs = await db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_sleep(${(SETTLE_MS + 100) / 1000}::double precision)`,
+      );
+
+      const rows = await tx.execute<{ lag_ms: string }>(
+        sql`INSERT INTO bingo.room_events (room_code, actor_player_id, kind)
+            VALUES (${host.code}, ${host.player.id}::uuid, 'PLAYER_JOINED')
+            RETURNING extract(epoch from (at - now())) * 1000 AS lag_ms`,
+      );
+
+      return Number([...rows][0]!.lag_ms);
+    });
+
+    expect(lagMs).toBeGreaterThan(SETTLE_MS);
+  });
+
+  /**
+   * And what that buys on the read path: a row appended by a long transaction
+   * gets the whole window, not the remainder of it. On a transaction-start
+   * stamp this row is deliverable the instant it commits.
+   */
+  it('gives a row from a long transaction the full window', async () => {
+    const host = await createRoom('Host');
+
+    await pastTheWindow();
+    const cursor = (await logSeqs(host.code)).at(-1)!;
+
+    const appended = await db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_sleep(${(SETTLE_MS + 100) / 1000}::double precision)`,
+      );
+
+      const rows = await tx.execute<{ seq: string }>(
+        sql`INSERT INTO bingo.room_events (room_code, actor_player_id, kind)
+            VALUES (${host.code}, ${host.player.id}::uuid, 'PLAYER_JOINED')
+            RETURNING seq`,
+      );
+
+      return Number([...rows][0]!.seq);
+    });
+
+    expect(await readEventsAfter(db, host.code, cursor)).toEqual([]);
+
+    await pastTheWindow();
+
+    expect(
+      (await readEventsAfter(db, host.code, cursor)).map((event) => event.seq),
+    ).toEqual([appended]);
+  });
+
+  /**
+   * The asymmetry, pinned. `at` is stamped with `clock_timestamp()` but the
+   * filter compares against `now()`, and that is deliberate: an earlier clock on
+   * the read side only withholds a row *longer*, which is the safe direction,
+   * and `clock_timestamp()` is volatile — matching the two would perturb the
+   * selectivity estimate the EXPLAIN assertion below depends on. Without this,
+   * a well-meaning "make both clocks agree" edit has nothing to fail against.
+   * `settledHeadSeq` carries the same predicate and must move with this one.
+   */
+  it('compares against `now()` on the read side', () => {
+    const { sql: text } = eventsAfterQuery(db, 'ABCD', 0).toSQL();
+
+    expect(text).toContain('"at" < now() - ');
+    expect(text).not.toContain('clock_timestamp');
   });
 });
 

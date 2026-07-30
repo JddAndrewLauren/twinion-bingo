@@ -1,0 +1,1 @@
+ALTER TABLE "bingo"."room_events" ALTER COLUMN "at" SET DEFAULT clock_timestamp();

@@ -131,7 +131,16 @@ export const roomEvents = bingo.table(
     actorPlayerId: uuid('actor_player_id')
       .notNull()
       .references(() => players.id),
-    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * `clock_timestamp()`, not `defaultNow()`: `now()` is the transaction's
+     * start, so a row appended late in a long transaction would already have
+     * spent part of the stream's settle window before it existed. The insert's
+     * own clock is what makes that window mean the interval it names — see
+     * `SETTLE_MS` in `rooms/events.ts`.
+     */
+    at: timestamp('at', { withTimezone: true })
+      .notNull()
+      .default(sql`clock_timestamp()`),
     kind: roomEventKind('kind').notNull(),
     squareId: text('square_id'),
     /** The CALL row a RETRACT supersedes. */
