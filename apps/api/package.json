@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "dev": "PORT=${PORT:-$((${CONDUCTOR_PORT:-8079} + 1))} WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:${CONDUCTOR_PORT:-3000}} tsx watch --env-file-if-exists=.env src/server.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "db:generate": "drizzle-kit generate",
