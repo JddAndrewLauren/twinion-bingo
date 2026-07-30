@@ -1921,12 +1921,381 @@
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:hand:lights_out",
-      "label": "\"Lights out and away!\"",
-      "description": "Crofty calls the start with the line he has never once skipped.",
+      "id": "f1.v2:hand:alonso_age_stat",
+      "label": "Alonso Age Stat",
+      "description": "A statistic about Alonso's age or career length airs.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "commentary:lights_out",
+      "exclusivityGroup": "broadcast:silly_stat",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:blue_flags_ignored",
+      "label": "Blue Flags Ignored",
+      "description": "A driver being lapped is slow to move aside and the booth notices.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "stewards:blue_flags",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:cadillac_double_points",
+      "label": "Both Cadillacs in the Points",
+      "description": "Cadillac finishes the race with both cars in the top ten.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "team:cadillac_overperforms",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:cadillac_not_last",
+      "label": "Cadillac Not Last",
+      "description": "Either Cadillac finishes ahead of a pre-2026 team's car.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "team:cadillac_overperforms",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:celeb_in_garage",
+      "label": "A-List Celeb in the Garage",
+      "description": "A genuinely famous person shown in a team's garage.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "garage:celeb",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:copy_and_nothing_else",
+      "label": "\"Copy\" and Nothing Else",
+      "description": "A driver's entire response to bad news is \"copy\".",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:copy_only",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:croftys_silly_stat",
+      "label": "Crofty's Silly Stat",
+      "description": "Crofty delivers a statistic nobody needed.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:silly_stat",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:cuts_away_from_battle",
+      "label": "TV Cuts Away From Battle",
+      "description": "The director cuts away from a live on-track fight to show something else.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:cut_away",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:dad_looks_nervous",
+      "label": "Driver's Dad Looks Nervous",
+      "description": "A driver's parent shown mid-anxiety.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "garage:parent",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:debris_yellow",
+      "label": "Debris Yellow",
+      "description": "A local yellow or VSC specifically for debris on track.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:debris",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:double_dnf",
+      "label": "Double DNF for One Team",
+      "description": "Both cars from the same team fail to finish.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "retirement:double_dnf",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:double_stack",
+      "label": "Double Stack Pit Stop",
+      "description": "A team pits both cars on the same lap, one behind the other.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "pitlane:double_stack",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:early_retirement",
+      "label": "Retirement Before Lap 10",
+      "description": "Any car is out of the race within the first ten laps.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "retirement:early",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:empty_seats_shown",
+      "label": "Empty Grandstand Shown",
+      "description": "The camera lingers on visibly empty seats.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "crowd:empty_seats",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:engineer_were_looking",
+      "label": "Engineer Says \"We're Looking\"",
+      "description": "The classic stalling answer: \"we're looking into it\", \"we'll come back to you\".",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:stalling",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:five_second_penalty",
+      "label": "5-Second Penalty",
+      "description": "Any driver receives a 5-second time penalty.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "stewards:time_penalty",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:front_wing_change",
+      "label": "Front Wing Change",
+      "description": "A car pits for a new nose after damage.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "damage:front_wing",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:full_beans",
+      "label": "Full Beans",
+      "description": "Any driver or engineer says \"full beans\".",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:full_beans",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:grazie_ragazzi",
+      "label": "\"Grazie Ragazzi\"",
+      "description": "Ferrari radio victory/celebration in Italian on the world feed.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:grazie_ragazzi",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:hammertime",
+      "label": "Hammertime",
+      "description": "Hamilton gets (or references) the \"Hammertime\" call.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:hammertime",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:home_hero_hyped",
+      "label": "Home Hero Hyped",
+      "description": "The local driver's every move gets outsized coverage.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:home_hero",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:investigation_postponed",
+      "label": "Verdict After the Race",
+      "description": "Penalty investigation is postponed until after the race.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "stewards:postponed",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:kid_ear_defenders",
+      "label": "Kid With Ear Defenders",
+      "description": "A child in ear defenders shown in the garage or grandstand.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "garage:kid",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:lap_one_contact",
+      "label": "Lap 1 Contact",
+      "description": "Any contact between cars on the opening lap.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "contact:lap_one",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:lead_change_on_track",
+      "label": "Lead Changes Hands on Track",
+      "description": "The race lead changes hands on track rather than through the pit stops.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "race:lead_change",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:marshal_sprints",
+      "label": "Marshal Sprints Across Track",
+      "description": "Marshals dash out to clear debris.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:debris",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:max_complains",
+      "label": "Max Complains About the Car",
+      "description": "Verstappen critiques balance, energy, or strategy on the radio.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio_moan:VER",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:mexican_wave",
+      "label": "Mexican Wave in the Stands",
+      "description": "The crowd starts a wave and the director cuts to it.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "crowd:wave",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:nobody_retires",
+      "label": "Nobody Retires",
+      "description": "Every car that started the race is still running at the chequered flag.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "retirement:early",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:nostalgia_2021",
+      "label": "2021 Nostalgia",
+      "description": "Max and Lewis battle it out.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "storyline:2021",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:onboard_bouncing",
+      "label": "Onboard Shows Bouncing",
+      "description": "An onboard camera makes the car's porpoising or bouncing obvious.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:bouncing",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:orange_smoke",
+      "label": "Orange Smoke in Grandstand",
+      "description": "Verstappen fans light flares/smoke. Track-dependent — strongest in Europe.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "crowd:orange_smoke",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:override_explained",
+      "label": "Manual Override Explained",
+      "description": "Commentary explains the 2026 manual override boost as somebody uses it.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:regs_explainer",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:padel_or_golf",
+      "label": "Padel or Golf Mention",
+      "description": "Somebody mentions drivers' padel/golf hobbies on air.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:hobbies",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:papaya_rules",
+      "label": "Papaya Rules",
+      "description": "Broadcasters bring up \"Papaya Rules\".",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "paddock:papaya_rules",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:partner_in_garage",
+      "label": "Driver Girlfriend in Garage",
+      "description": "Camera cuts to a driver's partner reacting in the garage.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "garage:partner",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:photo_finish",
+      "label": "Photo Finish Under 0.5s",
+      "description": "The top two are separated by less than half a second at the line.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "finish:photo_finish",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:pit_fire",
+      "label": "Fire in the Pit Box",
+      "description": "Flames or a fire extinguisher in a pit box during a stop.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "pitlane:fire",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:pit_window_talk",
+      "label": "Pit Window Mentioned",
+      "description": "Commentary talks about a driver's pit window opening or closing.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:pit_window",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:podium_boos",
+      "label": "Crowd Boos on the Podium",
+      "description": "Audible booing during the podium ceremony.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "crowd:boos",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:power_unit_failure",
+      "label": "Power Unit Failure",
+      "description": "A retirement attributed on air to the new power unit (ICE, battery, or electrics).",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "retirement:power_unit",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:race_ends_behind_sc",
+      "label": "Race Ends Behind Safety Car",
+      "description": "The chequered flag falls with the safety car still leading the field.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:car",
       "templateId": null
     },
     {
@@ -1939,30 +2308,246 @@
       "templateId": null
     },
     {
+      "id": "f1.v2:hand:rain_never_arrives",
+      "label": "Rain Never Arrives",
+      "description": "Rain is forecast or radar-watched on air, but the race stays dry.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "weather:rain",
+      "templateId": null
+    },
+    {
       "id": "f1.v2:hand:red_flag",
-      "label": "Red flag",
-      "description": "The race is stopped and the field is sent to the pit lane.",
+      "label": "Red Flag",
+      "description": "The race is red-flagged and stopped.",
       "tier": "rare",
       "source": "handcrafted",
       "exclusivityGroup": "neutralisation:red_flag",
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:safety_car",
-      "label": "Safety car deployed",
-      "description": "The safety car is sent out, full or virtual.",
+      "id": "f1.v2:hand:refuses_team_order",
+      "label": "Driver Refuses Team Order",
+      "description": "A driver is told to hold position or swap places, and audibly does not comply.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:refuses_order",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:regs_re_explained",
+      "label": "2026 Regs Re-Explained",
+      "description": "The booth stops to re-explain a 2026 rule the audience is assumed to have missed.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:regs_explainer",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:replay_three_times",
+      "label": "Replay Shown 3+ Times",
+      "description": "The same incident replayed at least three times.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:safety_car",
+      "exclusivityGroup": "broadcast:replay",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:rookie_podium",
+      "label": "Rookie on the Podium",
+      "description": "A driver in their first full season finishes in the top three.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "podium:rookie",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:russell_bad_luck",
+      "label": "George Russell Bad Luck",
+      "description": "Russell loses a result to something outside his control — reliability, strategy, or someone else's mess.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "storyline:russell_luck",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:safety_car",
+      "label": "Safety Car",
+      "description": "A full safety car is deployed at any point in the race.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:car",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:sarcastic_radio",
+      "label": "Sarcastic Radio Reply",
+      "description": "A driver answers the pit wall with pure sarcasm.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:sarcasm",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:sparks_under_braking",
+      "label": "Sparks From the Skid Block",
+      "description": "Showers of sparks off a car's skid block, in a replay or on an onboard.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:sparks",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:standing_restart",
+      "label": "Standing Restart",
+      "description": "The race is restarted from a standing grid after a stoppage.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:red_flag",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:stewards_baffle_booth",
+      "label": "Steward Decision Baffles Booth",
+      "description": "Commentary is openly confused by a stewards' ruling.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:steward_confusion",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:strategist_head_in_hands",
+      "label": "Strategist Head in Hands",
+      "description": "A pit wall strategist shown with head in hands.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "paddock:head_in_hands",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:ten_second_penalty",
+      "label": "10-Second Penalty",
+      "description": "Any driver receives a 10-second penalty or worse (drive-through, stop-go).",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "stewards:time_penalty",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:that_was_dangerous",
+      "label": "\"That Was Dangerous\"",
+      "description": "A driver complains that a rival's move was dangerous.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:dangerous",
       "templateId": null
     },
     {
       "id": "f1.v2:hand:track_limits",
-      "label": "A lap time is deleted",
-      "description": "A lap time is deleted for exceeding track limits.",
-      "tier": "medium",
+      "label": "Track Limits Lap Deleted",
+      "description": "A lap time is deleted for track limits during the race.",
+      "tier": "certain",
       "source": "handcrafted",
       "exclusivityGroup": "stewards:track_limits",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:trophy_handled_badly",
+      "label": "Trophy Handled Badly",
+      "description": "A trophy is dropped, broken, or awkwardly juggled on the podium.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "podium:trophy_mishap",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:two_secs_ted",
+      "label": "2 Secs Ted",
+      "description": "Ted Kravitz gets interrupted mid-sentence by driver comms or the director.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:ted",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:typical_ferrari",
+      "label": "Typical Ferrari",
+      "description": "Ferrari makes a questionable strategy call.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "paddock:typical_ferrari",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:tyre_closeup",
+      "label": "Tyre Blistering Close-Up",
+      "description": "The broadcast shows a close-up of a blistered or grained tyre surface.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "broadcast:tyre_closeup",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:tyres_are_dead",
+      "label": "\"Tyres Are Dead\"",
+      "description": "A driver declares their tyres gone/dead/finished.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:tyres_dead",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:unsafe_release",
+      "label": "Unsafe Release",
+      "description": "A car is released into the path of another in the pit lane (penalty or investigation).",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "pitlane:unsafe_release",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:vasseur_laughs_it_off",
+      "label": "Fred Vasseur Laughs It Off",
+      "description": "Ferrari's boss deflects a crisis question with a chuckle.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "paddock:vasseur_laughs",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:vsc",
+      "label": "VSC",
+      "description": "A Virtual Safety Car period is called.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "neutralisation:car",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:wet_tyres",
+      "label": "Rain Tyres Fitted",
+      "description": "At least one car fits intermediate or full wet tyres during the race.",
+      "tier": "medium",
+      "source": "handcrafted",
+      "exclusivityGroup": "weather:wet_tyres",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:whos_behind_me",
+      "label": "\"Who's Behind Me?\"",
+      "description": "A driver has to ask who they're racing.",
+      "tier": "certain",
+      "source": "handcrafted",
+      "exclusivityGroup": "radio:whos_behind",
+      "templateId": null
+    },
+    {
+      "id": "f1.v2:hand:win_from_outside_top3",
+      "label": "Winner Started Outside Top 3",
+      "description": "The race winner started from fourth on the grid or further back.",
+      "tier": "rare",
+      "source": "handcrafted",
+      "exclusivityGroup": "race_winner",
       "templateId": null
     },
     {

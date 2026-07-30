@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 import {
   CARD_SQUARES,
   DECK_SIZE,
-  DeckCompositionError,
   MAX_PER_TEMPLATE,
   SOURCE_QUOTA,
   TIER_QUOTA,
@@ -16,10 +15,10 @@ import {
 import { defaultThemeId, loadPoolRegistry, poolFor, themesRoot } from '../src/games/pools.js';
 
 /**
- * The pool #7's numbers were written against does not exist yet — #16 authors the
- * F1 pool to ~180 squares, and the committed one is a 47-square starter. So the
- * quotas are proved against a committed synthetic pool of that size, and the real
- * pool gets its own test proving the composer refuses it loudly.
+ * The quotas are proved against a committed synthetic pool rather than against the
+ * real F1 one, because the real pool is authored copy: its counts move every time
+ * a square is written, and these tests exist to pin numbers. The real pool gets its
+ * own test below, asserting only that it can supply a deck at all.
  *
  * The fixture is committed rather than generated in a `beforeAll` on purpose: a
  * pool that changed shape between runs would make every count below unstable,
@@ -193,32 +192,32 @@ describe('composing a deck', () => {
 });
 
 /**
- * Option C, made executable. The committed F1 pool cannot supply this deck, and
- * the composer says so in numbers rather than degrading silently — the numbers
- * being the whole reason #7 was quarantined. When #16 lands, this test is what
- * will notice: it should start failing, and become a passing composition test.
+ * The other half of option C. This test was written to fail loudly while the
+ * committed F1 pool was a 47-square starter that could not reach D6's quotas, and
+ * to flip once #16 authored the pool for real — which #58 did. What it pins now is
+ * that the committed artefact, not only the synthetic fixture, satisfies every
+ * quota the composer refuses to bend.
  */
 describe('composing a deck from the real F1 pool', () => {
   const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
 
-  it('refuses, naming the quotas the starter pool cannot reach', () => {
-    expect(() => composeDeck(f1, 'seed-one')).toThrow(DeckCompositionError);
+  it('composes a deck meeting every tier and source quota', () => {
+    const deck = composeDeck(f1, 'seed-one');
 
-    let message = '';
-    try {
-      composeDeck(f1, 'seed-one');
-    } catch (error) {
-      message = (error as Error).message;
-    }
-
-    // 13 certain wanted, and the cap of 3 per template leaves fewer selectable
-    // than the 8 the pool holds; 24 hand-crafted wanted against 5.
-    expect(message).toContain('13 certain squares');
-    expect(message).toContain('24 handcrafted squares');
+    expect(deck).toHaveLength(DECK_SIZE);
+    expect(tiersOf(deck)).toEqual(TIER_QUOTA);
+    expect(sourcesOf(deck)).toEqual(SOURCE_QUOTA);
   });
 
-  it('is a shortfall in the pool, not in the composer: the fixture composes', () => {
-    expect(composeDeck(fixture, 'seed-one')).toHaveLength(DECK_SIZE);
+  it('deals a full card from it, one square per exclusivity group', () => {
+    const deck = composeDeck(f1, 'seed-one');
+    const card = dealCard(deck, 'seed-one', 'player-a');
+    const groups = deck
+      .filter((square) => card.includes(square.id))
+      .map((square) => square.exclusivityGroup);
+
+    expect(card).toHaveLength(CARD_SQUARES);
+    expect(new Set(groups).size).toBe(CARD_SQUARES);
   });
 });
 
