@@ -2202,7 +2202,7 @@
     {
       "id": "f1.v2:hand:orange_smoke",
       "label": "Orange Smoke in Grandstand",
-      "description": "Verstappen fans light flares or smoke in the grandstand.",
+      "description": "Verstappen fans light flares/smoke.",
       "tier": "medium",
       "source": "handcrafted",
       "exclusivityGroup": "crowd:orange_smoke",

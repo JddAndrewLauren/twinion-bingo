@@ -465,7 +465,7 @@
     {
       "key": "orange_smoke",
       "label": "Orange Smoke in Grandstand",
-      "description": "Verstappen fans light flares or smoke in the grandstand.",
+      "description": "Verstappen fans light flares/smoke.",
       "tier": "medium",
       "exclusivityGroup": "crowd:orange_smoke"
     },
