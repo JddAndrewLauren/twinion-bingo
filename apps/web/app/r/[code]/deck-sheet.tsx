@@ -1,7 +1,7 @@
 import type { Deck, Mark } from '../../room-api';
 
 const ROW =
-  'flex w-full items-center justify-between gap-2 rounded border p-2 text-left';
+  'flex min-h-11 w-full items-center justify-between gap-2 rounded border p-2 text-left';
 
 /**
  * The other half of D7: the host can call any square in the room's deck, not only

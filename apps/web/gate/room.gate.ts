@@ -726,6 +726,7 @@ test.describe('the host deck sheet', () => {
 
     await row.tap();
     await expect(row).toHaveAttribute('aria-pressed', 'true');
+    await expectThumbSized(row, 'the called deck row');
 
     // Past the ten-second window this is the only affordance left for it, so the row
     // itself is what opens the dialog.
