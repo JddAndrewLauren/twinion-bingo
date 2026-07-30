@@ -23,10 +23,11 @@ from the theme pool, deals every player a 24-square card from that one deck, and
 holding. The draw is seeded and the seed stored, so a deal can be reproduced from the row. Cards
 hold `square_ids` and nothing else: marks are derived from the call log, never stored.
 
-**The deck cannot be drawn from the F1 theme yet.** D6's quotas are hard constraints, and the
-committed 47-square starter pool cannot meet them — starting a game answers 503 with the shortfall
-until #16 authors the pool to ~180 squares. `docs/adr/0002-deck-composition-hard-quotas.md` has the
-arithmetic and why it fails loudly rather than degrading.
+**The F1 theme supplies that deck.** D6's quotas are hard constraints, and the committed F1 pool —
+300 squares at `poolVersion: v2`, 230 generated from 11 teams and 22 drivers plus 70 hand-crafted —
+meets every one of them, so starting a game deals real cards. A pool that could not would be
+refused rather than degraded: the composer answers 503 naming the quotas it cannot reach.
+`docs/adr/0002-deck-composition-hard-quotas.md` has the arithmetic and why it fails loudly.
 
 Not built yet: calling squares and the win ladder — see the open issues off the master plan (#1).
 

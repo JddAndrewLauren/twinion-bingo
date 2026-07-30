@@ -141,6 +141,22 @@ deck so the deck feels varied.
 Pacing is governed by the **rarity mix of a card**, not pool size — expected marks is just the sum of
 per-square occurrence probabilities. Pool size only controls variety across a season.
 
+> **Resolved — the F1 pool shipped at 300, not ~180, and the mix is accepted as it stands.**
+> #16's authoring landed as #57–#60: 300 squares at `poolVersion: v2`, 230 generated from 11 teams /
+> 22 drivers / 14 templates plus 70 hand-crafted, in a 40 certain / 191 medium / 69 rare mix. That is
+> not the ≈60/90/30 the grilled plan (#53, decision 6) targeted, and it does not need to be.
+> Retiering to hit the old split was considered and declined: no deck quota strains against the mix
+> as it stands, and the ~2–3-per-template cap holds the generated side to 42 selectable squares
+> however large the pool grows. Pool size buys season variety, which is what the paragraph above
+> already says it buys.
+>
+> **The quotas now bind the card as well as the deck.** The 13/20/7 above is met across the 40, but
+> the deal was taking 24 of those 40 with no tier control, so the deck's mix never reached the card
+> drawn from it: over 3000 cards, 11.5% held 6–7 rare of 24, worst case 7 rare against 3 certain — a
+> card that is mostly waiting. A dealt card therefore holds **at most 5 rare and at least 6 certain**.
+> Bounds, not a second quota: the deal is still a draw, and these only rule out the tails the ~8/~12/~4
+> above was always assumed to sit inside.
+
 ### D7 — call scope, and why
 
 A mark is monotonically good for you, so under card-only calling you always call immediately —
@@ -175,16 +191,16 @@ themes/f1/
   overrides.json    prune list + reworded lines
       |  pnpm pool:build
       v
-  pool.generated.json   <- COMMITTED and reviewed, ~180 squares
+  pool.generated.json   <- COMMITTED and reviewed, 300 squares at v2
 ```
 
 Templates carry **per-entity tier rules**, because one template × 22 drivers yields 22 squares with
 wildly different real-world odds — "Norris wins" is a coin-flip, "Bortoleto wins" is absurd:
 
 ```
-"{driver} wins"   frontrunner -> medium
-                  midfield    -> rare
-                  backmarker  -> excluded
+"{driver} wins"   podium -> medium
+                  points -> rare
+                  field  -> excluded
 ```
 
 The deck draw applies a **source quota** — ~24 hand-crafted + ~16 generated per 40-square deck — so the
@@ -283,7 +299,7 @@ as the fallback.
 |---|---|
 | 28–31 Jul | Repo skeleton; Fly app + `fly.toml` per D2; Supabase `bingo` schema + Drizzle with `schemaFilter`; rooms/join/game endpoints; SSE stream with replay. Prove plumbing with two browsers. |
 | 28 Jul–2 Aug | **`/prototype` the room screen, phone *and* 11" iPad** — several variations, mock state, judged on real hardware. Parallel; needs only mock data. |
-| 1–8 Aug | F1 content: `entities.json`, `templates.json`, `handcrafted.json`, `pool:build`; review and prune to ~180 squares. The long pole — authoring good squares takes longer than the code. |
+| 1–8 Aug | F1 content: `entities.json`, `templates.json`, `handcrafted.json`, `pool:build`; review and prune. The long pole — authoring good squares takes longer than the code. Landed 29 Jul at 300 squares (v2). |
 | 5–12 Aug | Real room screen from the chosen prototypes: card grid, calls, toasts, undo, phone sheet, iPad two-pane, standings, timeline. |
 | 12–15 Aug | Host deck sheet; win ladder and prize moments; confetti; Screen Wake Lock; manifest + icons; OG unfurl for `/r/:code`. |
 | **15 Aug** | **Feature freeze.** |

@@ -43,7 +43,7 @@ cell stops working.
 | | Label max | Longest word | What it is |
 | --- | --- | --- | --- |
 | `short` | 16 | 10 | Terse authoring. What the cap looks like with room to spare |
-| `real` | 28 | 10 | The committed 47-square pool's own longest labels. What is on screen today |
+| `real` | 28 | 10 | The committed F1 pool's own longest labels. What is on screen today |
 | `cap` (default) | 28 | 13 | At the cap, with `investigation`, `championship`, `disqualified`, `reprimanded` |
 | `long` | 41 | 13 | **Over** the cap. Not a proposal — what raising it would cost |
 
@@ -195,7 +195,7 @@ Two consequences that are decisions rather than observations:
 
 1. **`description` becomes load-bearing.** Today it is a long-press nicety; in this list it is the
    thing that settles arguments about whether an event counted. That is a real addition to #16's
-   brief for ~180 squares — every square needs prose that *disambiguates*, not prose that reminds.
+   pool-authoring brief — every square needs prose that *disambiguates*, not prose that reminds.
 2. **64 characters may not be enough for it.** The committed pool's descriptions run 31-64
    characters, median 47. Several mock descriptions here are deliberately longer (up to ~130),
    because "clarifies exactly what people are looking for" is a harder brief than "reminds you what

@@ -24,7 +24,7 @@ row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-
 
 ## Squares and where they come from
 
-**Pool** — a theme's whole authored body of squares (~180 at full size), committed to the repo as
+**Pool** — a theme's whole authored body of squares (F1's is 300 at `v2`), committed to the repo as
 folders under `themes/` (D9, D10). Not a runtime concept: nothing reads a pool during a race except
 the deck composer.
 

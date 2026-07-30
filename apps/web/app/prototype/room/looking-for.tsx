@@ -13,7 +13,7 @@
  * `description` for the long press), so nothing here needs a model change. What it
  * does change is the *weight* on `description`: today it is a long-press nicety,
  * and in this list it becomes the thing that settles arguments about whether an
- * event counted. That is a real addition to #16's brief for ~180 squares, and it
+ * event counted. That is a real addition to #16's pool-authoring brief, and it
  * is a decision to record rather than one for this file to make.
  *
  * Three shapes, because how the list is disclosed is the whole question:
