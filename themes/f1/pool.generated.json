@@ -405,7 +405,7 @@
       "description": "Albon fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:ALB",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -414,7 +414,7 @@
       "description": "Alonso fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:ALO",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -423,7 +423,7 @@
       "description": "Antonelli fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:ANT",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -432,7 +432,7 @@
       "description": "Bearman fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:BEA",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -441,7 +441,7 @@
       "description": "Bortoleto fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:BOR",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -450,7 +450,7 @@
       "description": "Bottas fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:BOT",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -459,7 +459,7 @@
       "description": "Colapinto fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:COL",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -468,7 +468,7 @@
       "description": "Gasly fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:GAS",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -477,7 +477,7 @@
       "description": "Hadjar fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:HAD",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -486,7 +486,7 @@
       "description": "Hamilton fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:HAM",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -495,7 +495,7 @@
       "description": "Hulkenberg fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:HUL",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -504,7 +504,7 @@
       "description": "Lawson fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:LAW",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -513,7 +513,7 @@
       "description": "Leclerc fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:LEC",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -522,7 +522,7 @@
       "description": "Lindblad fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:LIN",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -531,7 +531,7 @@
       "description": "Norris fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:NOR",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -540,7 +540,7 @@
       "description": "Ocon fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:OCO",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -549,7 +549,7 @@
       "description": "Pérez fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:PER",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -558,7 +558,7 @@
       "description": "Piastri fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:PIA",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -567,7 +567,7 @@
       "description": "Russell fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:RUS",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -576,7 +576,7 @@
       "description": "Sainz fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:SAI",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -585,7 +585,7 @@
       "description": "Stroll fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "out:STR",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -594,7 +594,7 @@
       "description": "Verstappen fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "out:VER",
+      "exclusivityGroup": "retirement:any",
       "templateId": "driver_dnf"
     },
     {
@@ -2016,7 +2016,7 @@
       "description": "Both cars from the same team fail to finish.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:double_dnf",
+      "exclusivityGroup": "retirement:any",
       "templateId": null
     },
     {
@@ -2034,7 +2034,7 @@
       "description": "Any car is out of the race within the first ten laps.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:early",
+      "exclusivityGroup": "retirement:any",
       "templateId": null
     },
     {
@@ -2178,7 +2178,7 @@
       "description": "Every car that started the race is still running at the chequered flag.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:early",
+      "exclusivityGroup": "retirement:any",
       "templateId": null
     },
     {
@@ -2286,7 +2286,7 @@
       "description": "A retirement attributed on air to the new power unit (ICE, battery, or electrics).",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:power_unit",
+      "exclusivityGroup": "retirement:any",
       "templateId": null
     },
     {
@@ -2529,7 +2529,7 @@
       "description": "At least one car fits intermediate or full wet tyres during the race.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "weather:wet_tyres",
+      "exclusivityGroup": "weather:rain",
       "templateId": null
     },
     {
