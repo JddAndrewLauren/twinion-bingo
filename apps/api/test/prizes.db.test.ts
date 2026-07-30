@@ -94,6 +94,15 @@ async function prizeRows(code: string) {
   return [...rows];
 }
 
+/** The 40 square ids the room is playing, in the order the draw put them. */
+async function deckOf(gameId: string): Promise<string[]> {
+  const rows = await db.execute<{ deck: string[] }>(
+    sql`SELECT deck FROM bingo.games WHERE id = ${gameId}`,
+  );
+
+  return [...rows][0]!.deck;
+}
+
 const truncate = async () => {
   await db.execute(
     sql`TRUNCATE bingo.room_events, bingo.cards, bingo.games, bingo.players, bingo.rooms CASCADE`,
@@ -406,6 +415,18 @@ describe.skipIf(noTestDatabase)('standings and the timeline', () => {
 describe.skipIf(noTestDatabase)('joining mid-game', () => {
   beforeEach(truncate);
 
+  /**
+   * A room mid-stint: the host has taken a line off their own card, and has
+   * called the rest of the deck's traffic besides — every square the deck holds
+   * that the host's card does not.
+   *
+   * The second half is what makes the newcomer's inheritance a fact rather than
+   * a coin toss. A card is 24 of the deck's 40, so no card can miss more than 16
+   * called squares; calling those 16 alongside the line puts at least five of
+   * the 21 on whatever card the newcomer is dealt, however the dealer picks.
+   * They are squares the host does not hold, so they add calls to the log
+   * without adding the host a second line.
+   */
   async function roomWithALineAlreadyCalled() {
     const host = await createRoom('Ash');
     const started = (await (
@@ -419,6 +440,14 @@ describe.skipIf(noTestDatabase)('joining mid-game', () => {
       LINES[0]!,
     );
 
+    const held = new Set(started.card!.map((square) => square.id));
+    for (const id of await deckOf(started.id)) {
+      if (held.has(id)) continue;
+
+      expect((await call(started.id, id, host.token)).ok).toBe(true);
+      called.push(id);
+    }
+
     return { host, gameId: started.id, called };
   }
 
@@ -430,10 +459,7 @@ describe.skipIf(noTestDatabase)('joining mid-game', () => {
     expect(theirs.id).toBe(gameId);
     expect(theirs.card).toHaveLength(CARD_SQUARES);
 
-    const deckRows = await db.execute<{ deck: string[] }>(
-      sql`SELECT deck FROM bingo.games WHERE id = ${gameId}`,
-    );
-    const deck = new Set([...deckRows][0]!.deck);
+    const deck = new Set(await deckOf(gameId));
     expect(theirs.card!.every((square) => deck.has(square.id))).toBe(true);
 
     // The marks arrive for free: the card's ids intersected with the live calls,
