@@ -5,10 +5,10 @@ import { createRandom, shuffled } from './random.js';
  * D6's composition, as numbers. These are hard quotas: the composer either draws
  * a deck that meets every one of them or it refuses to draw at all.
  *
- * Refusing is deliberate. The committed F1 pool is a 47-square starter that
- * cannot satisfy them — see #16, which authors it to ~180 — and the alternative
- * to refusing is a relaxation policy invented here, in code, for a pool that is
- * about to be replaced. A loud failure is the honest version of "not yet".
+ * Refusing is deliberate: the alternative is a relaxation policy invented here,
+ * in code, and a loud failure is the honest version of "this pool is too thin".
+ * The committed F1 pool is 300 squares and composes comfortably, so the refusal
+ * is a guard on future themes rather than a description of this one.
  */
 export const DECK_SIZE = 40;
 
@@ -33,6 +33,21 @@ export const MAX_PER_TEMPLATE = 3;
 
 /** 5x5 with a free centre (D4). The centre is the theme's, not a pool square. */
 export const CARD_SQUARES = 24;
+
+/**
+ * The deck's 13/20/7 does not reach the card on its own. Dealing 24 of 40 by
+ * shuffle alone put six or seven rare squares on 11.5% of cards across 3000
+ * measured deals, and the worst card held seven rare against three certain —
+ * most of a third of the grid dead all race, with almost nothing firing in the
+ * opening laps. So the card is bounded directly, on top of the deck's quotas.
+ *
+ * Both bounds are one-sided on purpose. Capping rare protects the card from
+ * being unplayable; flooring certain protects the opening laps from being
+ * silent. Nothing bounds medium, which is what the card is mostly made of.
+ */
+export const MAX_RARE_PER_CARD = 5;
+
+export const MIN_CERTAIN_PER_CARD = 6;
 
 /**
  * How many independent draws to try before declaring the pool unable to supply a
@@ -62,6 +77,14 @@ export type Deck = PoolSquare[];
  * Draws the room's deck. Every card in the game is dealt from this one deck
  * rather than independently from the pool — 24 of 40 puts each square on ~3.6 of
  * 6 cards, so there is nearly always a second player watching for it (D6).
+ *
+ * The tier quota is not what makes a deck dealable within the card bounds: 13
+ * certain and 33 non-rare are plenty of squares, but squares that share an
+ * exclusivity group count once on a card. A 13/20/7 deck whose certain squares
+ * sit in five groups cannot put six certain on any card, whatever order it is
+ * dealt in. That is a property of the draw, not of the numbers, so it is fixed
+ * here — by rejecting such a draw and taking another — rather than by moving the
+ * quotas, which would not fix it.
  */
 export function composeDeck(pool: Pool, seed: string): Deck {
   assertPoolCanSupply(pool);
@@ -71,50 +94,122 @@ export function composeDeck(pool: Pool, seed: string): Deck {
   for (let attempt = 0; attempt < DRAW_ATTEMPTS; attempt += 1) {
     const deck = attemptDraw(pool.squares, random);
 
-    // A deck with fewer distinct exclusivity groups than a card has squares
-    // cannot be dealt from at all, so it is not a deck.
-    if (deck !== undefined && distinctGroups(deck) >= CARD_SQUARES) return deck;
+    // A deck no card can be dealt from is not a deck, so the composer is where
+    // that is caught — not the deal, mid-game, for one unlucky player.
+    if (deck !== undefined && cardBoundsShortfalls(deck).length === 0) return deck;
   }
 
   throw new DeckCompositionError(pool.themeId, [
     `no draw satisfying every quota was found in ${DRAW_ATTEMPTS} attempts, ` +
       'even though the per-tier and per-source counts above are individually sufficient — ' +
-      'the tier and source quotas cannot be met at the same time by this pool',
+      'either the tier and source quotas cannot be met at the same time by this pool, ' +
+      'or the draws that meet them spread too few exclusivity groups to deal a ' +
+      `${CARD_SQUARES}-square card holding at least ${MIN_CERTAIN_PER_CARD} certain ` +
+      `and at most ${MAX_RARE_PER_CARD} rare`,
   ]);
 }
 
 /**
  * Deals one player's 24 squares from the deck. At most one square per exclusivity
  * group, so a card never carries both "Norris wins" and "Norris on the podium" —
- * one event would mark two cells.
+ * one event would mark two cells. At most MAX_RARE_PER_CARD rare and at least
+ * MIN_CERTAIN_PER_CARD certain, so no player spends a race staring at a grid
+ * that cannot fill.
+ *
+ * Three passes over one shuffle, in bound order: the certain floor first, then
+ * the non-rare squares up to the rare cap's complement, then anything left. Each
+ * pass takes whatever the shuffle offers in an unused group, so no pass can
+ * spend a budget a later pass needs and none of them can loop — 24 slots, three
+ * single passes over a 40-square list. A greedy single pass could not do this:
+ * it would spend the rare cap on squares whose groups also held a medium, and
+ * then find the leftover groups were rare-only and the card short.
  *
  * Seeded by the game's seed and the player's id, so the same game with the same
  * roster deals the same cards however many times it is replayed.
  */
 export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
+  const shortfalls = cardBoundsShortfalls(deck);
+  if (shortfalls.length > 0) {
+    throw new Error(
+      `cannot deal a ${CARD_SQUARES}-square card from this deck:\n` +
+        shortfalls.map((reason) => `  - ${reason}`).join('\n'),
+    );
+  }
+
   const random = createRandom(`${seed}:${playerId}`);
+  const order = shuffled(deck, random);
   const groups = new Set<string>();
   const squareIds: string[] = [];
 
-  for (const square of shuffled(deck, random)) {
-    if (squareIds.length === CARD_SQUARES) break;
-    if (groups.has(square.exclusivityGroup)) continue;
+  /** Fills up to `upTo` squares, taking only squares this pass will accept. */
+  const fill = (upTo: number, accepts: (square: PoolSquare) => boolean): void => {
+    for (const square of order) {
+      if (squareIds.length === upTo) return;
+      if (groups.has(square.exclusivityGroup)) continue;
+      if (!accepts(square)) continue;
 
-    groups.add(square.exclusivityGroup);
-    squareIds.push(square.id);
-  }
+      groups.add(square.exclusivityGroup);
+      squareIds.push(square.id);
+    }
+  };
 
-  // Unreachable for a deck from `composeDeck`, which will not return one with
-  // fewer than CARD_SQUARES distinct groups. Asserted rather than assumed
-  // because a card short of 24 squares would be a silently unplayable game.
+  fill(MIN_CERTAIN_PER_CARD, (square) => square.tier === 'certain');
+  fill(CARD_SQUARES - MAX_RARE_PER_CARD, (square) => square.tier !== 'rare');
+  fill(CARD_SQUARES, () => true);
+
+  // Unreachable: the shortfall check above is exactly the condition under which
+  // these three passes fill all 24 slots. Asserted rather than assumed because
+  // a card short of 24 squares would be a silently unplayable game.
   if (squareIds.length !== CARD_SQUARES) {
     throw new Error(
-      `dealt ${squareIds.length} squares, not ${CARD_SQUARES}: the deck holds ` +
-        `only ${distinctGroups(deck)} distinct exclusivity groups`,
+      `dealt ${squareIds.length} squares, not ${CARD_SQUARES}, from a deck of ` +
+        `${deck.length} in ${distinctGroups(deck)} distinct exclusivity groups`,
     );
   }
 
   return squareIds;
+}
+
+/**
+ * Why a deck cannot be dealt within the card bounds, or nothing if it can. The
+ * three counts are necessary and sufficient together, which is what lets the
+ * deal above be three flat passes rather than a search: a card is 24 groups of
+ * which at least MIN_CERTAIN_PER_CARD must offer a certain square and at least
+ * CARD_SQUARES - MAX_RARE_PER_CARD must offer a non-rare one, and the passes
+ * claim those groups in that order, so each pass has what the count promised.
+ */
+function cardBoundsShortfalls(deck: Deck): string[] {
+  const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
+    new Set(deck.filter(accepts).map((square) => square.exclusivityGroup)).size;
+
+  const nonRareNeeded = CARD_SQUARES - MAX_RARE_PER_CARD;
+  const total = distinctGroups(deck);
+  const nonRare = groupsHolding((square) => square.tier !== 'rare');
+  const certain = groupsHolding((square) => square.tier === 'certain');
+  const reasons: string[] = [];
+
+  if (total < CARD_SQUARES) {
+    reasons.push(
+      `it holds only ${total} distinct exclusivity groups, and a card is ` +
+        `${CARD_SQUARES} squares in ${CARD_SQUARES} of them`,
+    );
+  }
+
+  if (nonRare < nonRareNeeded) {
+    reasons.push(
+      `only ${nonRare} of its exclusivity groups hold a non-rare square, and a ` +
+        `card capped at ${MAX_RARE_PER_CARD} rare needs ${nonRareNeeded}`,
+    );
+  }
+
+  if (certain < MIN_CERTAIN_PER_CARD) {
+    reasons.push(
+      `only ${certain} of its exclusivity groups hold a certain square, and a ` +
+        `card needs ${MIN_CERTAIN_PER_CARD}`,
+    );
+  }
+
+  return reasons;
 }
 
 /**

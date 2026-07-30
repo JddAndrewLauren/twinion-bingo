@@ -34,7 +34,9 @@ approximated (ADR-0002). `apps/api/src/games/deck.ts`.
 
 **Card** — the 24 squares one player is dealt from the room's deck, plus a free centre, laid out
 5×5 (D4). Dealt from the *deck*, never from the pool — the 24-of-40 overlap is what puts each square
-on ~3.6 of 6 cards, and it is the reason a call has anyone to matter to.
+on ~3.6 of 6 cards, and it is the reason a call has anyone to matter to. Bounded in its own right, on
+top of the deck's quotas: at most 5 *rare* and at least 6 *certain*, because the deck's tier mix does
+not reach a 24-square subset of it on its own.
 
 **Free centre** — the middle cell, theme-flavoured ("LIGHTS OUT"). Not a pool square and not
 "always marked": nothing has to happen for it to count, so lines through it are complete when their
