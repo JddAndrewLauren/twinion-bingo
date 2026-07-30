@@ -124,28 +124,28 @@
       "label": "Retirement Before Lap 10",
       "description": "Any car is out of the race within the first ten laps.",
       "tier": "medium",
-      "exclusivityGroup": "retirement:early"
+      "exclusivityGroup": "retirement:any"
     },
     {
       "key": "nobody_retires",
       "label": "Nobody Retires",
       "description": "Every car that started the race is still running at the chequered flag.",
       "tier": "rare",
-      "exclusivityGroup": "retirement:early"
+      "exclusivityGroup": "retirement:any"
     },
     {
       "key": "double_dnf",
       "label": "Double DNF for One Team",
       "description": "Both cars from the same team fail to finish.",
       "tier": "rare",
-      "exclusivityGroup": "retirement:double_dnf"
+      "exclusivityGroup": "retirement:any"
     },
     {
       "key": "power_unit_failure",
       "label": "Power Unit Failure",
       "description": "A retirement attributed on air to the new power unit (ICE, battery, or electrics).",
       "tier": "medium",
-      "exclusivityGroup": "retirement:power_unit"
+      "exclusivityGroup": "retirement:any"
     },
     {
       "key": "rain_arrives",
@@ -166,7 +166,7 @@
       "label": "Rain Tyres Fitted",
       "description": "At least one car fits intermediate or full wet tyres during the race.",
       "tier": "medium",
-      "exclusivityGroup": "weather:wet_tyres"
+      "exclusivityGroup": "weather:rain"
     },
     {
       "key": "photo_finish",

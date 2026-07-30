@@ -77,7 +77,7 @@
       "entityType": "driver",
       "label": "{driver} DNFs",
       "description": "{driver} fails to finish the race.",
-      "exclusivityGroup": "out:{driver}",
+      "exclusivityGroup": "retirement:any",
       "tierByEntityTier": {
         "podium": "rare",
         "points": "medium",
