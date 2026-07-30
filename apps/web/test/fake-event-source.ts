@@ -33,6 +33,7 @@ export class FakeEventSource {
     kind: string;
     actorPlayerId?: string;
     squareId?: string | null;
+    prizeKind?: string | null;
   }) {
     const message = new MessageEvent('message', { data: JSON.stringify(event) });
     for (const listener of this.listeners) listener(message);
