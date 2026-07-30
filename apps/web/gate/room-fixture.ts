@@ -124,6 +124,17 @@ export type Fixture = {
   }) => Promise<void>;
   /** The card square at a grid index, for a test that wants to name what it tapped. */
   square: (index: number) => CardSquare;
+  /**
+   * How many streams this page has ever opened. The count, not the live ones: the
+   * stub keeps every `EventSource` it was asked for, so "exactly one" is a claim
+   * about the whole run rather than about this instant.
+   *
+   * It is the only mechanical evidence for #14's "does not drop the SSE connection",
+   * and it has to be counted here rather than off `page.on('request')` — the stream
+   * never reaches the network in this fixture, because `EventSource` itself is what
+   * is replaced.
+   */
+  streams: () => Promise<number>;
 };
 
 function gameFor(stage: Stage, marked: string[]): Game {
@@ -301,6 +312,10 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
       (window as unknown as { __gateEmit: (p: unknown) => void }).__gateEmit(payload);
     }, event),
     square: (index) => CARD[index]!,
+    streams: () =>
+      page.evaluate(
+        () => (window.EventSource as unknown as { live: unknown[] }).live.length,
+      ),
   };
 }
 

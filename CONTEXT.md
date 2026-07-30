@@ -119,6 +119,29 @@ towards the standings but towards no win of theirs (`claimableSquares` gates on 
 renders grey rather than green — so a line that was already complete at join reads as something to
 look at rather than something to claim.
 
+## The two layouts
+
+The room screen has two, and which one applies is decided by width alone — a pure CSS switch at
+Tailwind's stock `lg` (1024px), never by a device name (#12's C1, built in #13 and #14).
+
+**Phone layout** — one column. The card, with "what am I looking for" as a collapsible block under
+it, and the *Race* surface behind a `Card` | `Race` segmented control. `ipad-11-portrait` (834) gets
+this too, with much larger cells: it is a comfortable single column, not a stretched phone.
+
+**Two-pane layout** — the card alone on the left, a **pane** on the right, at `ipad-11-landscape`
+(1194) and above. Named for an iPad propped next to the TV, which is plausibly the *primary* device
+(D14). Both columns are fixed to the viewport and each scrolls itself: a page that scrolls would move
+the card, and a card that moves is the thing two columns are for.
+
+**Pane** — the right column of the two-pane layout, and only that. Itself tabbed, **Looking for** |
+**Race**, opening on the list: early in a race what you want is what to watch for, not a timeline of
+what already happened. A *surface* is the phone layout's whole-screen equivalent; a pane is beside the
+card rather than instead of it.
+
+Both layouts' markup is in the document at every width — the price of a CSS-only switch, paid so that
+rotating mid-game cannot remount the screen and drop the stream. `docs/SURFACES.md` carries the
+consequences.
+
 ## Identity
 
 **Player** — a display name plus a server-issued token held in `localStorage`, per browser. No

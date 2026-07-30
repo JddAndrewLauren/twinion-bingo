@@ -209,20 +209,72 @@ function stream() {
 }
 
 /**
+ * The phone layout's segmented control, located through its own tablist.
+ *
+ * There are two tab widgets in the document since #14 — this one and the two-pane
+ * layout's right pane, which carries a `Race` tab of its own. Exactly one is ever on
+ * screen, because which layout applies is a CSS question at `lg`, but both are always
+ * in the markup. Scoping to the tablist is what keeps "the Race tab" meaning one
+ * thing on this side.
+ */
+function surfaceTab(name: 'Card' | 'Race') {
+  return within(screen.getByRole('tablist', { name: 'Room' })).getByRole('tab', {
+    name,
+  });
+}
+
+/** One of the phone layout's two surfaces, by the tab that names it. */
+function surface(name: 'Card' | 'Race') {
+  return screen.getByRole('tabpanel', { name });
+}
+
+/**
+ * Whether a surface is the one on screen — in the only terms jsdom can answer it.
+ *
+ * Both surfaces are mounted at once and always were; what changed in #14 is that
+ * `inert` and `aria-hidden` no longer say which is up. They cannot be media-queried,
+ * and left on the phone's `tab` they would have made the right pane permanently
+ * un-hittable in the two-pane layout. So the switch is `hidden` alone, which is
+ * `display: none` — and jsdom applies no Tailwind, so the class is the only signal
+ * here. The browser gate asserts the real thing, per viewport.
+ */
+function isShown(panel: HTMLElement) {
+  return !panel.className.split(/\s+/).includes('hidden');
+}
+
+/**
+ * The docked prose panel, by its own hook rather than by its text — the same reason
+ * the gate uses that hook. The open-squares list carries the same prose, so a search
+ * for the words would pass whether or not the panel ever rendered.
+ */
+function prosePanel() {
+  return document.querySelector('[data-prose]');
+}
+
+/**
  * Get to C1's second surface the way a player does.
  *
  * The prizes, the standings and the timeline are not under the card any more — they
- * are a whole screen of their own behind a segmented control (#12's C1, #13), and the
- * card's panel is hidden from the accessibility tree while they are up and vice
- * versa. So a test that reads them taps the tab first, and finds its heading by role
- * rather than by text: `findByText` would keep passing against markup no player could
- * reach, which is the mistake this project has already made once by measuring the
- * wrong thing about the card.
+ * are a whole screen of their own behind a segmented control (#12's C1, #13). So a
+ * test that reads them taps the tab first, and finds its heading by role rather than
+ * by text: `findByText` would keep passing against markup no player could reach,
+ * which is the mistake this project has already made once by measuring the wrong
+ * thing about the card.
+ *
+ * It hands back the results themselves — `Race pane`, the panel inside the surface —
+ * rather than the whole surface, because the surface also holds the two-pane
+ * layout's tabs and its open-squares list. Those are never on screen at the same time
+ * as this, but they are in the same markup.
  */
 async function openRace() {
-  fireEvent.click(await screen.findByRole('tab', { name: 'Race' }));
+  await screen.findByRole('tablist', { name: 'Room' });
+  fireEvent.click(surfaceTab('Race'));
+  // The tap is what put this surface up. Worth asserting here rather than trusting:
+  // `aria-hidden` used to make the inactive panel unfindable, so every caller of this
+  // helper got that check for free, and since #14 nothing marks it in jsdom at all.
+  expect(isShown(surface('Race'))).toBe(true);
 
-  return screen.findByRole('tabpanel', { name: 'Race' });
+  return screen.getByRole('tabpanel', { name: 'Race pane' });
 }
 
 beforeEach(() => {
@@ -265,8 +317,8 @@ describe('starting a game', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Start game' }));
 
-    expect(await screen.findByLabelText('Your card')).toBeDefined();
-    expect(screen.getByText('Square 0')).toBeDefined();
+    const grid = await screen.findByLabelText('Your card');
+    expect(within(grid).getByText('Square 0')).toBeDefined();
   });
 
   it('says so when the API will not start a game', async () => {
@@ -340,8 +392,10 @@ describe('the card itself', () => {
 
     const grid = await screen.findByLabelText('Your card');
 
+    // Scoped to the grid: an open square's label is also a row of the right pane's
+    // list, which is in the document at every width since #14.
     for (const square of card) {
-      expect(screen.getByText(square.label)).toBeDefined();
+      expect(within(grid).getByText(square.label)).toBeDefined();
     }
 
     // 24 earnable squares are tappable; the free centre is not one of them.
@@ -390,12 +444,13 @@ describe('the card and the race as two surfaces', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     await screen.findByLabelText('Your card');
-    expect(screen.getByRole('tab', { name: 'Card' }).getAttribute('aria-selected')).toBe('true');
+    expect(surfaceTab('Card').getAttribute('aria-selected')).toBe('true');
 
-    // Not merely off-screen: hidden from the accessibility tree, and `inert`, so
-    // the panel below the fold cannot swallow a tap meant for the card.
-    expect(screen.queryByRole('tabpanel', { name: 'Race' })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Standings' })).toBeNull();
+    // Mounted but not on screen. `hidden` is `display: none`, so it is out of the
+    // accessibility tree and un-hittable in a browser — which is what lets the
+    // panel below the fold not swallow a tap meant for the card.
+    expect(isShown(surface('Card'))).toBe(true);
+    expect(isShown(surface('Race'))).toBe(false);
 
     const race = await openRace();
     expect(within(race).getByRole('heading', { name: 'Standings' })).toBeDefined();
@@ -414,14 +469,14 @@ describe('the card and the race as two surfaces', () => {
     await screen.findByLabelText('Your card');
 
     await openRace();
-    expect(screen.queryByRole('tabpanel', { name: 'Card' })).toBeNull();
+    expect(isShown(surface('Card'))).toBe(false);
     // Still mounted, though, and that is the point: coming back to it costs no
     // re-render, no re-measure of the grid and no lost scroll position.
     expect(screen.getByLabelText('Your card')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Card' }));
-    expect(screen.getByRole('tabpanel', { name: 'Card' })).toBeDefined();
-    expect(screen.queryByRole('heading', { name: 'Standings' })).toBeNull();
+    fireEvent.click(surfaceTab('Card'));
+    expect(isShown(surface('Card'))).toBe(true);
+    expect(isShown(surface('Race'))).toBe(false);
   });
 });
 
@@ -483,16 +538,16 @@ describe('a square`s prose', () => {
       const square = await screen.findByRole('button', { name: 'Square 5' });
 
       fireEvent.pointerDown(square);
-      expect(screen.queryByText('What square 5 means.')).toBeNull();
+      expect(prosePanel()).toBeNull();
 
       await act(async () => {
         vi.advanceTimersByTime(500);
       });
-      expect(screen.getByText('What square 5 means.')).toBeDefined();
+      expect(prosePanel()?.textContent).toContain('What square 5 means.');
 
       // Nothing to dismiss, so nothing that can be left covering the card.
       fireEvent.pointerUp(square);
-      expect(screen.queryByText('What square 5 means.')).toBeNull();
+      expect(prosePanel()).toBeNull();
     } finally {
       vi.useRealTimers();
     }
@@ -546,7 +601,7 @@ describe('a square`s prose', () => {
       });
       fireEvent.pointerCancel(square);
 
-      expect(screen.queryByText('What square 5 means.')).toBeNull();
+      expect(prosePanel()).toBeNull();
     } finally {
       vi.useRealTimers();
     }
@@ -557,8 +612,17 @@ describe('a square`s prose', () => {
  * The list is the whole difference between the prototype's C and its C1, and C1 is
  * what #12 settled on: a card of 24 short phrases is a set of reminders, and the
  * argument a room actually has is whether the thing on screen counted.
+ *
+ * These tests are about the phone layout's accordion, so they read the accordion's
+ * own list — `Squares still open`. The two-pane layout's right pane carries the same
+ * rows and is in the document at every width (#14), which is why that one is named
+ * through its container instead and why nothing here searches for the prose loose in
+ * the page.
  */
 describe('what am I looking for', () => {
+  /** The accordion's rows, which exist only while it is open. */
+  const openList = () => screen.queryByRole('list', { name: 'Squares still open' });
+
   it('is shut, counting the squares still open', async () => {
     stubRoom({
       you: host,
@@ -574,7 +638,7 @@ describe('what am I looking for', () => {
       name: 'What am I looking for (23)',
     });
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(screen.queryByText('What square 5 means.')).toBeNull();
+    expect(openList()).toBeNull();
   });
 
   /**
@@ -595,8 +659,9 @@ describe('what am I looking for', () => {
       await screen.findByRole('button', { name: 'What am I looking for (23)' }),
     );
 
-    expect(screen.getByText('What square 5 means.')).toBeDefined();
-    expect(screen.queryByText('What square 3 means.')).toBeNull();
+    const rows = within(openList()!);
+    expect(rows.getByText('What square 5 means.')).toBeDefined();
+    expect(rows.queryByText('What square 3 means.')).toBeNull();
   });
 
   /**
@@ -617,7 +682,7 @@ describe('what am I looking for', () => {
       await screen.findByRole('button', { name: 'What am I looking for (23)' }),
     );
 
-    expect(screen.queryByText('What square 4 means.')).toBeNull();
+    expect(within(openList()!).queryByText('What square 4 means.')).toBeNull();
   });
 });
 

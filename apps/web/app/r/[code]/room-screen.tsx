@@ -19,7 +19,7 @@ import {
 } from '../../room-api';
 import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
-import { LookingFor } from './looking-for';
+import { LookingFor, LookingForPanel, openSquares } from './looking-for';
 import { Results, nextPrizeName } from './results';
 import { useWakeLock } from './use-wake-lock';
 
@@ -42,10 +42,24 @@ const ACTION =
   'min-h-11 rounded border border-neutral-700 px-3 font-semibold disabled:text-neutral-500';
 
 /**
- * The card's two surfaces, per #12's C1. Not a sheet and not a gesture: two whole
- * screens, one segmented control, and neither ever covering the other.
+ * The card's two surfaces in the phone layout, per #12's C1. Not a sheet and not a
+ * gesture: two whole screens, one segmented control, and neither ever covering the
+ * other. Means nothing in the two-pane layout, where both are up at once.
  */
 type Tab = 'card' | 'race';
+
+/**
+ * The two-pane layout's right pane, which is tabbed rather than split — and a
+ * different pair of tabs rather than `Tab` renamed, so it is separate state.
+ *
+ * It opens on the list: propped next to the TV with the race still young, what you
+ * want is what to watch for, not a timeline of things that already happened. The
+ * cost, since #14's own acceptance criterion asked for the other thing: the
+ * standings and the timeline are a tap away rather than permanently on screen. #12
+ * traded that deliberately and named it, and #14's body says to follow the
+ * prototype.
+ */
+type Pane = 'looking' | 'race';
 
 /** Long enough to read who spotted it, short enough not to sit over the card. */
 const TOAST_MS = 4000;
@@ -181,6 +195,13 @@ export function RoomScreen({
    * shift or scroll trap".
    */
   const [tab, setTab] = useState<Tab>('card');
+  /**
+   * Which half of the two-pane layout's right pane is up. Untouched below `lg`,
+   * where the right pane is only ever the race — and untouched by a rotation, which
+   * is how "rotating mid-game preserves state" holds for it: the layout switch is
+   * CSS, so nothing here unmounts or resets when the device turns.
+   */
+  const [pane, setPane] = useState<Pane>('looking');
   /**
    * The square a thumb is holding down, and the whole of D4's second field on a
    * phone: a ~68pt cell has room for `label` and not for `description`. Held state
@@ -565,9 +586,35 @@ export function RoomScreen({
      * - **The card is full-bleed**, so it is not held to `max-w-md`. That is the
      *   other half of #47: the cap on the page is what pinned an iPad cell to a
      *   phone cell's width while the type went on growing.
+     *
+     * **Two layouts, switched in pure CSS at Tailwind's stock `lg` (1024px)** — the
+     * phone layout below it, which `ipad-11-portrait` (834) also gets and which is
+     * what #14 asks for there, and the two-pane layout above it, which is
+     * `ipad-11-landscape` (1194). No `matchMedia`, and that is load-bearing rather
+     * than tidy: a JS switch costs a flash of the phone layout on the device being
+     * judged (#12 rejected it for exactly that), and "rotating mid-game preserves
+     * state and does not drop the SSE connection" is true *by construction* only
+     * while this stays one mounted element. A remount would re-freeze the stream's
+     * `horizon` and replay the whole log as fresh toasts.
+     *
+     * What it costs, said out loud: at phone widths the right pane's markup is in
+     * the document as well as the phone's — hidden, never painted. Worth knowing if
+     * you ever count rows in a gate.
      */
     return (
-      <div className="flex min-h-dvh flex-col">
+      /*
+        `min-h-dvh` in the phone layout, where the page is meant to scroll, and
+        exactly `h-dvh` in the two-pane layout, where it is not.
+
+        That second half is load-bearing and was found by measuring rather than by
+        reading. A *minimum* height leaves the row below with no definite height, so
+        `flex-1` panes grow to their content and their own `overflow-y-auto` never
+        engages: at lights out the right pane stood 1427px tall and the document
+        scrolled 742px, which drags the card off screen — the one thing this layout
+        exists to prevent. With a definite height the row is bounded, so each pane
+        scrolls itself and both columns stay put.
+      */
+      <div className="flex min-h-dvh flex-col lg:h-dvh">
         {/*
           The slim bar. Everything on it is something you want without leaving the
           card: how you are doing, what the room is playing for next, and who is
@@ -583,7 +630,17 @@ export function RoomScreen({
           </p>
         </header>
 
-        <div role="tablist" aria-label="Room" className="flex shrink-0 gap-1 p-2">
+        {/*
+          The phone layout's segmented control, and gone at `lg` — where both panes
+          are up, so there is nothing to switch between. `tab` stops meaning anything
+          there and is left alone rather than reset: rotating back has to find the
+          surface you left up.
+        */}
+        <div
+          role="tablist"
+          aria-label="Room"
+          className="flex shrink-0 gap-1 p-2 lg:hidden"
+        >
           {(
             [
               ['card', 'Card'],
@@ -612,23 +669,30 @@ export function RoomScreen({
           ))}
         </div>
 
-        <div className="flex min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 lg:gap-4 lg:p-4">
           {/*
             Both panels stay mounted and the inactive one is hidden in CSS rather
             than unmounted. That is what makes coming back to the card free: the
             grid is not re-measured, the fit is not re-run, and neither column
-            loses where it was scrolled to. `inert` and `aria-hidden` are belt and
-            braces for the same reason #12 needed them — an off-screen panel that
-            is still hit-testable is a band that swallows taps, and that defect was
-            invisible to review.
+            loses where it was scrolled to.
+
+            **No `inert` and no `aria-hidden`, and that is a change from #13.**
+            Neither can be media-queried, so left on `tab` they would make the right
+            pane permanently un-hittable at `lg` — #12's "invisible band that
+            swallows taps", inverted. They are safe to drop because Tailwind's
+            `hidden` is `display: none`, which is already both non-hit-testable and
+            out of the accessibility tree; #12's case was an *off-screen* panel that
+            was still being painted.
           */}
           <section
             role="tabpanel"
             id="panel-card"
             aria-labelledby="tab-card"
-            aria-hidden={tab !== 'card'}
-            inert={tab !== 'card'}
-            className={`min-w-0 flex-1 overflow-y-auto p-1 ${
+            // It keeps its own scroller at every width, unlike the prototype, which
+            // could drop it at `lg` because the card was all this column ever held.
+            // The host's 40-row deck sheet lives in here too, and a column that does
+            // not scroll would put those rows on the page instead.
+            className={`min-w-0 flex-1 overflow-y-auto p-1 lg:block ${
               tab === 'card' ? 'block' : 'hidden'
             }`}
           >
@@ -654,7 +718,14 @@ export function RoomScreen({
                     onPeek={setPeek}
                     finished={finished}
                   />
-                  <LookingFor game={game} />
+                  {/*
+                    Phone layout only. At `lg` the list has a tab of its own in the
+                    right pane, and carrying it in both places would be two ways to
+                    read one thing.
+                  */}
+                  <div className="lg:hidden">
+                    <LookingFor game={game} />
+                  </div>
                 </>
               )}
               {deck !== null && (
@@ -671,17 +742,82 @@ export function RoomScreen({
             </div>
           </section>
 
+          {/*
+            The right pane. In the phone layout it is the Race surface and nothing
+            else; at `lg` it is tabbed and opens on the list.
+          */}
           <section
             role="tabpanel"
             id="panel-race"
             aria-labelledby="tab-race"
-            aria-hidden={tab !== 'race'}
-            inert={tab !== 'race'}
-            className={`min-w-0 flex-1 overflow-y-auto p-3 ${
+            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-neutral-800 ${
               tab === 'race' ? 'block' : 'hidden'
             }`}
           >
-            <Results game={game} />
+            <div
+              role="tablist"
+              aria-label="Right pane"
+              className="hidden shrink-0 gap-1 lg:flex"
+            >
+              {/*
+                **Race pane**, not **Race**, and the reason is the same one that
+                keeps the right pane's list off the accordion's accessible name:
+                both layouts' markup is in the document at every width, so a second
+                tab called `Race` would make that name ambiguous everywhere. The
+                caption a thumb reads is still `Race`, which the fuller name
+                contains.
+              */}
+              {(
+                [
+                  ['looking', `Looking for ${openSquares(game).length}`, undefined],
+                  ['race', 'Race', 'Race pane'],
+                ] as const
+              ).map(([which, caption, label]) => (
+                <button
+                  key={which}
+                  type="button"
+                  role="tab"
+                  aria-label={label}
+                  id={`pane-tab-${which}`}
+                  aria-selected={pane === which}
+                  aria-controls={`pane-${which}`}
+                  onClick={() => setPane(which)}
+                  className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+                    pane === which
+                      ? 'bg-neutral-800 text-neutral-50'
+                      : 'text-neutral-500'
+                  }`}
+                >
+                  {caption}
+                </button>
+              ))}
+            </div>
+
+            {/*
+              At `lg` these two tabs decide; below it this pane is only ever the
+              race, so `Results` is simply always shown and the list panel is never
+              shown at all.
+            */}
+            <div
+              role="tabpanel"
+              id="pane-looking"
+              aria-labelledby="pane-tab-looking"
+              className={`hidden min-h-0 flex-1 overflow-y-auto ${
+                pane === 'looking' ? 'lg:block' : ''
+              }`}
+            >
+              <LookingForPanel game={game} />
+            </div>
+            <div
+              role="tabpanel"
+              id="pane-race"
+              aria-labelledby="pane-tab-race"
+              className={`min-h-0 flex-1 overflow-y-auto ${
+                pane === 'race' ? 'lg:block' : 'lg:hidden'
+              }`}
+            >
+              <Results game={game} />
+            </div>
           </section>
         </div>
 

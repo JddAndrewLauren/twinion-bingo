@@ -67,10 +67,15 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling |
 | Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code, and the rung dropping out rather than reading "full house next" once the ladder is spent |
-| Game — the two surfaces | `/r/:code`, tapping `Card` and `Race`          | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
+| Game — the two surfaces | `/r/:code`, tapping `Card` and `Race` — the **phone layout**, so `phone-small`, `phone` and `ipad-11-portrait` | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
 | Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
 | Game — a square's prose | `/r/:code`, a card cell held down for 400ms    | D4's `description` in the docked slot, **covering no part of the card**, gone on release — and the release **not** also calling the square, which is the way this can go wrong that no screenshot shows. Drive it with a **second pointer on another cell** too: a resting thumb on a one-handed card once turned the hold into a call for the whole room |
-| Game — what am I looking for | `/r/:code`, the block under the card, open at lights out | All **24** rows and their prose (to ~130 characters, #12's licence) with none overflowing, the toggle thumb-sized and its count reading while the block is shut, and the count falling to `(0)` at a full house |
+| Game — what am I looking for | `/r/:code`, the block under the card, open at lights out (phone layout) | All **24** rows and their prose (to ~130 characters, #12's licence) with none overflowing, the toggle thumb-sized and its count reading while the block is shut, and the count falling to `(0)` at a full house |
+| Game — two panes      | `/r/:code`, a live game, **`ipad-11-landscape` only** | **Both columns up at once**: the card alone on the left, the right pane beside it and **not intersecting it** (asserted as box intersection, like the bottom slot), and none of the phone layout's chrome — no `Card`/`Race` control, no accordion under the card |
+| Game — the right pane's tabs | `/r/:code`, **`ipad-11-landscape` only**   | **Looking for _n_** and **Race**, both **thumb-sized (44px)**, **opening on Looking for** — the count on the tab reading 24 at lights out and 0 at a full house, no row of the open list overflowing its own box, and at a full house the pane **saying it is empty** rather than being blank while the final standings sit behind the other tab |
+| Game — each pane scrolls itself | `/r/:code`, at `ipad-11-landscape`, 24 open squares in the right pane | **The page does not scroll vertically at all.** Scroll the list to its end and the card's box is unchanged — driven, and with the pane's own `scrollTop` asserted to have moved, or "the card did not move" passes for the wrong reason. The host's deck sheet is the same claim for the left column: 40 rows go into that column's scroller, not onto the page |
+| Game — card unmoved across a pane switch | `/r/:code`, **`ipad-11-landscape`**, tapping **Race** in the right pane | The card's box **identical to the pixel** before and after. The left column is the card and only the card, so nothing that happens on the right may move it |
+| Game — rotated mid-race | `/r/:code`, your own call just made, `ipad-11-landscape` → `ipad-11-portrait` → back | The mark, the still-open undo row and **which right-pane tab was up** all survive, and **exactly one stream is opened across the whole run** — the layout switch is CSS, so `RoomScreen` never remounts |
 | Game — a prize landing | `/r/:code`, a PRIZE frame arriving on a live game | The burst playing while **the card's box is identical to the pixel**, and a cell tapped mid-burst still calling for the room. The only surface here that is not docked in flow: `canvas-confetti` owns the canvas and gives it `position: fixed; pointer-events: none`, so both halves are a library's property and are asserted rather than trusted |
 | Install — the head of `/` | `/`, as a phone reads it before offering Add to Home Screen | A `link[rel=manifest]` and a `link[rel=apple-touch-icon]` that both fetch 200, a manifest whose `display` is `standalone` with 192/512/maskable icons that all resolve, and **no service worker registered** — a negative claim, so it is gated rather than written down (see the note in `app/manifest.ts` for why there is none) |
 | Share — room unfurl | `/r/:code`, as a group-chat crawler reads it | The room code in `og:title`, an **absolute** `og:image` URL, and a 1200×630 image naming both the room code and its theme when the API is reachable; with the API unavailable, a code-only fallback still answering 200 `image/png` rather than collapsing to a bare link |
@@ -100,6 +105,7 @@ states each, with a per-cell `scrollHeight`/`scrollWidth` assertion rather than 
 - At `ipad-11-landscape` the grid does not spread: `max-w-md` on the page holds it to a 400px square
   block, so the inverted risk above does not bite. What it leaves instead is a small card in a wide
   viewport with a lot of empty space — a layout question for #14's two-pane work, not a defect.
+  **Answered by #14**: that space is the right pane. See #14's run block below.
 
 **Settled by #10's gate run** (Playwright, `page.setViewportSize`, all four viewports, the sheet and
 the card back-to-back, with a per-row `scrollHeight`/`scrollWidth` assertion):
@@ -110,7 +116,8 @@ the card back-to-back, with a per-row `scrollHeight`/`scrollWidth` assertion):
 - The guest view at `phone-small` offers no sheet and no toggle, which is the visual half of the
   criterion the API enforces.
 - Like the card, the sheet sits in the page's `max-w-md` column, so `ipad-11-landscape` leaves the
-  same wide empty margin #8 noted. Same #14 question, same non-defect.
+  same wide empty margin #8 noted. Same #14 question, same non-defect — and answered the same way,
+  below.
 - **A caution for any future card gate.** Padding a label to the 30-character cap with one long
   unbreakable run (`Hand-written moment 36 WWWWWWW`) clips the card grid at both iPad viewports,
   where the `clamp()` font has grown to its 0.8rem ceiling while `max-w-md` holds the cells at their
@@ -254,10 +261,13 @@ either, which is the defect #13 found next door.
 ## Status of the toolchain
 
 **The gate is in the repo and runs, as of #13.** `pnpm --filter @twinion-bingo/web run gate`, in
-`apps/web/gate/`, and in CI as the `gate` job. 29 tests at each of the four matrix viewports, 116 in
+`apps/web/gate/`, and in CI as the `gate` job. 36 tests at each of the four matrix viewports, 144 in
 all — `room.gate.ts` for the game screen, `lobby.gate.ts` for everything before the deal, and
-`install.gate.ts` (#15) for the manifest, the icons and the absent service worker. Failures keep
-a trace and a screenshot, which the CI job uploads.
+`install.gate.ts` (#15) for the manifest, the icons and the absent service worker. Since #14 a test
+may belong to one layout rather than to a viewport, so **24 of those are skipped by layout rather than
+run** and 120 execute: see #14's run block. These are the figures of one run of the suite with both
+#14 and #15 in it — they are **not** #14's and #15's own totals added up, which would double-count
+everything inherited from #13. Failures keep a trace and a screenshot, which the CI job uploads.
 
 It was assigned to #12 and then to #13. **#12 settled without it, deliberately** — it prototyped the
 room screen on a throwaway route and verified from a scratch directory outside the repo, because a
@@ -350,7 +360,120 @@ Also worth knowing: the pinned-slot seed is caught at one viewport out of four. 
 assertion, it is the geometry — and it is the argument for gating all four rather than only the two
 a phone-layout issue is about.
 
-**#15's gate run** (WebKit with `hasTouch`, all four matrix viewports, 116 tests green):
+The two blocks below are records of **two separate runs**, #14's and #15's, each as the suite stood
+when that issue landed. The merged suite's own figures are in *Status of the toolchain* above; they
+were re-measured rather than summed.
+
+**#14's gate run** (WebKit with `hasTouch`, all four matrix viewports, 124 tests as the suite stood
+then: 100 green and 24 skipped by layout — see below. Re-run after the merge with #15 the totals are
+144/120/24: the 24 layout skips are unchanged, which is the part of this run that #15 could have
+disturbed and did not):
+
+The 11" iPad is a first-class target from here, and it is **two layouts, switched in pure CSS at
+Tailwind's stock `lg` (1024px)**. `ipad-11-portrait` (834) is deliberately on the *phone* layout —
+a comfortable single column with the larger cells, which is what #14 asks for there — and
+`ipad-11-landscape` (1194) is the only matrix viewport that gets two panes.
+
+| Viewport | Cell | Font |
+| --- | --- | --- |
+| `phone-small` | 70px | 11.0px |
+| `phone` | 73px | 11.5px |
+| `ipad-11-portrait` | 162px | 24.8px |
+| `ipad-11-landscape` | **108px** | **16.7px** |
+
+- Only the landscape row moved, and it moved *down*: the card no longer has the whole viewport, so
+  138px/21.2px became 108px/16.7px. It is still half again the phone cell, and the type is still
+  `3cqw` of the card, so characters-per-line is unchanged — which is the property #47 is about.
+- **A width-dependent constant in a test that resizes is the wrong shape of assertion.** `sizes its
+  type against the card` asserted `wide.cell > narrow.cell * 1.5` at 1194x834; two panes make that
+  1.48 and it failed on geometry rather than on a defect. What it was replaced with — and what was
+  wrong with the first replacement — is below, under the tautology.
+- **24 tests are skipped rather than weakened.** Seven two-pane tests do not apply below `lg`, and
+  three phone-layout tests (the `Card`/`Race` control, and both accordion tests) do not apply above
+  it. Each skip names the layout it belongs to; nothing was loosened to pass in both.
+
+- **The gate was green and the layout was broken, and that is the most useful thing in this run.**
+  Two defects survived a full green pass and were found in review afterwards. Both are fixed and both
+  now have assertions; the reason they got through is worth more than either fix:
+
+  1. **The page scrolled instead of the pane.** The screen was `min-h-dvh` — a *minimum* — so the row
+     holding the two columns had no definite height, its `flex-1` panes grew to their content, and
+     `overflow-y-auto` never engaged. At lights out the right pane stood **1427px** tall and the
+     document scrolled **742px**: reading the list drags the card off screen, which is the one thing
+     two columns exist to prevent. The gate could not see it because **it had an instrument for
+     horizontal scroll and none for vertical** — `expectNoVerticalScroll` now exists, and the fix is
+     `lg:h-dvh` on the screen plus keeping the card column's own scroller (the host's 40-row deck
+     sheet lives in that column, so it needs one; the prototype could drop it because the card was all
+     that column ever held). The new tests also *drive* the scroll and re-assert the card's box, and
+     check the pane actually moved — otherwise "the card did not move" passes for the wrong reason.
+  2. **A finished game opened on a blank pane.** `LookingForPanel` had no empty state, so at a full
+     house the right half of the screen was empty with **Final standings** behind an unhinted tab. The
+     test asserted the tab caption read `Looking for 0`, which is true of a blank pane. It now asserts
+     the words.
+
+  The pattern in both: **an assertion about a caption or an intersection is not an assertion about the
+  layout.** Same lesson as the stacked-columns seed below, arrived at three separate ways in one run.
+
+- **A tautology was written into this gate and then taken out, which is worth recording.** The old
+  `expect(wide.cell).toBeGreaterThan(narrow.cell * 1.5)` had to go — two panes make the landscape card
+  557px against a narrow 382px, so the cell goes 73px to 108px, which is 1.48 and fails on geometry
+  rather than on a defect. What first replaced it — "the cell is the same *fraction* of the card at
+  both widths" — is **true by construction** for a `grid-cols-5 gap-1` grid and discriminates nothing.
+  What actually defends #47 is the `font / card` band asserted at **two** widths, and that was
+  re-seeded to prove it: with the defect back (`clamp(0.5rem,1.7vw,0.8rem)` behind a `max-w-md` page)
+  the narrow reading is 8px in a 382px card — **0.021**, outside the band — and the test fails at all
+  four viewports. A clipping check still passes, which is #13's finding standing.
+
+- **A loose locator, found the same way.** `racePanel()` resolved to the whole `Race` *surface* at
+  phone widths, which since #14 also contains the right pane's hidden list — so `reads the race out`
+  measured 24 hidden rows alongside the standings. Hidden rows return empty `getClientRects()`, so
+  they measure clean *and* satisfy "has rows": the test would have passed with the standings rendering
+  nothing at all. It now names the results panel (`Race pane`) in both layouts.
+- **Both layouts' markup is in the document at every width** — the price of a CSS-only switch, and
+  paid deliberately: a `matchMedia` hook costs a flash of the phone layout on the device being judged
+  (#12 rejected it for that), and "rotating mid-game preserves state and does not drop the SSE
+  connection" is true *by construction* only while `RoomScreen` stays one mounted element. Worth
+  knowing if you count rows in a future gate: **the open squares appear twice in the document and
+  once on the screen**. Two consequences already paid for:
+  - The right pane's list is *not* `aria-label="Squares still open"` and its Race tab is named
+    `Race pane` — a duplicated accessible name would be ambiguous everywhere, and in jsdom (no
+    Tailwind, so both copies read as visible) it breaks the query outright.
+  - `inert` and `aria-hidden` came off the two surfaces. Neither can be media-queried, and left on
+    the phone's tab they would have made the right pane permanently un-hittable at `lg` — #12's
+    "invisible band that swallows taps", inverted. `hidden` is `display: none`, which is already both
+    non-hit-testable and out of the accessibility tree; #12's case was an *off-screen* panel that was
+    still being painted. The jsdom suite therefore reads the class, because it is the only signal on
+    that side, and this gate is what asserts the real thing per viewport.
+- **Rotation is driven, not reasoned about.** A call is made at landscape, the viewport is set to
+  portrait and back, and the mark, the open undo row and the selected right-pane tab are all still
+  there. The stream is counted rather than looked at: `openRoom` hands back `streams()`, the number of
+  `EventSource`s the page has *ever* opened, and it is 1 across the rotation. It has to be counted in
+  the stub rather than off `page.on('request')` — the fixture replaces `EventSource` itself, so the
+  stream never reaches the network.
+- **Two seeded regressions, and the first one found a hole in this run's own assertion.**
+
+| Seeded | Caught |
+| --- | --- |
+| The two columns stacked (`lg:flex-col` on the row) — the phone layout with extra steps | **Not at first.** `expectClearOfTheCard` passes a pane *below* the card, because a pane below the card covers nothing. "Both columns up at once" was being asserted as non-intersection, which stacking satisfies. `expectBesideTheCard` in `gate/measure.ts` is the fix: the pane starts at or after the card's right edge, and the two share vertical space |
+| The columns in the wrong order (`lg:flex-row-reverse`) — beside, but on the wrong side | Yes, by the new instrument, naming the geometry: *the right pane starts at x=29 against a card ending at x=1174* |
+
+  The lesson is the one this file keeps re-learning: **an assertion that a thing covers nothing is not
+  an assertion about where it is.** Two panes are a claim about position, so position is what has to
+  be measured.
+
+- **Two of #14's own acceptance criteria are answered differently, on the record.** The right pane is
+  tabbed rather than permanently split (#12's C1 traded that and named the cost; #14's body says to
+  follow the prototype), and `description` does not render inline in the cell (the pool licences prose
+  to ~130 characters against a ~162px portrait cell — the open-squares list is the answer to the same
+  need). Both are commented on the issue rather than left in a diff.
+- **The prototype route is gone**, per its own NOTES.md: `apps/web/app/prototype/` is deleted in the
+  same PR. Its numbers were superseded by #13's table above; the file itself is in git history.
+- **Still a hardware pass, and not gateable:** whether 16.7px type in a 108px cell reads at arm's
+  length on a real 11" iPad, in both orientations, with a car moving — and whether calls keep arriving
+  through a real rotation on real hardware. Same class of question as #13's, for the same reason.
+
+**#15's gate run** (WebKit with `hasTouch`, all four matrix viewports, 116 tests green as the suite
+stood then — before #14's layout skips were in it):
 
 - **The burst covers nothing and catches nothing.** `canvas-confetti` appends one canvas to `body`,
   computed `position: fixed` and `pointer-events: none`; the card's box is identical to the pixel

@@ -1,10 +1,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openRoom } from './room-fixture';
 import {
+  expectBesideTheCard,
   expectClearOfTheCard,
   expectNoCellClipped,
   expectNoHorizontalScroll,
   expectNoRowClipped,
+  expectNoVerticalScroll,
   expectThumbSized,
 } from './measure';
 
@@ -20,12 +22,42 @@ import {
  */
 
 /**
+ * Which of the two layouts this project's viewport gets. The switch is pure CSS at
+ * Tailwind's stock `lg` (1024px), so the viewport is the whole of it — and
+ * `ipad-11-landscape` (1194) is the only matrix viewport at or above it. #14's own
+ * criterion puts `ipad-11-portrait` (834) on the phone layout deliberately: a
+ * comfortable single column with the larger cells.
+ *
+ * Tests written for one layout say so rather than being weakened to pass in both.
+ */
+const twoPane = () => test.info().project.name === 'ipad-11-landscape';
+
+/**
  * The spotter credit, located as the toast rather than by its words. `getByText(/
  * spotted/)` cannot be used here: the timeline is a list of the same sentence, so it
  * matches thirteen rows on a mid-race card and the one that matters is the only one
  * that is not in a list.
  */
 const credit = (page: Page) => page.locator('p[role="status"]');
+
+/**
+ * The tab that puts the standings and the timeline up, in whichever layout is on:
+ * the phone's `Race` surface, or the right pane's `Race` tab. Two tab widgets are in
+ * the document at every width — only one is ever painted — so each is named
+ * distinctly rather than located by position.
+ */
+const raceTab = (page: Page): Locator =>
+  page.getByRole('tab', { name: twoPane() ? 'Race pane' : 'Race' });
+
+/**
+ * And the panel that tab reveals — the results themselves in both layouts, not the
+ * surface that holds them. `Race` names the surface, which at phone widths also
+ * contains the right pane's own list; measuring `li` rows in there swept up 24 hidden
+ * rows, and hidden rows measure clean, so the assertion would have passed with the
+ * standings rendering nothing at all.
+ */
+const racePanel = (page: Page): Locator =>
+  page.getByRole('tabpanel', { name: 'Race pane' });
 
 /** The undo row itself, not the span inside it — the row is what covers or does not. */
 const undoRow = (page: Page): Locator => page.getByText(/^Called /).locator('xpath=..');
@@ -121,9 +153,27 @@ test.describe('the card', () => {
       expect(measured.font / measured.card).toBeLessThan(0.032);
     }
 
-    // And the cell grew with the card rather than staying pinned while the type went
-    // on growing past it, which is #47 stated as a comparison rather than a constant.
-    expect(wide.cell).toBeGreaterThan(narrow.cell * 1.5);
+    /*
+      And the same ratio against the cell, which is the assertion that says the type
+      did not outrun the cell it sits in.
+
+      **`expect(wide.cell).toBeGreaterThan(narrow.cell * 1.5)` used to stand here and
+      is deliberately gone rather than nudged.** It was a fact about a layout where the
+      card was the width of the viewport; two panes make the landscape card 557px
+      against a narrow 382px, so the cell goes 73px to 108px — 1.48, and it failed on
+      geometry rather than on a defect.
+
+      What replaced it first was worse than nothing: "the cell is the same fraction of
+      the card at both widths" is *true by construction* for a `grid-cols-5 gap-1`
+      grid, at every width, defect or no defect. A tautology in the place of a real
+      assertion is how this file's history keeps repeating itself, so it is written
+      down rather than quietly deleted.
+
+      The load is carried by the `font / card` band above, asserted at *two* widths —
+      re-seeded and confirmed: with #47 back (`clamp(0.5rem,1.7vw,0.8rem)` behind a
+      `max-w-md` page) the narrow reading is 8px in a 382px card, 0.021, outside the
+      band. That is the mechanism, and a clipping check still cannot see it.
+    */
     expect(wide.font / wide.cell).toBeCloseTo(narrow.font / narrow.cell, 2);
   });
 
@@ -183,6 +233,9 @@ test.describe('the slim bar and the two surfaces', () => {
    * reachable by thumb and that neither surface covers the other.
    */
   test('switches surfaces by tap, and comes back to the card unmoved', async ({ page }) => {
+    // There is no Card/Race control in the two-pane layout, because both are up at
+    // once — `the two panes` below is the same claim for that layout.
+    test.skip(twoPane(), 'the phone layout only');
     await openRoom(page, 'mid');
 
     await expectThumbSized(page.getByRole('tab', { name: 'Card' }), 'the Card tab');
@@ -210,10 +263,192 @@ test.describe('the slim bar and the two surfaces', () => {
    */
   test('reads the race out without a row overflowing', async ({ page }) => {
     await openRoom(page, 'mid');
-    await page.getByRole('tab', { name: 'Race' }).tap();
+    await raceTab(page).tap();
 
-    const panel = page.getByRole('tabpanel', { name: 'Race' });
-    await expectNoRowClipped(panel.locator('li'), 'the race panel');
+    await expectNoRowClipped(racePanel(page).locator('li'), 'the race panel');
+    await expectNoHorizontalScroll(page);
+  });
+});
+
+/**
+ * #14's layout, and the only viewport in the matrix that gets it. An 11" iPad on its
+ * side is plausibly the *primary* device — propped next to the TV — so this is a
+ * first-class layout rather than a wide phone.
+ *
+ * Two of #14's own acceptance criteria are answered differently here on purpose, and
+ * both departures are recorded on the issue:
+ *
+ * - **The right pane is tabbed, not permanently split.** #12's C1 traded permanent
+ *   standings for **Looking for | Race** opening on the list, and named the cost;
+ *   #14's body says to follow the prototype.
+ * - **No inline `description` in the cell.** The pool licences prose to ~130
+ *   characters against a ~162px cell, so it does not fit. The list is the answer to
+ *   the same need, which is what #12 built it for.
+ */
+test.describe('the two panes', () => {
+  test.beforeEach(() => {
+    test.skip(!twoPane(), 'the two-pane layout is `lg` and above');
+  });
+
+  /** The right pane's list, named by the tab that carries its count. */
+  const listPane = (page: Page): Locator =>
+    page.getByRole('tabpanel', { name: /Looking for/ });
+
+  test('puts both columns up at once, neither covering the other', async ({ page }) => {
+    await openRoom(page, 'mid');
+
+    await expect(page.getByLabel('Your card')).toBeVisible();
+    await expect(listPane(page)).toBeVisible();
+    /*
+      Beside the card and covering none of it — two assertions rather than one, and
+      that is a seeded regression talking. Stacking the columns (`lg:flex-col` on the
+      row) covers nothing either, so `expectClearOfTheCard` alone passed the phone
+      layout with extra steps. `expectBesideTheCard` is the claim actually being made.
+    */
+    await expectBesideTheCard(page, listPane(page), 'the right pane');
+    await expectClearOfTheCard(page, listPane(page), 'the right pane');
+
+    // And none of the phone layout's chrome came with it: no Card/Race control, and
+    // no accordion under the card, which would be a second way to read one list.
+    await expect(page.getByRole('tablist', { name: 'Room' })).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: /What am I looking for/ }),
+    ).toBeHidden();
+    await expectNoHorizontalScroll(page);
+  });
+
+  test('opens on the list, and changing pane never moves the card', async ({ page }) => {
+    await openRoom(page, 'mid');
+
+    const looking = page.getByRole('tab', { name: /Looking for/ });
+    await expectThumbSized(looking, 'the Looking for tab');
+    await expectThumbSized(raceTab(page), 'the Race tab');
+    // Early in a race what you want is what to watch for, not a timeline of things
+    // that already happened. So the pane opens on the list rather than on the race.
+    await expect(looking).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: 'Standings' })).toBeHidden();
+
+    const before = await page.getByLabel('Your card').boundingBox();
+
+    await raceTab(page).tap();
+    await expect(page.getByRole('heading', { name: 'Standings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+    await expect(listPane(page)).toBeHidden();
+
+    // The left column is the card and only the card, so a tap on the right must not
+    // move it by a pixel — that is the whole reason the card lives in its own column.
+    expect(await page.getByLabel('Your card').boundingBox()).toEqual(before);
+    await expectNoRowClipped(racePanel(page).locator('li'), 'the right pane');
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * The count is the phone accordion's job done by a tab caption, so it is gated the
+   * same way: the list's worst case at lights out, and empty at a full house.
+   */
+  test('carries all 24 open squares at lights out, none of them clipped', async ({ page }) => {
+    await openRoom(page, 'start');
+
+    await expect(page.getByRole('tab', { name: 'Looking for 24' })).toBeVisible();
+    const rows = listPane(page).locator('li');
+    await expect(rows).toHaveCount(24);
+    await expectNoRowClipped(rows, 'the open squares list');
+    await expectNoHorizontalScroll(page);
+  });
+
+  test('empties out as the card fills, and says so', async ({ page }) => {
+    await openRoom(page, 'done');
+
+    await expect(page.getByRole('tab', { name: 'Looking for 0' })).toBeVisible();
+    // Not a blank half of the screen. The accordion can get away with an empty list
+    // because it is shut and its heading reads `(0)`; a pane that opens by default
+    // cannot, and this asserts the words rather than only the count on the tab.
+    await expect(listPane(page)).toContainText('Nothing left to look for');
+  });
+
+  /**
+   * The defect this run shipped and the gate did not see, so it gets two assertions
+   * of its own: the page must not scroll at all, and scrolling the list must leave the
+   * card where it was.
+   *
+   * The mechanism, because it is not obvious from the markup: the screen was
+   * `min-h-dvh`, a *minimum*, so the row holding the two columns had no definite
+   * height, `flex-1` panes grew to their content, and their `overflow-y-auto` never
+   * engaged. At lights out that made the pane 1427px tall and the document scroll
+   * 742px — the card leaves the screen when you read the list, which is precisely what
+   * two columns are for. Nothing in the gate measured vertical scroll.
+   */
+  test('scrolls the list inside its own pane, never the page', async ({ page }) => {
+    await openRoom(page, 'start');
+
+    await expectNoVerticalScroll(page, '24 open squares in the right pane');
+
+    const before = await page.getByLabel('Your card').boundingBox();
+    const scrolled = await listPane(page).evaluate((pane) => {
+      pane.scrollTop = pane.scrollHeight;
+
+      return pane.scrollTop;
+    });
+
+    // The pane really did scroll — otherwise "the card did not move" would be true
+    // for the wrong reason, which is the shape of half the defects in this file.
+    expect(scrolled, 'pixels the right pane scrolled').toBeGreaterThan(0);
+    expect(await page.getByLabel('Your card').boundingBox()).toEqual(before);
+    await expectNoVerticalScroll(page, 'the right pane scrolled to its end');
+  });
+
+  /**
+   * The host's 40-row deck sheet, which lands in the *card* column — the one place
+   * the left column carries something taller than the card. The prototype could drop
+   * that column's scroller at `lg`; the real screen cannot.
+   */
+  test('keeps the host deck sheet inside the card column', async ({ page }) => {
+    await openRoom(page, 'mid');
+
+    await page.getByRole('button', { name: 'Host deck sheet' }).tap();
+    await expect(page.getByRole('button', { name: 'Back to your card' })).toBeVisible();
+
+    // Both columns are still up — the sheet takes the card's place, not the screen —
+    // and 40 rows went into the column's own scroller rather than onto the page.
+    await expect(listPane(page)).toBeVisible();
+    await expectNoVerticalScroll(page, 'the deck sheet open beside the right pane');
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * #14's rotation criterion, driven rather than reasoned about. An iPad next to a TV
+   * gets turned mid-race, and the two things that must survive it are the game's
+   * state and the stream.
+   *
+   * The stream is why the layout switch is CSS and not `matchMedia`: `RoomScreen`
+   * stays one mounted element across the rotation, so the subscription is never torn
+   * down. A remount would re-freeze the stream's `horizon` and replay the whole log
+   * as fresh toasts — which is why "exactly one stream, across the whole run" is the
+   * assertion rather than "a stream is open".
+   */
+  test('survives a rotation with its state and its stream', async ({ page }) => {
+    const room = await openRoom(page, 'start');
+
+    await raceTab(page).tap();
+    const square = page.getByRole('button', { name: room.square(0).label });
+    await square.tap();
+    await expect(square).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+
+    // Upright, which is the phone layout, and back onto its side.
+    await page.setViewportSize({ width: 834, height: 1194 });
+    await expect(page.getByRole('tablist', { name: 'Room' })).toBeVisible();
+    await expect(square).toHaveAttribute('aria-pressed', 'true');
+    await page.setViewportSize({ width: 1194, height: 834 });
+
+    // The mark, the still-open undo window, and which pane was up — all three are
+    // state a remount would have taken with it.
+    await expect(square).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+    await expect(raceTab(page)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: 'Standings' })).toBeVisible();
+
+    expect(await room.streams(), 'streams opened across the rotation').toBe(1);
     await expectNoHorizontalScroll(page);
   });
 });
@@ -299,6 +534,14 @@ test.describe('a square`s prose', () => {
  * characters — so that is what is gated.
  */
 test.describe('what am I looking for', () => {
+  // The accordion is the phone layout's shape for the list. In the two-pane layout it
+  // has a tab of its own instead, gated in `the two panes` below. Asked in a
+  // `beforeEach` rather than at describe scope because `test.info()` — which is how a
+  // test learns its own viewport — only exists once a test is running.
+  test.beforeEach(() => {
+    test.skip(twoPane(), 'the phone layout only');
+  });
+
   test('opens to 24 rows at lights out without one overflowing', async ({ page }) => {
     await openRoom(page, 'start');
 
@@ -413,7 +656,13 @@ test.describe('the bottom slot', () => {
   test('leaves the race reachable with the list open and the slot full', async ({ page }) => {
     const room = await openRoom(page, 'mid');
 
-    await page.getByRole('button', { name: /What am I looking for/ }).tap();
+    // Open the list, in whichever shape this layout gives it: the accordion under the
+    // card, or the right pane's own tab — which opens on the list already.
+    if (twoPane()) {
+      await page.getByRole('tab', { name: /Looking for/ }).tap();
+    } else {
+      await page.getByRole('button', { name: /What am I looking for/ }).tap();
+    }
     await room.emit({
       seq: 503,
       kind: 'CALL',
@@ -422,7 +671,7 @@ test.describe('the bottom slot', () => {
     });
     await expect(credit(page)).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Race' }).tap();
+    await raceTab(page).tap();
     await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
     await expectNoHorizontalScroll(page);
   });
