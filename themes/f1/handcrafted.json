@@ -149,7 +149,7 @@
     },
     {
       "key": "rain_arrives",
-      "label": "Rain starts falling",
+      "label": "Rain Starts Falling",
       "description": "Rain reaches the circuit during the race, wherever on the track.",
       "tier": "medium",
       "exclusivityGroup": "weather:rain"
@@ -465,7 +465,7 @@
     {
       "key": "orange_smoke",
       "label": "Orange Smoke in Grandstand",
-      "description": "Verstappen fans light flares/smoke. Track-dependent — strongest in Europe.",
+      "description": "Verstappen fans light flares/smoke.",
       "tier": "medium",
       "exclusivityGroup": "crowd:orange_smoke"
     },

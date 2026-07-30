@@ -69,10 +69,12 @@ as a word:
 - A **hyphen** breaks, after it — a browser may wrap `Re-Explained` as `Re-` / `Explained`, so that
   label's longest run is 9, not 12. Same for `5-Second` and `A-List`.
 - **Punctuation hanging off a word does not break.** Count the quote marks, the exclamation mark and
-  the full stop as part of the run they touch: `Dangerous!"` is eleven, and so is over the line.
+  the full stop as part of the run they touch: `Dangerous!"` is eleven, which is over the line.
 
 So the measurement is: split each label on whitespace and hyphens, and take the longest piece.
 
 ## Status
 
-`themes/f1` is a starter pool that exercises the machinery. Authoring the real ~180 squares is #16.
+`themes/f1` is authored (#16): 300 squares at poolVersion `v2`, reviewed line by line in #59. It sits
+at both legibility ceilings with no margin — the longest labels are 30 characters and the longest
+unbreakable runs are 10 — so a new square is as likely to be refused by the cap as accepted.

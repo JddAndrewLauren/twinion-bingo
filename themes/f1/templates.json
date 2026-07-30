@@ -125,7 +125,7 @@
       "entityType": "driver",
       "label": "{driver} moans: no battery",
       "description": "{driver} complains on radio about having no battery or no deployment left.",
-      "exclusivityGroup": "battery_moan:{driver}",
+      "exclusivityGroup": "radio_moan:{driver}",
       "tierByEntityTier": {
         "podium": "medium",
         "points": "medium",
@@ -148,7 +148,7 @@
       "id": "team_slow_stop",
       "entityType": "team",
       "label": "{team} slow pit stop",
-      "description": "A {team} pit stop goes wrong — slow, unsafe or a wheel not on.",
+      "description": "A pit stop for {team} goes wrong — slow, unsafe or a wheel not on.",
       "exclusivityGroup": "slow_stop:{team}",
       "tierByEntityTier": {
         "podium": "medium",
