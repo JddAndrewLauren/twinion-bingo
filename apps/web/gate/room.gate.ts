@@ -8,6 +8,7 @@ import {
   expectNoRowClipped,
   expectNoVerticalScroll,
   expectThumbSized,
+  expectWholeOnScreen,
 } from './measure';
 
 /**
@@ -698,6 +699,52 @@ test.describe('the host deck sheet', () => {
 
     await page.getByRole('button', { name: 'Back to your card' }).tap();
     await expect(page.getByLabel('Your card')).toBeVisible();
+  });
+
+  /**
+   * #46's correction, and the first committed measurement of D8's dialog. It is gated
+   * here rather than beside the card because the sheet is where the dialog is now
+   * *only* reachable from: the ~16 deck squares no card of the host's holds can be
+   * called and taken back nowhere else, so this is the surface it has to be whole over.
+   *
+   * The dialog is a `fixed inset-0` layer over a 40-row scroller, which is why it is
+   * measured with `expectWholeOnScreen` rather than the bottom slot's
+   * `expectClearOfTheCard` — there is no card on screen to be clear of, and scrolling
+   * the sheet behind it does not bring a button below the fold into reach.
+   */
+  test('takes a called deck row back, with the dialog whole over the sheet', async ({
+    page,
+  }) => {
+    await openRoom(page, 'mid');
+    await page.getByRole('button', { name: 'Host deck sheet' }).tap();
+
+    // A deck square that is on no card, so the card could not reach this call at all.
+    const row = page
+      .getByLabel('Host deck sheet')
+      .getByRole('button', { name: /Investigation into a stop/ })
+      .first();
+
+    await row.tap();
+    await expect(row).toHaveAttribute('aria-pressed', 'true');
+
+    // Past the ten-second window this is the only affordance left for it, so the row
+    // itself is what opens the dialog.
+    await row.tap();
+
+    const dialog = page.getByRole('dialog');
+    const back = dialog.getByRole('button', { name: 'Take it back' });
+    const keep = dialog.getByRole('button', { name: 'Keep it' });
+
+    await expectWholeOnScreen(page, dialog.locator('> div'), 'the retract dialog');
+    await expectThumbSized(back, 'the dialog`s Take it back');
+    await expectThumbSized(keep, 'the dialog`s Keep it');
+    await expectNoRowClipped(dialog.locator('p'), 'the dialog prose');
+    await expectNoHorizontalScroll(page);
+
+    // Reachable has to mean the call comes back, not that the button rendered.
+    await back.tap();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(row).toHaveAttribute('aria-pressed', 'false');
   });
 });
 

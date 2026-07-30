@@ -26,7 +26,11 @@ export type CardSquare = {
  */
 export type Deck = {
   squares: CardSquare[];
-  called: string[];
+  /**
+   * The deck's live calls in deck order, carrying the CALL row rather than the
+   * square id alone — which is what lets the sheet take one back (#46).
+   */
+  called: Mark[];
 };
 
 /**

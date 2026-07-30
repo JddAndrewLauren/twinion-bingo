@@ -20,6 +20,7 @@ import type { Page, Route } from '@playwright/test';
 import type {
   CardSquare,
   Game,
+  Mark,
   PrizeAward,
   Roster,
   TimelineEntry,
@@ -137,7 +138,18 @@ export type Fixture = {
   streams: () => Promise<number>;
 };
 
-function gameFor(stage: Stage, marked: string[]): Game {
+/**
+ * The room as the API would derive it from a call log. `calls` is that log — the
+ * fixture's single source for which squares are marked *and* for the seq each one
+ * carries, because a retraction names the CALL by seq and a second source would be
+ * a second answer. It was two sources once, and both of the ways that went wrong
+ * are recorded at the `/call` route below.
+ */
+function gameFor(stage: Stage, calls: Mark[]): Game {
+  const deckSquares = [...CARD, ...DECK_EXTRA];
+  const byId = new Map(calls.map((call) => [call.squareId, call]));
+  const onTheCard = CARD.filter((square) => byId.has(square.id));
+
   const prizes: PrizeAward[] =
     stage === 'start'
       ? []
@@ -149,12 +161,12 @@ function gameFor(stage: Stage, marked: string[]): Game {
             { seq: 61, prizeKind: 'FULL_HOUSE', playerId: LONG_NAME.id, name: LONG_NAME.name },
           ];
 
-  const timeline: TimelineEntry[] = marked.map((squareId, index) => ({
-    seq: 100 + index,
-    squareId,
+  const timeline: TimelineEntry[] = calls.map((call, index) => ({
+    seq: call.seq,
+    squareId: call.squareId,
     elapsed: `+${String(index * 7).padStart(2, '0')}:${String((index * 13) % 60).padStart(2, '0')}`,
-    playerId: index % 2 === 0 ? GUEST.id : LONG_NAME.id,
-    name: index % 2 === 0 ? GUEST.name : LONG_NAME.name,
+    playerId: call.actorPlayerId,
+    name: ROSTER.players.find((player) => player.id === call.actorPlayerId)!.name,
   }));
 
   return {
@@ -162,19 +174,23 @@ function gameFor(stage: Stage, marked: string[]): Game {
     state: stage === 'done' ? 'done' : 'live',
     freeCentre: 'LIGHTS OUT',
     card: CARD,
-    deck: { squares: [...CARD, ...DECK_EXTRA], called: marked },
-    marks: marked.map((squareId, index) => ({
-      squareId,
-      seq: 100 + index,
-      actorPlayerId: index % 2 === 0 ? GUEST.id : LONG_NAME.id,
-    })),
+    deck: {
+      squares: deckSquares,
+      // In deck order, as the API sends it, and carrying the row rather than the
+      // id — which is what the sheet takes a call back by.
+      called: deckSquares
+        .map((square) => byId.get(square.id))
+        .filter((call): call is Mark => call !== undefined),
+    },
+    marks: onTheCard.map((square) => byId.get(square.id)!),
     // A late joiner's greyed marks, which have to read as distinct from earned ones.
-    inheritedMarks: stage === 'mid' ? marked.slice(0, 2) : [],
+    inheritedMarks:
+      stage === 'mid' ? onTheCard.slice(0, 2).map((square) => square.id) : [],
     prizes,
     standings: ROSTER.players.map((player, index) => ({
       playerId: player.id,
       name: player.name,
-      marks: Math.max(0, marked.length - index * 2),
+      marks: Math.max(0, calls.length - index * 2),
     })),
     timeline,
     streamedThroughSeq: 200,
@@ -194,7 +210,16 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
         ? CARD.map((square) => square.id)
         : CARD.slice(0, 12).map((square) => square.id);
 
-  const state = { marks: [...marked] };
+  /**
+   * The room's call log, and the fixture's one source of truth for a seq. The
+   * pre-seeded calls keep the `100 + index` seqs and the alternating spotter the
+   * timeline was written against; everything the routes below append lands here too.
+   */
+  const calls: Mark[] = marked.map((squareId, index) => ({
+    squareId,
+    seq: 100 + index,
+    actorPlayerId: index % 2 === 0 ? GUEST.id : LONG_NAME.id,
+  }));
 
   /**
    * `EventSource` cannot be served through `page.route` — a fulfilled response is a
@@ -240,19 +265,18 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
 
   await page.route('**/rooms/ABCD/game', (route) =>
-    json(route, gameFor(stage, state.marks)),
+    json(route, gameFor(stage, calls)),
   );
   await page.route('**/rooms/ABCD', (route) => json(route, ROSTER));
   /**
    * A CALL row is named by its `seq` and a retraction names it back, so the fixture
-   * has to hold the same mapping the log does rather than infer one from array
-   * positions. It did infer one, and that was wrong twice over: the pre-seeded marks
-   * carry seqs of `100 + index` (see `gameFor`) which matched nothing, so a retraction
-   * from the card's confirm dialog answered `200 OK` and unmarked nothing; and calling
-   * an already-marked square returned a seq mapping to a *different* square, so an
-   * undo would have taken back the wrong mark.
+   * appends to the one log rather than keeping a mapping beside a list of marked
+   * ids. It kept one, and that was wrong twice over: the pre-seeded marks carried
+   * seqs the mapping did not, so a retraction from the card's confirm dialog
+   * answered `200 OK` and unmarked nothing; and calling an already-marked square
+   * returned a seq mapping to a *different* square, so an undo would have taken back
+   * the wrong mark.
    */
-  const seqOf = new Map(marked.map((squareId, index) => [100 + index, squareId]));
   let nextSeq = 300;
 
   await page.route(`**/games/${GAME_ID}/call`, (route) => {
@@ -262,40 +286,29 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
 
     // One square, one live call: a losing tap is handed back the call that won,
     // which is `appended: false` and opens no undo window.
-    const existing = [...seqOf.entries()].find(([, id]) => id === squareId);
+    const existing = calls.find((call) => call.squareId === squareId);
     if (existing !== undefined) {
-      return json(route, {
-        seq: existing[0],
-        squareId,
-        actorPlayerId: GUEST.id,
-        appended: false,
-      });
+      return json(route, { ...existing, appended: false });
     }
 
     nextSeq += 1;
-    seqOf.set(nextSeq, squareId);
-    state.marks.push(squareId);
+    const appended = { squareId, seq: nextSeq, actorPlayerId: HOST.id };
+    calls.push(appended);
 
-    return json(route, {
-      seq: nextSeq,
-      squareId,
-      actorPlayerId: HOST.id,
-      appended: true,
-    });
+    return json(route, { ...appended, appended: true });
   });
 
   await page.route(`**/games/${GAME_ID}/retract`, (route) => {
     const { seq } = JSON.parse(route.request().postData() ?? '{}') as { seq: number };
-    const squareId = seqOf.get(seq);
+    const target = calls.findIndex((call) => call.seq === seq);
 
     // A seq the log never handed out is a 409 in the API, and answering 200 here is
     // how this fixture used to make a broken retraction look like a working one.
-    if (squareId === undefined) {
+    if (target === -1) {
       return route.fulfill({ status: 409, contentType: 'application/json', body: '{}' });
     }
 
-    seqOf.delete(seq);
-    state.marks = state.marks.filter((id) => id !== squareId);
+    calls.splice(target, 1);
 
     return json(route, { targetSeq: seq, appended: true });
   });

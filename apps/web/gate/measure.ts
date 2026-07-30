@@ -192,6 +192,40 @@ export async function expectThumbSized(target: Locator, what: string): Promise<v
   expect(Math.min(box!.width, box!.height), `${what} smallest side`).toBeGreaterThanOrEqual(44);
 }
 
+/**
+ * An element is whole on screen — inside the viewport on all four sides, so nothing
+ * has to be scrolled to to be read or tapped.
+ *
+ * For the retract dialog, which is the one surface where "reachable" cannot mean
+ * "reachable after scrolling": it is a `fixed inset-0` layer, so the page behind it
+ * scrolls and the panel does not move with it. A button hanging below the fold there
+ * is unreachable rather than merely awkward, and `expectNoVerticalScroll` cannot see
+ * it — the document is as tall as it ever was.
+ */
+export async function expectWholeOnScreen(
+  page: Page,
+  target: Locator,
+  what: string,
+): Promise<void> {
+  const box = await target.boundingBox();
+  const view = page.viewportSize();
+
+  expect(box, `${what} has a box`).not.toBeNull();
+  expect(view, 'the page has a viewport').not.toBeNull();
+
+  const past = {
+    top: Math.max(0, -box!.y),
+    left: Math.max(0, -box!.x),
+    bottom: Math.max(0, box!.y + box!.height - view!.height),
+    right: Math.max(0, box!.x + box!.width - view!.width),
+  };
+
+  expect(
+    Math.max(past.top, past.bottom, past.left, past.right),
+    `pixels ${what} runs outside a ${view!.width}x${view!.height} viewport (${JSON.stringify(past)})`,
+  ).toBeLessThanOrEqual(0.5);
+}
+
 /** No row of a list runs outside its own box — the standings and timeline check. */
 export async function expectNoRowClipped(rows: Locator, what: string): Promise<void> {
   const count = await rows.count();

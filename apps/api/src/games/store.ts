@@ -117,8 +117,15 @@ export type CardSquare = {
  */
 export type DeckView = {
   squares: CardSquare[];
-  /** Deck squares with a live CALL — the same set marks are derived from. */
-  called: string[];
+  /**
+   * The deck's live CALLs in deck order — the same derivation marks come from,
+   * taken against the whole deck rather than against one card.
+   *
+   * It carries the row and not just the square id for the reason a mark does: a
+   * retraction names a CALL by `seq`, and the sheet is the only place the host
+   * can reach a call on a square that is on no card of theirs (D8, #46).
+   */
+  called: Mark[];
 };
 
 export type GameView = {
@@ -341,7 +348,8 @@ export async function readGame(
    *
    * A mark carries the CALL row that made it, not just the square id, because a
    * correction has to name that row by `seq` and a device cannot learn a seq
-   * anywhere else (D8). The deck sheet wants only the ids, so it takes the keys.
+   * anywhere else (D8). The deck sheet takes the same rows against the deck, for
+   * the same reason: it corrects calls no card of the host's can reach.
    *
    * Reading all of it here rather than accumulating any of it is what makes the
    * disconnect criterion hold with no catch-up path: a device that slept through
@@ -383,7 +391,9 @@ export async function readGame(
       playerId !== undefined && playerId === game.hostPlayerId
         ? {
             squares: describeCard(pool, game.deck),
-            called: game.deck.filter((id) => called.has(id)),
+            called: game.deck
+              .map((id) => called.get(id))
+              .filter((mark): mark is Mark => mark !== undefined),
           }
         : null,
     marks,

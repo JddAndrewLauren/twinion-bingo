@@ -97,10 +97,13 @@ function stubRoom({
       ? {
           squares: deckSquares,
           // The same derivation the marks are, taken against the deck rather
-          // than against a card.
+          // than against a card — CALL rows and not bare ids, because the sheet
+          // takes one back by naming its seq.
           called: deckSquares
-            .map((square) => square.id)
-            .filter((id) => state.marks.some((mark) => mark.squareId === id)),
+            .map((square) =>
+              state.marks.find((mark) => mark.squareId === square.id),
+            )
+            .filter((mark): mark is Mark => mark !== undefined),
         }
       : null,
     marks: [...state.marks],
@@ -924,8 +927,8 @@ describe('the host deck sheet', () => {
     );
   });
 
-  it('shows a square that arrived already called, and does not offer to call it again', async () => {
-    stubRoom({
+  it('shows a square that arrived already called, and offers it back rather than again', async () => {
+    const room = stubRoom({
       you: host,
       liveFromTheStart: true,
       deck: true,
@@ -938,8 +941,20 @@ describe('the host deck sheet', () => {
 
     const called = sheet.querySelectorAll('[aria-pressed="true"]');
     expect(called).toHaveLength(1);
-    expect((called[0] as HTMLButtonElement).disabled).toBe(true);
     expect(within(sheet).getByText('1 of 40 called')).toBeDefined();
+
+    // The row is live, and what it does is the correction rather than a second
+    // call — the word on it says so, and no `/call` leaves the browser.
+    const row = called[0] as HTMLButtonElement;
+    expect(row.disabled).toBe(false);
+    expect(row.textContent).toContain('Take back');
+
+    fireEvent.click(row);
+
+    expect(await screen.findByRole('dialog')).toBeDefined();
+    expect(
+      room.fetchMock.mock.calls.some(([url]) => (url as string).endsWith('/call')),
+    ).toBe(false);
   });
 
   /**
@@ -1200,6 +1215,46 @@ describe('taking a call back', () => {
     await waitFor(() =>
       expect(
         screen.getByRole('button', { name: 'Square 3' }).getAttribute('aria-pressed'),
+      ).toBe('false'),
+    );
+  });
+
+  /**
+   * The correction that was unreachable until #46. A deck square on no card of the
+   * host's cannot be tapped on a card at all, so once the undo window shut nobody
+   * could take it back — not the host, who had no affordance, and not a player,
+   * whom the API refuses 403 for a call that is not theirs.
+   *
+   * The sheet reaches it with nothing new: the same dialog, the same request, and
+   * the square named because the host holds the deck's prose.
+   */
+  it('takes back a call on a deck square that is on no card of the host`s', async () => {
+    const room = stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      deck: true,
+      marks: [{ squareId: 'f1.v1:t:33', seq: 21, actorPlayerId: guest.id }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Host deck sheet' }));
+    const sheet = await screen.findByLabelText('Host deck sheet');
+    fireEvent.click(within(sheet).getByRole('button', { name: /Square 33/ }));
+
+    // Named, not "that square": the dialog reads off the deck the host was handed.
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog.textContent).toContain('Take back Square 33?');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Take it back' }));
+
+    await waitFor(() => expect(retracted(room.fetchMock)?.seq).toBe(21));
+    await waitFor(() =>
+      expect(
+        within(screen.getByLabelText('Host deck sheet'))
+          .getByRole('button', { name: /Square 33/ })
+          .getAttribute('aria-pressed'),
       ).toBe('false'),
     );
   });
