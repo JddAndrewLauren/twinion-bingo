@@ -23,19 +23,25 @@ export type RoomEvent = {
  * slower writer and lose its row for good, so rows are held back to give the
  * slower writer time to commit first.
  *
- * Be precise about how much time that actually is. The filter compares `at`,
- * and `at` is `defaultNow()` — `now()`, which in Postgres is the *transaction
- * start* time, not the insert's. The append happens inside a multi-statement
- * transaction (`store.ts`), so a row becomes eligible at `tx_start + 250ms`,
- * and the grace this really buys is 250ms *minus* whatever that transaction
- * spent before its insert. A writer that stalls longer than the remainder can
- * still be stepped over. So this makes gaps rare, not impossible — it is a
- * mitigation, not the proof that "no gaps" holds.
+ * `at` is `clock_timestamp()`, the insert's own clock, so a row is eligible at
+ * `insert + 250ms` no matter how long its transaction had already been open.
+ * The grace does not shrink as the call transaction grows.
  *
- * Making it a guarantee needs the timestamp to be the insert's, i.e. a
- * `clock_timestamp()` default on `room_events.at` (a schema change, out of
- * scope here), or a cursor that does not advance past an unfilled gap. That is
- * #8's problem, and #8 should not inherit the stronger claim.
+ * What is still not guaranteed: eligibility is measured from the *insert*, but
+ * visibility begins at the *commit*. A transaction spending more than
+ * `SETTLE_MS` between its insert and its commit surfaces a row that is already
+ * past the window, and the cursor is monotonic, so a row surfacing below it is
+ * lost for good. So this is a mitigation with a bound — no gaps unless a
+ * writer's insert-to-commit exceeds `SETTLE_MS` — and not a proof. Closing it
+ * needs a cursor that will not advance past an unfilled gap, rejected at triage
+ * because an aborted transaction leaves a `seq` no row will ever fill.
+ *
+ * The predicates below deliberately stay on `now()`. The asymmetry is safe in
+ * the direction it errs: on the write side a transaction-start stamp made a row
+ * eligible *sooner* than 250ms, while on the read side an earlier clock only
+ * withholds *longer*. Every caller is autocommit today, so the two are in fact
+ * equivalent — and `clock_timestamp()` is volatile, which would perturb the
+ * planner's selectivity estimate that `stream.db.test.ts`'s EXPLAIN pins.
  */
 export const SETTLE_MS = 250;
 
