@@ -39,8 +39,12 @@ pnpm dev            # web on :3000, API on :8080
 ```
 
 Copy each app's `.env.example` to `.env` (API) / `.env.local` (web) to override defaults. The
-API needs a `DATABASE_URL` to start — point it at the ephemeral container under **Database**
-below, never at the shared project.
+API needs a `DATABASE_URL` to start — point it at a local container, never at the shared project.
+Inside a Conductor workspace, `pnpm db:workspace` does that for you; see **Database** below.
+
+**Never pass `PORT` yourself.** `pnpm dev` derives both ports from `CONDUCTOR_PORT` — web on
+`CONDUCTOR_PORT`, API on `CONDUCTOR_PORT + 1` — and Conductor gives every workspace a distinct one.
+A hand-picked `PORT` throws that away and lands on whatever a sibling workspace is already serving.
 
 Square pools are generated at build time and committed, so regenerate and commit the diff after
 editing any theme folder — see `themes/README.md`:
@@ -85,12 +89,33 @@ development machine.** Schema changes go through the migration chain, applied by
 # Edit apps/api/src/db/schema.ts, then emit SQL and read it before running it.
 pnpm --filter @twinion-bingo/api db:generate
 
-# An ephemeral local Postgres to verify against — throw it away afterwards.
+# Then apply it locally and run the suites. Inside a Conductor workspace this is
+# the whole setup: it brings up a local Postgres on 55432, creates this
+# workspace's own database, writes both URLs into apps/api/.env, and migrates.
+pnpm db:workspace
+pnpm --filter @twinion-bingo/api test
+```
+
+`db:workspace` gives **each workspace its own database**, named after its directory
+(`gwangju` → `bingo_gwangju`) — its own tables and its own migration journal. Several workspaces of
+this repo sharing one database meant one `pnpm test` truncated its siblings' fixtures and one
+migration was journalled as applied for every branch. Both happened; see
+`docs/adr/0005-a-database-per-conductor-workspace.md`. The truncating suites now refuse any database
+but this workspace's own, and say `pnpm db:workspace` when they do.
+
+It reuses whatever is already listening on 55432, whatever the container is named (this machine's is
+`bingo-pg-13`; substitute yours in the `docker exec` lines below). Only if nothing answers does it
+start or create one named `bingo-pg`.
+
+**Outside Conductor** — a plain clone, or CI — there is nothing to derive a name from, so
+`db:workspace` refuses and you set the two variables explicitly. Note that they are deliberately
+different variables: the schema tests truncate every bingo table, so they read `TEST_DATABASE_URL`
+and never `DATABASE_URL`, and refuse any non-local host.
+
+```bash
 docker run -d --name bingo-pg -e POSTGRES_PASSWORD=postgres -p 55432:5432 postgres:17-alpine
 DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
   pnpm --filter @twinion-bingo/api db:migrate
-# Note the different variable: the schema tests truncate every bingo table, so they
-# read TEST_DATABASE_URL and never DATABASE_URL, and refuse any non-local host.
 TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/postgres \
   pnpm --filter @twinion-bingo/api test
 docker rm -f bingo-pg
@@ -102,6 +127,18 @@ safety gate that reads the emitted SQL. Applying a migration to the shared proje
 operator step, run with a credential that never reaches CI or an agent — and because that
 credential goes in `DATABASE_URL`, which the truncating tests do not read, running the
 operator sequence can never point them at the shared project.
+
+### Resetting a workspace's database
+
+Drizzle's migrator compares against the last applied `created_at`, so checking out a branch with a
+**shorter** migration chain is a silent no-op: the database keeps the newer objects and a journal row
+for a migration the checkout no longer has. A workspace database is disposable, so throw it away
+rather than repairing it:
+
+```bash
+docker exec bingo-pg-13 psql -U postgres -d postgres -c 'DROP DATABASE "bingo_<workspace>"'
+pnpm db:workspace
+```
 
 ## Deploy
 

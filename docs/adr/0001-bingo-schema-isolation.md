@@ -3,6 +3,9 @@
 - **Status:** accepted
 - **Date:** 2026-07-28
 - **Context in the plan:** decision D3 on issue #1; implemented by issue #3
+- **Amended by:** `docs/adr/0005-a-database-per-conductor-workspace.md` — mechanism 3 now has three
+  belts, and "a separate database", rejected below for the shared production project, is adopted for
+  local development
 
 ## Context
 
@@ -37,13 +40,26 @@ boundary — because each one covers a different tool path, and no one of them c
    `migrate()` call, **not** a `drizzle.config.ts` key, which is why the two settings live in two
    different files.
 
-3. **A separate environment variable for the truncating tests.** The DB-backed suites run
-   `TRUNCATE bingo.room_events, bingo.cards, bingo.games, bingo.players, bingo.rooms CASCADE`. They
-   read **`TEST_DATABASE_URL`** and never `DATABASE_URL`, and they assert the host is local
-   (`localhost`, `127.0.0.1`, `::1`) before connecting. `DATABASE_URL` is the variable that carries
-   the real shared credential during an operator's migration run, so the two names being disjoint is
-   what makes it impossible for the operator's own documented sequence to arm a truncate against
-   production. Unset, the suites skip rather than fail.
+3. **A separate environment variable for the truncating tests, and three belts on it.** The
+   DB-backed suites run
+   `TRUNCATE bingo.room_events, bingo.cards, bingo.games, bingo.players, bingo.rooms CASCADE`, so
+   `apps/api/test/support/test-database.ts` checks, in order:
+
+   1. **A different variable.** They read **`TEST_DATABASE_URL`** and never `DATABASE_URL`.
+      `DATABASE_URL` is the variable that carries the real shared credential during an operator's
+      migration run, so the two names being disjoint is what makes it impossible for the operator's
+      own documented sequence to arm a truncate against production. Unset, the suites skip rather
+      than fail.
+   2. **A local host.** `localhost`, `127.0.0.1`, `::1` — anything else throws before a connection
+      is opened.
+   3. **This workspace's own database.** Added later, by ADR-0005: several Conductor workspaces
+      develop this repo on one machine, and a stale or hand-pasted local URL truncated two siblings'
+      fixtures. The database in the URL must be the one derived from this workspace's directory
+      (`apps/api/src/db/workspace-database.ts`), and `pnpm db:workspace` is what provisions it. Inert
+      when `CONDUCTOR_WORKSPACE_PATH` is unset, which is CI's shape and a plain clone's.
+
+   Belts 2 and 3 are not redundant: belt 2 is what protects the shared Supabase credential, and a
+   remote host must keep failing for being remote whatever the database is called.
 
 Supporting rules that follow from the above:
 
@@ -53,9 +69,12 @@ Supporting rules that follow from the above:
   ephemeral service container; applying a migration to the shared project is an operator step
   (issue #26).
 - **The emitted SQL is gated by a test, not by review.** `apps/api/test/migration-safety.test.ts`
-  reads every file in `apps/api/drizzle/` and asserts no `DROP`, no mention of `public`, and that
-  every schema-qualified name is `bingo` — so the guarantee is checked against the artefact that
-  actually runs, not against the config that was supposed to produce it.
+  reads every file in `apps/api/drizzle/` and asserts no mention of `public`, that every
+  schema-qualified name is `bingo`, and that any statement containing `DROP` matches a narrow
+  allowlist — `DROP INDEX [IF EXISTS] "bingo"."<name>";`, one index at a time, nothing else. (The
+  allowlist replaced a blanket no-`DROP` rule once a migration legitimately needed to replace an
+  index.) So the guarantee is checked against the artefact that actually runs, not against the
+  config that was supposed to produce it.
 
 ## Consequences
 
@@ -73,13 +92,23 @@ Supporting rules that follow from the above:
 - `apps/api/vitest.config.ts` sets `fileParallelism: false`. Three suites truncating the same
   throwaway database in parallel deadlock on a genuine lock-order inversion (40P01), so they run one
   file at a time. This is a consequence of the truncate-based isolation, not an unrelated tuning
-  choice, and re-enabling parallelism reintroduces the deadlock.
+  choice, and re-enabling parallelism reintroduces the deadlock. **ADR-0005's per-workspace databases
+  do not retire this**: they stop workspaces colliding with *each other*, while five suites still
+  truncate one database *within* a workspace.
+- `apps/api/vitest.config.ts` also lifts `TEST_DATABASE_URL` out of `apps/api/.env` by hand, because
+  Vitest 4 does not read `.env` files. It lifts **only** that key: reading `DATABASE_URL` there would
+  put the shared credential into the truncating process and undo belt 1, which is why
+  `process.loadEnvFile()` is not used.
 
 ## Alternatives considered
 
 - **A separate database for bingo.** The obvious fix, and rejected for cost and operational
   overhead on a project whose whole point is a handful of phones on race weekends. If that changes,
-  this ADR is the thing to revisit — most of the machinery above becomes unnecessary.
+  this ADR is the thing to revisit — most of the machinery above becomes unnecessary. Note the scope
+  of that rejection: it is about the **shared production project**, which bingo still shares. For
+  **local development** a separate database per workspace has since been adopted —
+  `docs/adr/0005-a-database-per-conductor-workspace.md` — for isolation between concurrent
+  workspaces, which costs nothing on a throwaway container.
 - **`schemaFilter` alone.** Insufficient: it leaves the migrator's journal in a shared default
   schema. This is exactly the gap found while implementing #3.
 - **Relying on review to catch bad migrations.** Rejected. The dangerous artefact is a generated
