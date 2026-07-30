@@ -1,0 +1,14 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = "set -e; pnpm install --frozen-lockfile; [ -f apps/api/.env ] || cp apps/api/.env.example apps/api/.env; [ -f apps/web/.env.local ] || cp apps/web/.env.example apps/web/.env.local"
+run_mode = "nonconcurrent"
+
+[scripts.run.dev]
+command = "pnpm dev"
+default = true
+icon = "play"
+
+[scripts.run.check]
+command = "pnpm build && pnpm typecheck && pnpm lint && pnpm test"
+icon = "test-tube"
