@@ -51,8 +51,81 @@ describe('emitted migration SQL', () => {
     expect(migrations.length).toBeGreaterThan(0);
   });
 
-  it.each(migrations)('$name drops nothing', ({ sql }) => {
-    expect(sql).not.toMatch(/\bDROP\b/i);
+  /**
+   * Dropping used to be forbidden outright. It cannot stay that way — changing a
+   * unique index is a drop-and-recreate, and ADR-0004 drops one outright — but
+   * the reason for the ban survives the narrowing: drizzle-kit diffs a schema it
+   * has been filtered down to, so anything it cannot see reads as absent and is a
+   * candidate for a drop. What is safe to permit is therefore the narrowest thing
+   * that admits ADR-0004's migration: an index, named, inside `bingo`. A table, a
+   * schema, a column, a type, or an unqualified name is still refused.
+   */
+  const ALLOWED_DROP = /^DROP INDEX (?:IF EXISTS )?"bingo"\."[a-z0-9_]+";?$/i;
+
+  /**
+   * One SQL statement per element, so the allowlist can anchor. drizzle-kit
+   * separates statements with a `--> statement-breakpoint` comment rather than
+   * with the semicolon alone, and splitting on `;` while leaving the marker in
+   * place hands every statement but the first a comment prefix that no anchored
+   * pattern can match — which would refuse the drop-and-recreate this gate was
+   * widened to admit, and refuse it for the wrong reason.
+   */
+  const statementsOf = (sql: string): string[] =>
+    sql
+      .replaceAll('--> statement-breakpoint', '')
+      .split(';')
+      .map((statement) => statement.trim())
+      .filter((statement) => statement !== '')
+      .map((statement) => `${statement};`);
+
+  it.each(migrations)('$name drops nothing but a bingo index', ({ sql }) => {
+    const drops = statementsOf(sql).filter((statement) =>
+      /\bDROP\b/i.test(statement),
+    );
+
+    for (const statement of drops) {
+      expect(statement).toMatch(ALLOWED_DROP);
+    }
+  });
+
+  /**
+   * The allowlist is only as good as what it refuses, and a regex that is too
+   * generous fails silently — so the refusals are asserted rather than assumed,
+   * and so is the splitting, which is the half that is easy to get wrong.
+   */
+  it('refuses every drop but a schema-qualified bingo index', () => {
+    for (const statement of [
+      'DROP TABLE "bingo"."room_events";',
+      'DROP SCHEMA "bingo";',
+      'ALTER TABLE "bingo"."room_events" DROP COLUMN "square_id";',
+      'DROP TYPE "bingo"."room_event_kind";',
+      'DROP INDEX "room_events_call_unique";',
+      'DROP INDEX "drizzle"."room_events_call_unique";',
+      'DROP INDEX "bingo"."a", "bingo"."b";',
+    ]) {
+      expect(statement).not.toMatch(ALLOWED_DROP);
+    }
+
+    expect('DROP INDEX "bingo"."room_events_call_unique";').toMatch(ALLOWED_DROP);
+    expect('DROP INDEX IF EXISTS "bingo"."room_events_call_unique";').toMatch(
+      ALLOWED_DROP,
+    );
+
+    // A drop that is not the file's first statement is still a permitted drop.
+    const recreate = [
+      'DROP INDEX "bingo"."room_events_call_unique";',
+      '--> statement-breakpoint',
+      'CREATE INDEX "room_events_call_idx" ON "bingo"."room_events" ("game_id");',
+      '--> statement-breakpoint',
+      'DROP INDEX "bingo"."room_events_room_code_seq_idx";',
+    ].join('\n');
+
+    expect(statementsOf(recreate)).toHaveLength(3);
+    for (const statement of statementsOf(recreate).filter((s) =>
+      /\bDROP\b/i.test(s),
+    )) {
+      expect(statement).toMatch(ALLOWED_DROP);
+    }
   });
 
   it.each(migrations)('$name never names the public schema', ({ sql }) => {
@@ -73,13 +146,29 @@ describe('emitted migration SQL', () => {
   it.each(migrations)(
     '$name creates and alters only objects inside bingo',
     ({ sql }) => {
+      // `IF NOT EXISTS` is optional in both, and in the same places: a shape the
+      // counter recognises but the parser does not is a create that slips through
+      // the qualification check below without ever being looked at.
+      const EXISTS = '(?: IF NOT EXISTS)?';
+      const CREATES_OR_ALTERS = new RegExp(
+        `CREATE TABLE${EXISTS}|ALTER TABLE${EXISTS}|CREATE TYPE${EXISTS}|CREATE(?: UNIQUE)? INDEX${EXISTS}`,
+        'gi',
+      );
+
       const targets = [
         ...sql.matchAll(
-          /(?:CREATE TABLE|ALTER TABLE|CREATE TYPE|CREATE(?: UNIQUE)? INDEX "[^"]+" ON)\s+("[^"]+"(?:\."[^"]+")?)/gi,
+          new RegExp(
+            `(?:CREATE TABLE${EXISTS}|ALTER TABLE${EXISTS}|CREATE TYPE${EXISTS}|CREATE(?: UNIQUE)? INDEX${EXISTS} "[^"]+" ON)\\s+("[^"]+"(?:\\."[^"]+")?)`,
+            'gi',
+          ),
         ),
       ].map((match) => match[1]);
 
-      expect(targets.length).toBeGreaterThan(0);
+      // Every create or alter in the file was parsed into a target. A drop-only
+      // migration legitimately has none; what this refuses is a create the regex
+      // above quietly failed to match, which would otherwise pass unexamined.
+      expect(targets).toHaveLength([...sql.matchAll(CREATES_OR_ALTERS)].length);
+
       for (const target of targets) {
         expect(target).toMatch(/^"bingo"\./);
       }

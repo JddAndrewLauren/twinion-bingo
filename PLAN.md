@@ -328,8 +328,8 @@ Then, specifically:
   restarts it with zero state loss and an acceptable cold-start gap.
 - **Concurrency**: 20 simultaneous SSE connections, confirm the raised `soft_limit` behaves and no
   connection is dropped.
-- **Dedupe**: two clients call the same square in the same tick → exactly one CALL row (the partial
-  unique index does the work).
+- **Dedupe**: two clients call the same square in the same tick → exactly one CALL row (the game-row
+  lock does the work — ADR-0004). Then retract it and have both call it again: exactly one *new* row.
 - **Late join**: join at `seq > 0`; confirm inherited marks appear, and that a pre-complete line is
   greyed and wins nothing.
 - **Corrections**: self-undo inside 10 s with no dialog; after 10 s with a dialog; host retraction of

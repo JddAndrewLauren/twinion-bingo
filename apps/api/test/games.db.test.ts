@@ -445,8 +445,8 @@ describe.skipIf(noTestDatabase)('calling a square', () => {
   });
 
   /**
-   * The race the partial unique index exists for. Both players spotted the same
-   * event; exactly one row may result, and the one who lost the insert is not
+   * The race the game-row lock arbitrates (ADR-0004). Both players spotted the
+   * same event; exactly one row may result, and the one who arrived second is not
    * looking at a failure — the square they spotted is called.
    */
   it('turns two simultaneous calls into one row, with neither caller erroring', async () => {
@@ -1009,5 +1009,205 @@ describe.skipIf(noTestDatabase)('retracting a call', () => {
 
       expect(res.status).toBe(400);
     }
+  });
+
+  /**
+   * A correction has to leave the square callable again, or the undo is a trap:
+   * the event happened, the room saw it, and the one square that names it can
+   * never be marked. Liveness is a property of a second row, which is why the
+   * arbiter is the game-row lock and not a unique index (ADR-0004).
+   */
+  describe('re-calling a square that was taken back', () => {
+    /** Every row the log holds for one square, in log order. */
+    async function squareRows(code: string, squareId: string) {
+      const rows = await db.execute<{
+        seq: string;
+        kind: string;
+        actor_player_id: string;
+        square_id: string | null;
+        target_seq: string | null;
+      }>(
+        sql`SELECT seq, kind, actor_player_id, square_id, target_seq
+            FROM bingo.room_events AS e
+            WHERE e.room_code = ${code}
+              AND (e.square_id = ${squareId}
+                   OR e.target_seq IN (SELECT c.seq FROM bingo.room_events AS c
+                                       WHERE c.room_code = ${code}
+                                         AND c.kind = 'CALL'
+                                         AND c.square_id = ${squareId}))
+            ORDER BY seq`,
+      );
+
+      return [...rows];
+    }
+
+    /**
+     * What a device replaying from before the first CALL derives, computed the
+     * way the server does: a CALL counts unless some RETRACT names its seq.
+     */
+    function replayedMarks(
+      rows: readonly { seq: string; kind: string; square_id: string | null; target_seq: string | null }[],
+    ): string[] {
+      const retracted = new Set(
+        rows.filter((row) => row.kind === 'RETRACT').map((row) => row.target_seq),
+      );
+
+      return rows
+        .filter((row) => row.kind === 'CALL' && !retracted.has(row.seq))
+        .map((row) => row.square_id as string);
+    }
+
+    it('marks the square again, on a new row, for everyone holding it', async () => {
+      const { host, guest, gameId, shared, seq } = await calledGame();
+      expect((await retract(gameId, seq, guest.token)).status).toBe(201);
+      expect(await markedIdsOf(host.code, host.token)).toEqual([]);
+
+      const res = await call(gameId, shared, host.token);
+      expect(res.status).toBe(201);
+
+      const recalled = (await res.json()) as Mark & { appended: boolean };
+      expect(recalled).toMatchObject({
+        squareId: shared,
+        actorPlayerId: host.player.id,
+        appended: true,
+      });
+      expect(recalled.seq).toBeGreaterThan(seq);
+
+      expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
+      expect(await markedIdsOf(host.code, guest.token)).toEqual([shared]);
+    });
+
+    /**
+     * The correction and the call it undid both stay. A re-call is a third row,
+     * not an edit of the first — the same reason D8 appends rather than deletes.
+     */
+    it('destroys nothing: the call, its retraction and the re-call all stand', async () => {
+      const { host, guest, gameId, shared, seq } = await calledGame();
+      await retract(gameId, seq, guest.token);
+      await call(gameId, shared, host.token);
+
+      expect(await eventKinds(host.code)).toEqual([
+        'PLAYER_JOINED',
+        'PLAYER_JOINED',
+        'GAME_STARTED',
+        'CALL',
+        'RETRACT',
+        'CALL',
+      ]);
+
+      const rows = await squareRows(host.code, shared);
+      expect(rows.map((row) => row.kind)).toEqual(['CALL', 'RETRACT', 'CALL']);
+
+      // The superseded call is byte-for-byte what it was: the retraction still
+      // names a seq that exists, and it is still the guest's call.
+      const [original, retraction] = rows;
+      expect(Number(original!.seq)).toBe(seq);
+      expect(original!.actor_player_id).toBe(guest.player.id);
+      expect(original!.square_id).toBe(shared);
+      expect(Number(retraction!.target_seq)).toBe(seq);
+    });
+
+    it('leaves a device replaying the whole log marked, where a live one is', async () => {
+      const { host, gameId, shared, seq } = await calledGame();
+      await retract(gameId, seq, host.token);
+      await call(gameId, shared, host.token);
+
+      // No RETRACT names the second CALL, so replay derives it as marked — and
+      // that is what the device that never left is showing.
+      expect(replayedMarks(await squareRows(host.code, shared))).toEqual([shared]);
+      expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
+    });
+
+    /** Call, undo, call, undo: the square converges on unmarked, not on stuck. */
+    it('converges when the re-called square is taken back again', async () => {
+      const { host, guest, gameId, shared, seq } = await calledGame();
+      await retract(gameId, seq, guest.token);
+
+      const again = (await (await call(gameId, shared, host.token)).json()) as {
+        seq: number;
+      };
+      expect((await retract(gameId, again.seq, host.token)).status).toBe(201);
+
+      expect(await markedIdsOf(host.code, host.token)).toEqual([]);
+      expect(await markedIdsOf(host.code, guest.token)).toEqual([]);
+
+      const rows = await squareRows(host.code, shared);
+      expect(rows.map((row) => row.kind)).toEqual([
+        'CALL',
+        'RETRACT',
+        'CALL',
+        'RETRACT',
+      ]);
+      expect(replayedMarks(rows)).toEqual([]);
+    });
+
+    /**
+     * Retracting the original call again, once the square has been re-called, is
+     * still idempotent about *that call* — and says nothing about the square,
+     * which a newer CALL now marks. A device holding a stale undo can therefore
+     * be told `appended: false` for a square that is marked, so this pins the two
+     * questions apart rather than leaving the contract to be guessed at.
+     */
+    it('stays idempotent for the old call without claiming the square is clear', async () => {
+      const { host, guest, gameId, shared, seq } = await calledGame();
+      await retract(gameId, seq, guest.token);
+      const again = (await (await call(gameId, shared, host.token)).json()) as {
+        seq: number;
+      };
+
+      const stale = await retract(gameId, seq, guest.token);
+      expect(stale.status).toBe(200);
+      expect(await stale.json()).toMatchObject({
+        targetSeq: seq,
+        squareId: shared,
+        appended: false,
+      });
+
+      // No second RETRACT for the original call, and the square is still marked
+      // by the newer one — the reply was about the call, not about the square.
+      expect(
+        (await eventKinds(host.code)).filter((kind) => kind === 'RETRACT'),
+      ).toHaveLength(1);
+      expect(await marksOf(host.code, host.token)).toEqual([
+        { squareId: shared, seq: again.seq, actorPlayerId: host.player.id },
+      ]);
+    });
+
+    /**
+     * The regression the dropped index used to prevent, and the reason the
+     * live-call read runs on `tx` *after* the `FOR UPDATE` lock rather than on
+     * `db` before it. Two phones re-spotting the same retracted event still owe
+     * the room exactly one new row.
+     */
+    it('turns two simultaneous re-calls into one new row, with neither caller erroring', async () => {
+      const { host, guest, gameId, shared, seq } = await calledGame();
+      expect((await retract(gameId, seq, guest.token)).status).toBe(201);
+
+      const [mine, yours] = await Promise.all([
+        call(gameId, shared, host.token),
+        call(gameId, shared, guest.token),
+      ]);
+
+      expect(mine.ok).toBe(true);
+      expect(yours.ok).toBe(true);
+      expect([mine.status, yours.status].sort()).toEqual([200, 201]);
+
+      // The retracted call, still in the log, plus exactly one new one.
+      expect(await callRows(host.code)).toEqual([
+        { square_id: shared },
+        { square_id: shared },
+      ]);
+
+      const [one, two] = [
+        (await mine.json()) as { seq: number; actorPlayerId: string },
+        (await yours.json()) as { seq: number; actorPlayerId: string },
+      ];
+      expect(one.seq).toBe(two.seq);
+      expect(one.actorPlayerId).toBe(two.actorPlayerId);
+      // Neither was handed the dead row.
+      expect(one.seq).toBeGreaterThan(seq);
+
+      expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
+    });
   });
 });

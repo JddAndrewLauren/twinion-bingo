@@ -2,13 +2,13 @@ import { randomBytes } from 'node:crypto';
 import type { Pool } from '@twinion-bingo/theme';
 import { and, asc, desc, eq } from 'drizzle-orm';
 import type { Db, Tx } from '../db/client.js';
-import { isUniqueViolation } from '../db/errors.js';
 import { cards, games, players, roomEvents, rooms } from '../db/schema.js';
 import { settledHeadSeq } from '../rooms/events.js';
 import { RoomNotFound } from '../rooms/store.js';
 import {
   callsBySquare,
   claimableSquares,
+  liveCallFor,
   liveCalls,
   type Mark,
 } from './calls.js';
@@ -402,19 +402,25 @@ export async function readGame(
  * write: every card holding that square marks because the derivation says so, and
  * every device finds out from the stream it is already holding.
  *
- * Two phones tapping the same square in the same tick both get here. The partial
- * unique index on `(game_id, square_id) WHERE kind = 'CALL'` makes exactly one of
- * them a row and the other a 23505, and the loser is handed the winning row —
- * because from the player's side nothing went wrong: the square they spotted is
- * marked, which is all they were asking for.
+ * Two phones tapping the same square in the same tick both get here. Under the
+ * game-row lock, the first to arrive finds no live call and appends; the second
+ * finds the row the first just wrote and is handed it, because from the player's
+ * side nothing went wrong: the square they spotted is marked, which is all they
+ * were asking for. The lock is the arbiter, not a uniqueness constraint — a
+ * constraint cannot see that a RETRACT superseded the call, which is what made a
+ * retracted square uncallable for the rest of the game (#45, ADR-0004).
+ *
+ * So a square whose call was taken back is callable again, as an ordinary
+ * consequence of asking about *live* calls: the retracted row is not one, and the
+ * re-call is a new row rather than an edit of the old.
  *
  * The host is the one caller not held to their own card (D7): they repair a miss
  * from the deck sheet, and everything downstream of the scope check is the same
  * row, the same fanout and the same credit. That includes losing the race — a
- * host calling a square a player already called is handed the winning row too.
+ * host calling a square a player already called is handed the live row too.
  *
- * The row and the prizes it earns are appended together, under a lock on the
- * game — see the transaction below.
+ * The row and the prizes it earns are appended together, under that same lock —
+ * see the transaction below.
  */
 export async function callSquare(
   db: Db,
@@ -446,40 +452,41 @@ export async function callSquare(
     if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
   }
 
-  try {
-    return await db.transaction(async (tx) => {
-      await assertLive(tx, gameId);
+  return await db.transaction(async (tx) => {
+    await assertLive(tx, gameId);
 
-      const [appended] = await tx
-        .insert(roomEvents)
-        .values({
-          roomCode: game.roomCode,
-          gameId,
-          actorPlayerId: playerId,
-          kind: 'CALL',
-          squareId,
-        })
-        .returning({ seq: roomEvents.seq });
+    // After the lock, and this ordering is the whole fix (ADR-0004). A tap
+    // arriving in the same tick waits on `assertLive` until the first one has
+    // committed, so by the time this reads, the row it must not duplicate is
+    // there to be found. Asked before the lock it races, and both callers append.
+    const live = await liveCallFor(tx, gameId, squareId);
+    if (live !== undefined) return { ...live, squareId, appended: false };
 
-      if (appended === undefined) throw new Error('appending CALL added no row');
-
-      // Same transaction as the call that earned them: a prize written
-      // afterwards could be lost to a crash, and unlike a mark it is not
-      // recomputed on the next read, so there would be nothing to heal it.
-      await settleWinLadder(tx, game.roomCode, gameId);
-
-      return {
-        seq: Number(appended.seq),
-        squareId,
+    const [appended] = await tx
+      .insert(roomEvents)
+      .values({
+        roomCode: game.roomCode,
+        gameId,
         actorPlayerId: playerId,
-        appended: true,
-      };
-    });
-  } catch (error) {
-    if (!isUniqueViolation(error)) throw error;
+        kind: 'CALL',
+        squareId,
+      })
+      .returning({ seq: roomEvents.seq });
 
-    return readCall(db, gameId, squareId);
-  }
+    if (appended === undefined) throw new Error('appending CALL added no row');
+
+    // Same transaction as the call that earned them: a prize written
+    // afterwards could be lost to a crash, and unlike a mark it is not
+    // recomputed on the next read, so there would be nothing to heal it.
+    await settleWinLadder(tx, game.roomCode, gameId);
+
+    return {
+      seq: Number(appended.seq),
+      squareId,
+      actorPlayerId: playerId,
+      appended: true,
+    };
+  });
 }
 
 /**
@@ -503,37 +510,6 @@ async function assertLive(tx: Tx, gameId: string): Promise<void> {
   if (game.state !== 'live') throw new GameNotLive(game.state);
 }
 
-/** The CALL already in the log for this square — the winner of a tied race. */
-async function readCall(
-  db: Db,
-  gameId: string,
-  squareId: string,
-): Promise<CallResult> {
-  const [existing] = await db
-    .select({ seq: roomEvents.seq, actorPlayerId: roomEvents.actorPlayerId })
-    .from(roomEvents)
-    .where(
-      and(
-        eq(roomEvents.gameId, gameId),
-        eq(roomEvents.kind, 'CALL'),
-        eq(roomEvents.squareId, squareId),
-      ),
-    );
-
-  if (existing === undefined) {
-    throw new Error(
-      `CALL for ${squareId} conflicted with a row that is not there`,
-    );
-  }
-
-  return {
-    seq: Number(existing.seq),
-    squareId,
-    actorPlayerId: existing.actorPlayerId,
-    appended: false,
-  };
-}
-
 /**
  * D8's correction, and the reason the log is append-only. A RETRACT row names the
  * CALL it supersedes by `target_seq`; the CALL itself is never deleted and never
@@ -550,6 +526,12 @@ async function readCall(
  * index to make that airtight and a duplicate RETRACT would derive the same
  * marks anyway, so this is about the timeline read out of the log, which should
  * not say the same call was taken back twice because two thumbs landed together.
+ *
+ * `appended: false` says the *call at that seq* is retracted. It does not say the
+ * square is unmarked, and since #45 those are different questions: the square may
+ * have been called again since, in which case a newer CALL marks it and this
+ * result is about a row the card is no longer rendering. Marks come from the
+ * derivation on the next read, never from inferring them off this reply.
  *
  * A finished game takes no correction either, under the same lock a call takes.
  * The full house is a one-way door and PRIZE rows are appended facts rather than

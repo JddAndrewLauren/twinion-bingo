@@ -58,7 +58,8 @@ square tiers are fixed game-wide vocabulary.
 **Call** — the act, and the `CALL` row it appends: someone saw the event, so the square is marked
 for *everyone* holding it. Players may call only squares on their own card; the host may call any
 square in the deck (D7). One square, one live call — a tied race is won by whoever's row landed,
-and the loser is handed the winner's call rather than an error.
+and the loser is handed the winner's call rather than an error. That is arbitrated by the lock the
+call already takes on the game row, not by a uniqueness constraint (ADR-0004).
 
 **Mark** — a square that counts as called, together with the `CALL` row that marked it
 (`Mark` in `apps/api/src/games/calls.ts`). Never stored. It is derived, per read, from one formula:
@@ -74,6 +75,12 @@ through a stint needs no catch-up path — it re-reads the answer instead of rep
 **Retract** — a correction, appended as a `RETRACT` row naming the `CALL` it supersedes by `seq`.
 Never a delete: deleting would break `Last-Event-ID` replay for every device that already saw the
 row (D8).
+
+**Re-call** — calling a square whose call was taken back. It is an ordinary call: liveness is
+"no `RETRACT` names this row", so the superseded call does not block a new one, and the re-call is a
+fresh `CALL` row at a higher `seq` rather than an edit of the old one. So one square can carry
+several `CALL` rows over a game, of which at most one is live — the credit in the timeline and the
+standings goes to whoever made the *live* one (ADR-0004).
 
 **Undo window** — the fast path of D8: for a few seconds after your own call, a one-tap undo row,
 no confirmation. Past it, the slow path — tap your own marked square, confirm, retract.

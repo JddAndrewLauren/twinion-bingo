@@ -66,39 +66,50 @@ describe.skipIf(noTestDatabase)('the bingo schema', () => {
     expect(journals.map((row) => row.table_schema)).toEqual(['bingo']);
   });
 
-  it('rejects a duplicate CALL for the same square in the same game', async () => {
-    await sql`
+  /**
+   * The stated cost of ADR-0004, asserted rather than assumed. A partial unique
+   * index used to reject a second CALL for the same square, which made a retracted
+   * square uncallable for the rest of the game (#45) — a constraint cannot see the
+   * RETRACT that superseded the call it is comparing against.
+   *
+   * So the log itself constrains nothing here, and one-live-call-per-square is
+   * `callSquare`'s to keep under the game-row lock. This asserts the index is gone
+   * rather than merely unused: an index left behind would still reject the
+   * re-call the application is now free to append.
+   */
+  it('leaves one live call per square to the application, not to an index', async () => {
+    const indexes = await sql<{ indexname: string }[]>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = 'bingo' AND tablename = 'room_events'`;
+
+    expect(indexes.map((row) => row.indexname)).not.toContain(
+      'room_events_call_unique',
+    );
+
+    const insertCall = () => sql`
       INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, square_id)
       VALUES ('ABCD', ${gameId}, ${playerId}, 'CALL', 'f1.v1:driver_retires:VER')`;
 
-    await expect(
-      sql`
-        INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, square_id)
-        VALUES ('ABCD', ${gameId}, ${playerId}, 'CALL', 'f1.v1:driver_retires:VER')`,
-    ).rejects.toThrow(/room_events_call_unique/);
+    await insertCall();
+    await expect(insertCall()).resolves.toBeDefined();
   });
 
-  it('still allows repeated non-CALL rows for that square', async () => {
-    const insertRetract = () => sql`
-      INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, square_id)
-      VALUES ('ABCD', ${gameId}, ${playerId}, 'RETRACT', 'f1.v1:driver_retires:VER')`;
+  /**
+   * The lookup that replaced the constraint runs on every call rather than only
+   * on a lost race, and it runs holding the game row's lock — so without these it
+   * is two sequential scans of a log that is never pruned, and the lock is held
+   * for as long as that takes. Asserted non-unique: uniqueness moved to the lock
+   * (ADR-0004), and a unique index here would restore #45's dead end.
+   */
+  it('indexes the live-call lookup, without constraining it', async () => {
+    const rows = await sql<{ indexdef: string }[]>`
+      SELECT indexdef FROM pg_indexes
+      WHERE schemaname = 'bingo' AND tablename = 'room_events'
+        AND indexname IN ('room_events_call_idx', 'room_events_target_seq_idx')`;
 
-    await insertRetract();
-    await expect(insertRetract()).resolves.toBeDefined();
-  });
-
-  it('allows the same square to be called again in a different game', async () => {
-    const [next] = await sql<{ id: string }[]>`
-      INSERT INTO bingo.games (room_code, theme_id, deck, seed)
-      VALUES ('ABCD', 'f1.v1', ARRAY['f1.v1:driver_retires:VER'], 'seed-2')
-      RETURNING id`;
-
-    expect(next).toBeDefined();
-
-    await expect(
-      sql`
-        INSERT INTO bingo.room_events (room_code, game_id, actor_player_id, kind, square_id)
-        VALUES ('ABCD', ${next?.id ?? null}, ${playerId}, 'CALL', 'f1.v1:driver_retires:VER')`,
-    ).resolves.toBeDefined();
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row.indexdef).not.toMatch(/UNIQUE/i);
+    }
   });
 });

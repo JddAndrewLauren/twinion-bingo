@@ -18,6 +18,32 @@ export type Mark = {
 export type LiveCall = Mark & { at: Date };
 
 /**
+ * "No RETRACT names this row" — the half of the derivation that makes liveness a
+ * property of a *second* row, correlated on the CALL's own `seq` (D8).
+ *
+ * It is a helper rather than a repeated expression because more than one query
+ * needs it now: the reads below, and the call path, which asks whether a square
+ * has a live call before appending one (ADR-0004). A second hand-rolled copy of
+ * this predicate is exactly how a retracted square becomes callable to one reader
+ * and uncallable to another.
+ */
+function notSuperseded(db: Db | Tx) {
+  const retraction = alias(roomEvents, 'retraction');
+
+  return notExists(
+    db
+      .select({ seq: retraction.seq })
+      .from(retraction)
+      .where(
+        and(
+          eq(retraction.kind, 'RETRACT'),
+          eq(retraction.targetSeq, roomEvents.seq),
+        ),
+      ),
+  );
+}
+
+/**
  * The game's live calls — the right-hand side of the one formula the whole
  * design follows from:
  *
@@ -39,8 +65,6 @@ export async function liveCalls(
   db: Db | Tx,
   gameId: string,
 ): Promise<LiveCall[]> {
-  const retraction = alias(roomEvents, 'retraction');
-
   const rows = await db
     .select({
       seq: roomEvents.seq,
@@ -54,17 +78,7 @@ export async function liveCalls(
         eq(roomEvents.gameId, gameId),
         eq(roomEvents.kind, 'CALL'),
         isNotNull(roomEvents.squareId),
-        notExists(
-          db
-            .select({ seq: retraction.seq })
-            .from(retraction)
-            .where(
-              and(
-                eq(retraction.kind, 'RETRACT'),
-                eq(retraction.targetSeq, roomEvents.seq),
-              ),
-            ),
-        ),
+        notSuperseded(db),
       ),
     )
     .orderBy(asc(roomEvents.seq));
@@ -78,19 +92,67 @@ export async function liveCalls(
 }
 
 /**
+ * The one live call for a square, if the log still stands behind one — the same
+ * derivation `liveCalls` runs, narrowed to a single square.
+ *
+ * This is what the call path asks before appending: a square with a live call is
+ * already marked, so the caller is handed that row rather than a duplicate; a
+ * square whose only call was retracted has none, so it is callable again (#45).
+ * Both answers come from the query above's predicate rather than a second copy of
+ * it, which is the point — the reader and the writer cannot disagree.
+ *
+ * Only meaningful inside `callSquare`'s transaction, after the `FOR UPDATE` lock
+ * on the game row: the lock is what makes "is there a live call" still true by the
+ * time the insert lands (ADR-0004).
+ */
+export async function liveCallFor(
+  tx: Db | Tx,
+  gameId: string,
+  squareId: string,
+): Promise<Mark | undefined> {
+  const [row] = await tx
+    .select({ seq: roomEvents.seq, actorPlayerId: roomEvents.actorPlayerId })
+    .from(roomEvents)
+    .where(
+      and(
+        eq(roomEvents.gameId, gameId),
+        eq(roomEvents.kind, 'CALL'),
+        eq(roomEvents.squareId, squareId),
+        notSuperseded(tx),
+      ),
+    )
+    .orderBy(asc(roomEvents.seq))
+    .limit(1);
+
+  return row === undefined
+    ? undefined
+    : { squareId, seq: Number(row.seq), actorPlayerId: row.actorPlayerId };
+}
+
+/**
  * The same calls keyed by the square they marked. A card takes `.get()` for the
  * mark itself; the host's deck sheet takes `.has()` for which of its 40 squares
  * are called — one map off one query, feeding both.
+ *
+ * A square should have at most one live call, and under the game-row lock it does
+ * (ADR-0004). But that is now an application invariant rather than a constraint
+ * the database refuses to break, so this says out loud what happens if it ever is
+ * broken: the earliest live call wins, because first-to-spot is who D1 credits.
+ * `liveCallFor` resolves the same tie the same way, so the reader and the writer
+ * name the same row rather than differing by which one overwrote the other.
  */
 export function callsBySquare(
   calls: readonly LiveCall[],
 ): Map<string, Mark> {
-  return new Map(
-    calls.map(({ squareId, seq, actorPlayerId }) => [
-      squareId,
-      { squareId, seq, actorPlayerId },
-    ]),
-  );
+  const bySquare = new Map<string, Mark>();
+
+  for (const { squareId, seq, actorPlayerId } of calls) {
+    if (!bySquare.has(squareId)) {
+      bySquare.set(squareId, { squareId, seq, actorPlayerId });
+    }
+  }
+
+  return bySquare;
 }
 
 /**
