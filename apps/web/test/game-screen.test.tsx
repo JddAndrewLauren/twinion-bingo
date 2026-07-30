@@ -7,9 +7,11 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import confetti from 'canvas-confetti';
 import type { PrizeAward, TimelineEntry } from '../app/room-api';
 import { RoomScreen } from '../app/r/[code]/room-screen';
 import { FakeEventSource } from './fake-event-source';
+import { FakeWakeLock, FakeWakeLockSentinel } from './fake-wake-lock';
 
 const apiUrl = 'https://api.example';
 const shareLink = 'https://bingo.example/r/ABCD';
@@ -229,6 +231,10 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  // The visibility cases spy on a *getter*, which `unstubAllGlobals` does not
+  // undo — a document left reporting `hidden` silently suppresses the wake lock
+  // and the confetti in whichever test runs next.
+  vi.restoreAllMocks();
 });
 
 describe('starting a game', () => {
@@ -1484,5 +1490,380 @@ describe('a game that is done', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Host deck sheet' }));
 
     expect(await screen.findByLabelText('Host deck sheet')).toBeDefined();
+  });
+});
+
+/**
+ * The cheapest fix in the project and one of the two functionally load-bearing
+ * ones: a phone that sleeps every thirty seconds during a two-hour race is
+ * unusable. Held for exactly as long as there is a race to watch — a lobby is
+ * not one, and a scoreboard is something you put down.
+ */
+describe('keeping the screen awake', () => {
+  /** Put the document behind a spy, so a test can hide and show the tab. */
+  function visibility(state: DocumentVisibilityState) {
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state);
+    fireEvent(document, new Event('visibilitychange'));
+  }
+
+  /**
+   * Swap the wake lock out for the run of one test and put the shared fake back
+   * after. `setup.ts` installs the fake once for the whole file (see the note on
+   * the class), so a test that needs a different one has to restore it itself.
+   */
+  function withWakeLock(api: unknown) {
+    const original = (navigator as Navigator & { wakeLock?: unknown }).wakeLock;
+    Object.defineProperty(navigator, 'wakeLock', {
+      configurable: true,
+      value: api,
+    });
+
+    return () =>
+      Object.defineProperty(navigator, 'wakeLock', {
+        configurable: true,
+        value: original,
+      });
+  }
+
+  it('holds the screen awake while the game is live', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    await waitFor(() => expect(FakeWakeLock.held).toBeDefined());
+    expect(FakeWakeLock.held!.type).toBe('screen');
+    expect(FakeWakeLock.held!.released).toBe(false);
+  });
+
+  /**
+   * The lobby is not a race. Nothing is asked for until the host starts one, and
+   * then it is asked for off the stream — a guest never presses anything, so the
+   * `GAME_STARTED` frame's re-read is the only thing that can flip this.
+   */
+  it('asks for nothing in the lobby, and asks once the game starts', async () => {
+    const room = stubRoom({ you: guest });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByText(/Ash/);
+
+    expect(FakeWakeLock.requested).toHaveLength(0);
+
+    room.startElsewhere();
+    const live = await stream();
+    act(() => live.emit({ seq: 3, kind: 'GAME_STARTED' }));
+
+    await screen.findByLabelText('Your card');
+    await waitFor(() => expect(FakeWakeLock.held?.released).toBe(false));
+  });
+
+  /**
+   * D5's one-way door gives the screen back. Driven through the call that closes
+   * the game rather than served from a `done` fixture, because the transition is
+   * the thing — a game that arrives finished never held a lock to release.
+   */
+  it('gives the screen back when a full house closes the game', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true, closesOnCall: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 3' }));
+
+    const sentinel = await waitFor(() => {
+      expect(FakeWakeLock.held).toBeDefined();
+
+      return FakeWakeLock.held!;
+    });
+
+    await screen.findByText('Final standings');
+    await waitFor(() => expect(sentinel.released).toBe(true));
+  });
+
+  /** The criterion, verbatim: released on hide, re-acquired on the way back. */
+  it('releases on hide and takes the screen back on show', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const first = await waitFor(() => {
+      expect(FakeWakeLock.held).toBeDefined();
+
+      return FakeWakeLock.held!;
+    });
+
+    act(() => visibility('hidden'));
+    await waitFor(() => expect(first.released).toBe(true));
+
+    await act(async () => visibility('visible'));
+    await waitFor(() => expect(FakeWakeLock.requested).toHaveLength(2));
+    expect(FakeWakeLock.held!.released).toBe(false);
+  });
+
+  /**
+   * Half the target hardware is iOS Safari, and older versions have no wake lock
+   * at all — which `lib.dom` will not admit, so the feature test is the only
+   * thing standing between those phones and a blank room.
+   */
+  it('renders the game on a browser that has no wake lock', async () => {
+    const restore = withWakeLock(undefined);
+
+    try {
+      stubRoom({ you: host, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+      expect(await screen.findByLabelText('Your card')).toBeDefined();
+    } finally {
+      restore();
+    }
+  });
+
+  /** A refused lock is a screen that dims, not an error anyone should see. */
+  it('says nothing when the request is refused', async () => {
+    FakeWakeLock.refuse = true;
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    try {
+      stubRoom({ you: host, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+      await screen.findByLabelText('Your card');
+      await act(async () => {});
+
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
+  });
+
+  /**
+   * The one failure mode that leaves a phone awake for the rest of the evening.
+   * The request is a promise, so the sentinel can arrive after there is anyone
+   * left to hold it — and without the `gone` flag nothing would ever release it.
+   * StrictMode's second pass and a full house reach the same path.
+   */
+  it('leaves no lock behind when the screen goes while the request is in flight', async () => {
+    let settle: ((sentinel: FakeWakeLockSentinel) => void) | undefined;
+    const restore = withWakeLock({
+      request: () =>
+        new Promise<FakeWakeLockSentinel>((resolve) => {
+          settle = resolve;
+        }),
+    });
+
+    try {
+      stubRoom({ you: host, liveFromTheStart: true });
+
+      const view = render(
+        <RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />,
+      );
+      await screen.findByLabelText('Your card');
+      await waitFor(() => expect(settle).toBeDefined());
+
+      // The phone is put down before the browser answers.
+      view.unmount();
+
+      const late = new FakeWakeLockSentinel('screen');
+      await act(async () => settle!(late));
+
+      expect(late.released).toBe(true);
+    } finally {
+      restore();
+    }
+  });
+});
+
+/**
+ * D12's race-day feel, and the half of it that has to be felt across the room: a
+ * line landing is an event, not a row appearing in a list.
+ */
+describe('confetti on a prize', () => {
+  /** How many particles the burst was fired with, or undefined if none was. */
+  function burst(nth = 0): number | undefined {
+    const fired = vi.mocked(confetti).mock.calls[nth]?.[0];
+
+    return fired?.particleCount;
+  }
+
+  /** The PRIZE row D5 appends inside the winning call's own transaction. */
+  const prize = (seq: number, prizeKind: string, by = guest.id) => ({
+    seq,
+    kind: 'PRIZE',
+    actorPlayerId: by,
+    prizeKind,
+  });
+
+  it('fires when a rung lands', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => live.emit(prize(40, 'LINE')));
+
+    expect(vi.mocked(confetti)).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * The winner's own phone gets it off the same stream as everyone else's, which
+   * is the whole reason there is one mechanism here rather than two: nothing
+   * diffs `game.prizes` across reads, so there is no second replay guard.
+   */
+  it('fires for the player whose own tap won it', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    await screen.findByRole('button', { name: 'Undo' });
+
+    const mine = room.markFor('f1.v1:t:5');
+    const live = await stream();
+    act(() => live.emit(prize(mine!.seq + 1, 'LINE', guest.id)));
+
+    expect(vi.mocked(confetti)).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * Sits beside "does not re-announce calls its snapshot already accounts for",
+   * and for the same reason: a first connection sends no `Last-Event-ID`, so the
+   * whole log replays and a rung won an hour ago is not news.
+   */
+  it('does not fire for a rung the snapshot already accounts for', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      streamedThroughSeq: 40,
+      prizes: [{ seq: 40, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => live.emit(prize(40, 'LINE')));
+
+    expect(vi.mocked(confetti)).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The case the horizon cannot cover, and the reason the rung is remembered
+   * rather than the seq: D5 writes one PRIZE row per winner, so two players
+   * completing a line on the same call are two frames, both above the horizon
+   * and both genuine news. One rung is still one burst.
+   */
+  it('fires once for a rung two players took at the same moment', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => {
+      live.emit(prize(40, 'LINE', guest.id));
+      live.emit(prize(41, 'LINE', host.id));
+    });
+
+    expect(vi.mocked(confetti)).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * D13 keeps the room and its stream across games. A rung is won once *per
+   * game*, so the browser's co-winner deduplication has to start fresh when the
+   * next GAME_STARTED row arrives rather than silencing Sunday's line because
+   * Saturday's sprint already had one.
+   */
+  it('celebrates the same rung again in the room’s next game', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => {
+      live.emit(prize(40, 'LINE'));
+      live.emit(prize(41, 'FULL_HOUSE'));
+      live.emit({ seq: 42, kind: 'GAME_STARTED' });
+      live.emit(prize(43, 'LINE'));
+    });
+
+    expect(vi.mocked(confetti)).toHaveBeenCalledTimes(3);
+  });
+
+  /** The full house is the end of the session, so it is not the same cheer. */
+  it('is louder for the full house than for a line', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => {
+      live.emit(prize(40, 'LINE'));
+      live.emit(prize(61, 'FULL_HOUSE'));
+    });
+
+    expect(burst(1)!).toBeGreaterThan(burst(0)!);
+  });
+
+  it('stays still on a device told to keep motion down', async () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({
+      matches: true,
+    } as MediaQueryList);
+
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    const live = await stream();
+    act(() => live.emit(prize(40, 'LINE')));
+
+    expect(vi.mocked(confetti)).not.toHaveBeenCalled();
+  });
+
+  /**
+   * `requestAnimationFrame` is throttled in a background tab, so a burst fired
+   * there does not play now — it plays on the way back, minutes late and
+   * attached to nothing that just happened.
+   */
+  it('does not play into a tab nobody is looking at', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+
+    const live = await stream();
+    act(() => live.emit(prize(40, 'LINE')));
+
+    expect(vi.mocked(confetti)).not.toHaveBeenCalled();
+  });
+
+  /** An ordinary call is a toast, and only a toast. */
+  it('leaves an ordinary call alone, credit and all', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    room.calledElsewhere('f1.v1:t:7');
+    const live = await stream();
+    act(() =>
+      live.emit({
+        seq: 12,
+        kind: 'CALL',
+        actorPlayerId: guest.id,
+        squareId: 'f1.v1:t:7',
+      }),
+    );
+
+    expect((await screen.findByRole('status')).textContent).toBe(
+      'Bea spotted Square 7',
+    );
+    expect(vi.mocked(confetti)).not.toHaveBeenCalled();
   });
 });

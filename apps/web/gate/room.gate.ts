@@ -451,3 +451,95 @@ test.describe('the host deck sheet', () => {
     await expect(page.getByLabel('Your card')).toBeVisible();
   });
 });
+
+/**
+ * D12's confetti, and the one thing about it that needs a browser: it is the only
+ * surface in the app that is *not* docked in flow. Every other bottom-slot claim in
+ * `docs/SURFACES.md` is satisfied by the layout; this one is satisfied by
+ * `canvas-confetti` appending its own `position: fixed; pointer-events: none`
+ * canvas to `body` and taking it away again — which is a property of a library, and
+ * therefore a property to assert rather than to trust.
+ */
+test.describe('a prize landing', () => {
+  test('bursts over the card without covering it or catching a tap', async ({ page }) => {
+    const room = await openRoom(page, 'mid');
+
+    const calls: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().endsWith('/call')) calls.push(request.postData() ?? '');
+    });
+
+    const before = await page.getByLabel('Your card').boundingBox();
+
+    await room.emit({
+      seq: 601,
+      kind: 'PRIZE',
+      actorPlayerId: 'guest-id',
+      prizeKind: 'LINE',
+    });
+
+    const burst = page.locator('canvas');
+    await expect(burst).toHaveCount(1);
+
+    // The two properties the whole design rests on, read off the real element.
+    expect(
+      await burst.evaluate((canvas) => getComputedStyle(canvas).pointerEvents),
+    ).toBe('none');
+    expect(
+      await burst.evaluate((canvas) => getComputedStyle(canvas).position),
+    ).toBe('fixed');
+
+    // Nothing moved: the canvas is out of flow, so the grid is where it was.
+    expect(await page.getByLabel('Your card').boundingBox()).toEqual(before);
+
+    // And a cell tapped mid-burst still calls for the room, which is the half of
+    // "does not block interaction" that a computed style cannot answer.
+    const square = page.getByRole('button', { name: room.square(20).label });
+    await square.tap();
+    await expect(burst).toHaveCount(1);
+    await expect(square).toHaveAttribute('aria-pressed', 'true');
+    expect(calls, 'a tap during a burst must reach the room').toHaveLength(1);
+
+    await expectNoHorizontalScroll(page);
+  });
+});
+
+/**
+ * The share link is the primary join path and it mostly gets pasted into a group
+ * chat, so the unfurl is most players' first sight of the room.
+ *
+ * The half of it that is gateable is the half that fails silently: an `og:image`
+ * that is relative unfurls as a bare link on every machine but this one, and the
+ * image route is the only place in the app that fetches the API from the server.
+ * This run has no API at all — `playwright.config.ts` builds and serves against
+ * `http://api.gate.invalid` — so what passes here is specifically the fallback
+ * card, which is the path a slow or down API takes in production.
+ */
+test.describe('the unfurl for a share link', () => {
+  test('carries the room code, and draws a card with no API to ask', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/r/ABCD');
+
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      'content',
+      'Room ABCD',
+    );
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+      'content',
+      'summary_large_image',
+    );
+
+    // An unfurler is a different machine, so a relative image URL is a link with
+    // no card — this is what `metadataBase` is for and the only way to see it.
+    const image = await page
+      .locator('meta[property="og:image"]')
+      .getAttribute('content');
+    expect(image, 'og:image must be absolute').toMatch(/^https?:\/\//);
+
+    const card = await request.get(image!);
+    expect(card.status(), 'the card must render with the API unreachable').toBe(200);
+    expect(card.headers()['content-type']).toContain('image/png');
+  });
+});

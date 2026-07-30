@@ -71,6 +71,9 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
 | Game — a square's prose | `/r/:code`, a card cell held down for 400ms    | D4's `description` in the docked slot, **covering no part of the card**, gone on release — and the release **not** also calling the square, which is the way this can go wrong that no screenshot shows. Drive it with a **second pointer on another cell** too: a resting thumb on a one-handed card once turned the hold into a call for the whole room |
 | Game — what am I looking for | `/r/:code`, the block under the card, open at lights out | All **24** rows and their prose (to ~130 characters, #12's licence) with none overflowing, the toggle thumb-sized and its count reading while the block is shut, and the count falling to `(0)` at a full house |
+| Game — a prize landing | `/r/:code`, a PRIZE frame arriving on a live game | The burst playing while **the card's box is identical to the pixel**, and a cell tapped mid-burst still calling for the room. The only surface here that is not docked in flow: `canvas-confetti` owns the canvas and gives it `position: fixed; pointer-events: none`, so both halves are a library's property and are asserted rather than trusted |
+| Install — the head of `/` | `/`, as a phone reads it before offering Add to Home Screen | A `link[rel=manifest]` and a `link[rel=apple-touch-icon]` that both fetch 200, a manifest whose `display` is `standalone` with 192/512/maskable icons that all resolve, and **no service worker registered** — a negative claim, so it is gated rather than written down (see the note in `app/manifest.ts` for why there is none) |
+| Share — room unfurl | `/r/:code`, as a group-chat crawler reads it | The room code in `og:title`, an **absolute** `og:image` URL, and a 1200×630 image naming both the room code and its theme when the API is reachable; with the API unavailable, a code-only fallback still answering 200 `image/png` rather than collapsing to a bare link |
 
 ### Known-unverified claims inherited from #7
 
@@ -251,8 +254,9 @@ either, which is the defect #13 found next door.
 ## Status of the toolchain
 
 **The gate is in the repo and runs, as of #13.** `pnpm --filter @twinion-bingo/web run gate`, in
-`apps/web/gate/`, and in CI as the `gate` job. 24 tests at each of the four matrix viewports, 96 in
-all — `room.gate.ts` for the game screen, `lobby.gate.ts` for everything before the deal. Failures keep
+`apps/web/gate/`, and in CI as the `gate` job. 29 tests at each of the four matrix viewports, 116 in
+all — `room.gate.ts` for the game screen, `lobby.gate.ts` for everything before the deal, and
+`install.gate.ts` (#15) for the manifest, the icons and the absent service worker. Failures keep
 a trace and a screenshot, which the CI job uploads.
 
 It was assigned to #12 and then to #13. **#12 settled without it, deliberately** — it prototyped the
@@ -345,6 +349,31 @@ Two findings from that exercise that matter more than the passes:
 Also worth knowing: the pinned-slot seed is caught at one viewport out of four. That is not a weakness in the
 assertion, it is the geometry — and it is the argument for gating all four rather than only the two
 a phone-layout issue is about.
+
+**#15's gate run** (WebKit with `hasTouch`, all four matrix viewports, 116 tests green):
+
+- **The burst covers nothing and catches nothing.** `canvas-confetti` appends one canvas to `body`,
+  computed `position: fixed` and `pointer-events: none`; the card's box is identical to the pixel
+  across a real PRIZE frame arriving on the stream, and a cell tapped mid-burst posts its `/call`
+  and comes back marked. Both properties are read off the element rather than assumed from the
+  library's README — they are the whole reason the global `confetti()` is used rather than a canvas
+  of ours, so they are the thing to notice if a future version stops holding them.
+- **The unfurl is gated as far as it can be**: `og:title` carries the room code, `og:image` is
+  *absolute* (a relative one unfurls as a bare link on every machine but the one that rendered it),
+  and the image route answers 200 `image/png` **with no API to ask** — the gate builds and serves
+  against `http://api.gate.invalid`, so what passes there is specifically the code-only fallback
+  card. The theme half of the criterion needs a real API and is a hardware/by-hand check.
+- **The install head is gated at `/`**, including the negative claim. Seeded regression: registering
+  a service worker in `layout.tsx` fails `registers no service worker` immediately, which is what
+  makes that criterion evidence rather than prose.
+
+**What still needs hardware, said plainly.** The gate can prove a manifest links, parses and points
+at icons that exist; it cannot prove a phone offers Add to Home Screen, that the installed launch
+has no browser chrome, or that the icon looks like anything on a home screen. iOS ignores the
+manifest entirely and reads `apple-icon.png` and `appleWebApp` instead, so **the install criterion
+is a two-device hardware pass** (one iPhone, one Android) and the gate is the part of it that can be
+re-run. The icon art is a deliberate placeholder — a monogram on `neutral-950` — and is a design
+question, not a gate one.
 
 ## Adding a surface or a screen
 

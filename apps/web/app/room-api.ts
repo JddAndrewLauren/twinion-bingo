@@ -111,16 +111,27 @@ export type RoomEvent = {
   actorPlayerId?: string;
   /** The square a CALL is about; null on the kinds that are not about one. */
   squareId?: string | null;
+  /** Which rung a PRIZE row is; null on the kinds that are not about one. */
+  prizeKind?: string | null;
 };
 
-/** Undefined rather than a throw: an unknown code is a normal thing to type. */
+/**
+ * Undefined rather than a throw: an unknown code is a normal thing to type.
+ *
+ * `signal` is for the one caller that is not a player's browser — the OG image
+ * route, which is rendered for an unfurler with its own patience and must give
+ * up on a slow API rather than hold the card open. A screen has the stream and a
+ * retry; a crawler has neither.
+ */
 export async function fetchRoster(
   apiUrl: string,
   code: string,
   token: string | undefined,
+  signal?: AbortSignal,
 ): Promise<Roster | undefined> {
   const res = await fetch(`${apiUrl}/rooms/${encodeURIComponent(code)}`, {
     headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
+    signal,
   });
 
   // 400 alongside 404: the API rejects a code that isn't shaped like one — a typo

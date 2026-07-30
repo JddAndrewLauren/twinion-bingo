@@ -1,5 +1,6 @@
 'use client';
 
+import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
 import { readToken, storeToken } from '../../player-token';
 import {
@@ -20,6 +21,7 @@ import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
 import { LookingFor } from './looking-for';
 import { Results, nextPrizeName } from './results';
+import { useWakeLock } from './use-wake-lock';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
 
@@ -110,6 +112,43 @@ function labelFor(game: Game, squareId: string): string {
   );
 }
 
+/**
+ * A rung landing, felt across the room. The point of D12's race-day feel is that
+ * a line is an event in the room rather than a row appearing in a list, so this
+ * is deliberately louder than anything else the screen does.
+ *
+ * The global `confetti()` rather than `confetti.create(ourCanvas)`, on purpose.
+ * The library appends its own canvas to `body` at `position: fixed;
+ * pointer-events: none` and takes it away when the animation ends — which is how
+ * SURFACES.md's repeated *"covering no part of the card"* is satisfied here by
+ * construction rather than by measurement, and a cell stays tappable mid-burst.
+ * Owning the canvas would make both of those ours to get wrong.
+ *
+ * Two things it declines to fire for:
+ *
+ * - **A background tab.** `requestAnimationFrame` is throttled there, so the
+ *   burst would not play now; it would play oddly on the way back, minutes late
+ *   and attached to nothing.
+ * - **Reduced motion.** Checked here rather than left to the library's own
+ *   `disableForReducedMotion`, so the criterion is this app's and can be
+ *   asserted rather than delegated.
+ */
+function celebrate(prizeKind: string): void {
+  if (document.visibilityState !== 'visible') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // A full house is D5's one-way door and the end of the session, not a cheer.
+  const finale = prizeKind === 'FULL_HOUSE';
+
+  void confetti({
+    particleCount: finale ? 220 : 80,
+    spread: finale ? 140 : 70,
+    startVelocity: finale ? 55 : 40,
+    // Fired from below the card so the burst travels up past it.
+    origin: { y: 0.9 },
+  });
+}
+
 export function RoomScreen({
   apiUrl,
   code,
@@ -175,6 +214,17 @@ export function RoomScreen({
    */
   const rosterRef = useRef<Roster | null>(null);
   const gameRef = useRef<Game | null>(null);
+  /**
+   * The rungs this browser has already celebrated. The stream's replay horizon
+   * is necessary but not sufficient: D5 writes one PRIZE row per winner, so two
+   * players completing a line on the same call are two frames above the horizon
+   * and both are genuine news. This is the exact statement of "one burst per
+   * rung" — and it is a ref rather than effect-local state so it survives
+   * StrictMode's second pass and any re-open of the stream. A GAME_STARTED row
+   * above the snapshot horizon clears it, because a rung is won once per game
+   * and D13 keeps this same room and stream for the next one.
+   */
+  const celebrated = useRef(new Set<string>());
 
   useEffect(() => {
     let cancelled = false;
@@ -252,6 +302,36 @@ export function RoomScreen({
     const horizon = gameRef.current?.streamedThroughSeq ?? 0;
 
     const unsubscribe = subscribeToRoomEvents(apiUrl, code, (event) => {
+      /**
+       * One room hosts many games (D13), but the co-winner guard above is only
+       * meant to span one game's ladder. Clear on the log's transition rather
+       * than waiting for the debounced game re-read, because the next game's
+       * first prize can already be behind that read.
+       *
+       * Replayed GAME_STARTED rows stay below the snapshot horizon and must not
+       * disturb a guard that survived StrictMode or a stream re-open.
+       */
+      if (event.kind === 'GAME_STARTED' && event.seq > horizon) {
+        celebrated.current.clear();
+      }
+
+      /**
+       * Off the same stream every other phone reads, the tapper's included.
+       * PRIZE rows are appended inside the call's own transaction, and the
+       * stream is room-scoped and unfiltered — so a winner's own burst arrives
+       * by the same path everyone else's does, a second or so behind their
+       * Results panel. That is the price of one mechanism instead of two.
+       */
+      if (
+        event.kind === 'PRIZE' &&
+        event.seq > horizon &&
+        event.prizeKind != null &&
+        !celebrated.current.has(event.prizeKind)
+      ) {
+        celebrated.current.add(event.prizeKind);
+        celebrate(event.prizeKind);
+      }
+
       const credit =
         event.seq > horizon
           ? spotterCredit(event, rosterRef.current, gameRef.current)
@@ -289,6 +369,15 @@ export function RoomScreen({
 
     return () => clearTimeout(timer);
   }, [undo]);
+
+  /**
+   * `state === 'live'` and not anything looser. Not `!finished`, which is true
+   * in the lobby and true before the game read has landed; not `game !== null`,
+   * because a `done` game is a scoreboard and a scoreboard is something you put
+   * down. The `lobby → live` transition re-runs this for free — the
+   * `GAME_STARTED` frame's re-read is what flips `state`.
+   */
+  useWakeLock(game?.state === 'live');
 
   async function submitName(event: React.FormEvent) {
     event.preventDefault();
