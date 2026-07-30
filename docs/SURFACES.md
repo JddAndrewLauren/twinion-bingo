@@ -65,7 +65,8 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — host deck sheet | `/r/:code`, a live game, joined as the host, sheet open | All 40 deck rows, called ones telling apart from uncalled at a glance, **the amber admin chrome distinguishing the sheet from the host's own card**, and the toggle back to the card reachable |
 | Game — undo toast     | `/r/:code`, within 10s of **your own** call      | The toast **docked below the card** naming the square you called with the **Undo** button beside it — the button on the toast rather than below it, thumb-sized, and neither the label nor the button overflowing on a 30-character label; **covering no part of the card**. Tap it — "reachable" has to mean the square unmarks, not that the button rendered. The host's own call from the deck sheet opens the same window, so the toast has to sit over the sheet without hiding a row's Call affordance |
 | Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
-| Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling |
+| Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling, and both **thumb-sized (44px)** — they were 24px until #46 measured them |
+| Game — retract dialog over the sheet | `/r/:code`, the host tapping a **called** row of the deck sheet | The same confirmation over the 40-row sheet rather than the card — so nothing here can be said as "clear of the card", and the panel has to be **whole inside the viewport** while the scroller behind it is three screens tall. The prose **names the square**, which only works because the host holds the deck's prose; and the row it was opened from goes back to uncalled once **Take it back** is tapped. This is the only surface that reaches a call on one of the ~16 deck squares that are on no card of the host's |
 | Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code, and the rung dropping out rather than reading "full house next" once the ladder is spent |
 | Game — the two surfaces | `/r/:code`, tapping `Card` and `Race` — the **phone layout**, so `phone-small`, `phone` and `ipad-11-portrait` | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
 | Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
@@ -155,10 +156,37 @@ than stubbed):
   run rather than #10's `W` run, so it does not contradict the caution above — `W` is the wider
   glyph, and that caution stands.
 
-**Not gated, because there is nothing to gate.** The host can only *retract* from the card, never
-from the sheet: a retraction names a CALL by `seq` and `deck.called` carries square ids alone. So a
-call for one of the ~16 deck squares that are on no card of the host's is uncorrectable through the
-UI. See the note on #9.
+**Settled by #46's gate run** (the committed harness — `apps/web/gate/`, WebKit with touch, all four
+viewports — against the correction that used to be the note here: *"not gated, because there is
+nothing to gate"*, when the host could only retract from the card and the ~16 deck squares on no card
+of theirs were uncorrectable through the UI):
+
+- **Game — retract dialog from the deck sheet** passes at all four viewports, and it is the dialog's
+  first *committed* measurement — #9's run measured it over the card, with a harness that is not in
+  the repo. The panel is 320x194 at every size (`max-w-xs` centred in a `fixed inset-0` layer), so it
+  is identical on a 375px phone and a 1194px iPad and whole on screen at both: top at 236 on
+  `phone-small` against a 667px viewport, and at 500 on `ipad-11-portrait` against 1194.
+- Measured with `expectWholeOnScreen`, a new instrument, rather than the bottom slot's
+  `expectClearOfTheCard`. Two reasons, both structural: with the sheet up there is no card on screen
+  to be clear of, and the sheet behind the dialog is a 2218px scroller in a 667px viewport — so
+  `expectNoVerticalScroll` says nothing here, and a button below the fold on a `fixed` layer is
+  unreachable rather than merely awkward.
+- **A defect this found, and it was not #46's.** Both dialog buttons were 24px tall — browser
+  defaults, no `min-h-11` — against the 44px minimum every other tappable thing in this app is held
+  to. #9's run recorded *"both buttons on screen"* and that was true; a 24px button is on screen. They
+  are 286x44 now, and `Take it back` / `Keep it` are asserted with `expectThumbSized` so the next
+  round trip cannot lose it again.
+- Driven to the end rather than to the dialog: the row is *called* from the sheet, tapped again to
+  open the dialog, and **Take it back** returns it to `aria-pressed="false"`. This is the run's own
+  answer to "reachable has to mean the square unmarks".
+- **Seeded regression.** Putting the row back the way it was — `disabled={finished || mark !==
+  undefined}` in `deck-sheet.tsx`, which is exactly the pre-#46 state — fails this test at all four
+  viewports. The corresponding component test in `apps/web/test/game-screen.test.tsx` fails on the
+  same one-token revert.
+- The fixture gained a real fix on the way: `gameFor` invented a call's `seq` as `100 + index` while
+  the `/call` route kept its own map, and a deck square called from the sheet would have rendered a
+  row whose seq mapped to nothing — a 409 dressed as a working retraction, which is the third time
+  this fixture has done that. There is now one call log and the seq is decided in one place.
 
 
 **#11's gate run** (Playwright, `page.setViewportSize`, all four viewports; host and late-joiner

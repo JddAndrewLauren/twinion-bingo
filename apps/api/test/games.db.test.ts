@@ -50,7 +50,7 @@ type GameView = {
   state: string;
   freeCentre: string;
   card: CardSquare[] | null;
-  deck: { squares: CardSquare[]; called: string[] } | null;
+  deck: { squares: CardSquare[]; called: Mark[] } | null;
   marks: Mark[];
   streamedThroughSeq: number;
 };
@@ -676,7 +676,15 @@ describe.skipIf(noTestDatabase)('the host deck sheet', () => {
     const called = async () =>
       ((await (await readGame(host.code, host.token)).json()) as GameView).deck!.called;
 
-    expect(await called()).toEqual([notMineButTheirs]);
+    // The CALL row itself, not just the square id: the sheet is where the host
+    // reaches a call to take it back, and a retraction names the row by `seq`.
+    expect(await called()).toEqual([
+      {
+        squareId: notMineButTheirs,
+        seq: theirs.seq,
+        actorPlayerId: guest.player.id,
+      },
+    ]);
 
     // #9 owns the retract route; the sheet reads the same derivation marks do.
     await db.execute(
@@ -685,6 +693,31 @@ describe.skipIf(noTestDatabase)('the host deck sheet', () => {
     );
 
     expect(await called()).toEqual([]);
+  });
+
+  /**
+   * The case #46 was filed for. A deck square on nobody's card is called by the
+   * host from the sheet, and once the undo window shuts the sheet is the only
+   * surface that can reach it — a player would be refused 403, because the call is
+   * not theirs. So the seq has to arrive with the sheet or the call is permanent.
+   */
+  it('hands the host the seq for a deck square on nobody`s card, so it can be taken back', async () => {
+    const { host, gameId, notTheirs } = await gameWithSheet();
+
+    await call(gameId, notTheirs, host.token);
+
+    const sheet = async () =>
+      ((await (await readGame(host.code, host.token)).json()) as GameView).deck!.called;
+
+    const [live] = await sheet();
+    expect(live).toMatchObject({
+      squareId: notTheirs,
+      actorPlayerId: host.player.id,
+    });
+
+    expect((await retract(gameId, live!.seq, host.token)).status).toBe(201);
+
+    expect(await sheet()).toEqual([]);
   });
 });
 

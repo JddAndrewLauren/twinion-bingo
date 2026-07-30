@@ -85,11 +85,13 @@ standings goes to whoever made the *live* one (ADR-0004).
 **Undo window** — the fast path of D8: for a few seconds after your own call, a one-tap undo row,
 no confirmation. Past it, the slow path — tap your own marked square, confirm, retract.
 
-**Host retract** — D8's third path: the host may take back anyone's call, at any time. The host's
-reach through the UI is currently narrower than the rule (see #46).
+**Host retract** — D8's third path: the host may take back anyone's call, at any time. Reachable for
+every call in the game since #46 — from the card for a square the host holds, and from the deck sheet
+for the rest.
 
 **Host deck sheet** — the admin surface listing the room's whole deck, visibly not a card, from
-which the host calls squares that are not on their own (D7).
+which the host calls squares that are not on their own (D7) — and takes them back, which for the ~16
+deck squares on no card of theirs is the only surface that can (#46).
 
 ## Winning
 

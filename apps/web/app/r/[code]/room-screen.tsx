@@ -117,12 +117,20 @@ function spotterCredit(
 
 /**
  * A square's prose, for the toast and the dialog that talk about it. Same limit as
- * the credit toast: a device knows the prose for its own 24 squares and no others,
- * so anything else is named only as "that square".
+ * the credit toast, and the same two sources: a device knows its own 24 squares,
+ * and the host also holds the deck it was handed for the sheet. Anything else is
+ * named only as "that square".
+ *
+ * The deck half is load-bearing rather than tidy. The dialog is what the host
+ * confirms a retraction in, and the calls only reachable from the sheet are
+ * precisely the deck squares that are on no card of theirs — so without it the one
+ * correction #46 added would ask "take back that square?".
  */
 function labelFor(game: Game, squareId: string): string {
   return (
-    game.card?.find((square) => square.id === squareId)?.label ?? 'that square'
+    [...(game.card ?? []), ...(game.deck?.squares ?? [])].find(
+      (square) => square.id === squareId,
+    )?.label ?? 'that square'
   );
 }
 
@@ -554,10 +562,10 @@ export function RoomScreen({
      * checks the same thing, so this is about not offering what would be refused
      * rather than about enforcement.
      *
-     * The sheet does not offer it, only the card. A retraction names a CALL by
-     * `seq`, and `deck.called` carries square ids alone — so the host's reach
-     * through the UI stops at deck squares that are also on their own card. See
-     * the note on #9.
+     * It is the card's predicate and the card's alone. The sheet is handed only to
+     * the host and the host may take back anything, so it offers every called row
+     * unconditionally — which is how the host's reach through the UI came to match
+     * the rule for the ~16 deck squares no card of theirs holds (#46).
      */
     const canRetract = (mark: Mark) =>
       youAreHost || mark.actorPlayerId === roster.you?.id;
@@ -704,7 +712,12 @@ export function RoomScreen({
             */}
             <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_8rem)] flex-col gap-3">
               {deck !== null && sheetOpen ? (
-                <DeckSheet deck={deck} onCall={call} finished={finished} />
+                <DeckSheet
+                  deck={deck}
+                  onCall={call}
+                  onRetract={setConfirming}
+                  finished={finished}
+                />
               ) : (
                 <>
                   <CardGrid
@@ -910,10 +923,25 @@ export function RoomScreen({
                 Take back {labelFor(game, confirming.squareId)}? It unmarks for
                 everyone holding it.
               </p>
-              <button type="button" onClick={() => void retract(confirming)}>
+              {/*
+                Thumb-sized, which they were not: #46's gate measured both of these
+                at 24px — a browser-default button — against the 44px minimum every
+                other tappable thing in this app is held to. Nothing in #9's run
+                caught it, because "both buttons on screen" was the claim being
+                measured and a 24px button is on screen.
+              */}
+              <button
+                type="button"
+                onClick={() => void retract(confirming)}
+                className="min-h-11 rounded border border-neutral-600 font-semibold"
+              >
                 Take it back
               </button>
-              <button type="button" onClick={() => setConfirming(null)}>
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                className="min-h-11 rounded border border-neutral-600 font-semibold"
+              >
                 Keep it
               </button>
             </div>
