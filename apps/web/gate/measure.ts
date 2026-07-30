@@ -109,6 +109,41 @@ export async function expectClearOfTheCard(
 }
 
 /**
+ * The right pane is *beside* the card, not merely clear of it.
+ *
+ * Written against #14's own seeded regression, which is the same lesson this file
+ * keeps re-learning: stacking the two columns (`lg:flex-col` on the row) is a real
+ * defect — the phone layout with extra steps — and `expectClearOfTheCard` passes it
+ * happily, because a pane *below* the card intersects nothing. So "both columns up at
+ * once" has to be said as geometry: the pane starts at or after the card's right
+ * edge, and the two share vertical space.
+ */
+export async function expectBesideTheCard(
+  page: Page,
+  pane: Locator,
+  what: string,
+): Promise<void> {
+  const card = await page.getByLabel('Your card').boundingBox();
+  const beside = await pane.boundingBox();
+
+  expect(card, 'the card has a box').not.toBeNull();
+  expect(beside, `${what} has a box`).not.toBeNull();
+
+  expect(
+    beside!.x,
+    `${what} starts at x=${beside!.x.toFixed(0)} against a card ending at x=${(card!.x + card!.width).toFixed(0)}`,
+  ).toBeGreaterThanOrEqual(card!.x + card!.width);
+
+  const sharedRows =
+    Math.min(beside!.y + beside!.height, card!.y + card!.height) -
+    Math.max(beside!.y, card!.y);
+  expect(
+    sharedRows,
+    `pixels of height ${what} shares with the card — beside it, not under it`,
+  ).toBeGreaterThan(0);
+}
+
+/**
  * No page scrolls sideways. A card one pixel too wide for the viewport is the
  * signature failure of this layout, and it hides: the horizontal scrollbar is
  * invisible on the devices this is for.
@@ -121,6 +156,27 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
   });
 
   expect(overflowing, 'pixels the document scrolls horizontally').toBeLessThanOrEqual(0);
+}
+
+/**
+ * The page itself does not scroll vertically — which is a claim about the two-pane
+ * layout only, where each column carries its own scroller. The phone layout is
+ * *meant* to scroll: the card and the open-squares list under it are one page.
+ *
+ * Written against #14's own defect, and the hole it went through: the gate had an
+ * instrument for horizontal scroll and none for vertical, so a right pane that grew
+ * to 1427px and pushed the document 742px was invisible to a green run. Two columns
+ * side by side is a promise that neither moves, and a page that scrolls breaks it
+ * without either column being wrong about anything.
+ */
+export async function expectNoVerticalScroll(page: Page, what: string): Promise<void> {
+  const overflowing = await page.evaluate(() => {
+    const root = document.documentElement;
+
+    return root.scrollHeight - root.clientHeight;
+  });
+
+  expect(overflowing, `pixels the document scrolls vertically with ${what}`).toBeLessThanOrEqual(0);
 }
 
 /**
