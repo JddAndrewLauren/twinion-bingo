@@ -5,6 +5,13 @@ node_modules
 **/.next
 **/dist
 **/*.tsbuildinfo
+# These patterns are anchored at the build-context root, so they cover /.env
+# only. Every Conductor workspace now has an apps/api/.env with a live
+# connection string, and `COPY apps/api apps/api` would carry it into the build
+# stage — hence the `**/` forms.
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example
