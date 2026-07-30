@@ -8,6 +8,29 @@ const PRIZE_NAMES: Record<string, string> = {
 };
 
 /**
+ * The rungs in the order they have to be climbed — `LADDER` in
+ * `apps/api/src/games/prizes.ts`, which is the authority. Repeated here rather than
+ * fetched because the read of the game does not carry it, and a client that only
+ * needs to name the next rung does not need a round trip to learn three constants.
+ */
+const LADDER = ['LINE', 'TWO_LINES', 'FULL_HOUSE'] as const;
+
+/**
+ * What the room is playing for: the first rung nobody has taken. A rung is won once
+ * per game and the next is only reachable after it (D5), so the first unclaimed one
+ * is the only one worth naming.
+ *
+ * Undefined once the full house has gone, which is the same moment the game reaches
+ * `done` — there is nothing left to play for, so the header stops claiming there is.
+ */
+export function nextPrizeName(game: Game): string | undefined {
+  const won = new Set(game.prizes.map((prize) => prize.prizeKind));
+  const next = LADDER.find((rung) => !won.has(rung));
+
+  return next === undefined ? undefined : PRIZE_NAMES[next];
+}
+
+/**
  * Everything the log says about the game so far: the ladder, the standings and
  * the timeline. All three arrive with every read of the game and none of them is
  * state here, which is the whole reason a phone that slept through a stint needs

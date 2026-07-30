@@ -35,6 +35,41 @@ jobs:
 
       - run: pnpm test
 
+  # docs/SURFACES.md's visual gate. A job of its own because it is the slow one —
+  # a production build of the web app, then WebKit at four viewports — and because
+  # a layout failure is a different kind of news from a failing unit test.
+  #
+  # It needs no database and no API: the gate intercepts every call the app makes
+  # (see apps/web/gate/room-fixture.ts for what that buys and what it costs), so
+  # this job is the one in this file with no service container.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # WebKit and nothing else. The targets are iPhone and iPad Safari, and
+      # Chromium is a different engine — #12 graded a font decision in it and had
+      # to caveat the result. `--with-deps` is what makes WebKit run on a runner.
+      - run: pnpm --filter @twinion-bingo/web exec playwright install --with-deps webkit
+
+      - run: pnpm --filter @twinion-bingo/web run gate
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-report
+          path: apps/web/test-results/
+          retention-days: 7
+
   # The image build is the other thing no test covers, and the only time it has
   # broken it broke during a deploy. Build only, from the repo root as the build
   # context — same shape as `fly deploy .`; nothing is pushed.

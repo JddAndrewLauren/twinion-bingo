@@ -33,11 +33,14 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 ## Surface: web
 
 - **Code root:** `apps/web/app/`
-- **Toolset:** Playwright, driving a real viewport with `page.setViewportSize`. Never
-  `chrome --headless --screenshot` — the viewport renders at the wrong size and the captures lie.
-- **Gate:** launch `pnpm --filter @twinion-bingo/web dev` against a running API, then capture each
-  screen below at all four matrix viewports and review for clipping, overlap, broken wrapping, and
-  sticky/scroll or focus glitches.
+- **Toolset:** Playwright, in the repo since #13. Never `chrome --headless --screenshot` — the
+  viewport renders at the wrong size and the captures lie.
+- **Gate:** `pnpm --filter @twinion-bingo/web run gate`. Lives in `apps/web/gate/`, runs in CI as
+  the `gate` job, and needs no API and no database — it intercepts every call the app makes.
+  See `apps/web/gate/room-fixture.ts` for what that buys and what it costs.
+- **How to add to it:** `apps/web/gate/measure.ts` holds the instruments and each one carries the
+  name of the earlier run it was written against. Reach for those rather than writing a fresh
+  assertion; the history in this file is mostly a history of measuring the wrong thing.
 
 ### Screens
 
@@ -52,7 +55,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Room — host lobby     | `/r/:code`, joined as the host, no game yet      | The **Start game** button below the roster, reachable without scrolling past the share link                                |
 | Game — card           | `/r/:code`, a live game, this player dealt in    | The **5x5 card**: 25 square cells, the free centre reading "LIGHTS OUT", and every label legible and unclipped in its cell |
 | Game — marked card    | `/r/:code`, a live game with squares called      | Marked cells telling apart from unmarked ones at a glance, and still unclipped — a marked label is bolder, so a label that fit unmarked has to be re-checked marked |
-| Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast pinned to the bottom crediting the spotter by name, **covering no part of the card**, and wrapping rather than overflowing on a long name plus a 30-character label |
+| Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast **docked below the card** crediting the spotter by name — docked in flow since #13, not pinned over the card, so **covering no part of the card** is a property of the layout rather than a measurement to re-take — and wrapping rather than overflowing on a long name plus a 30-character label |
 | Game — prizes         | `/r/:code`, a game with rungs of the ladder won  | The **Prizes** list under the card: each rung named in words ("first line", "two lines", "full house") against its winner, and co-winners of one rung as separate lines |
 | Game — standings      | `/r/:code`, a live game with calls in it         | The **Standings** list: every player's name against a right-aligned raw mark count, the name truncating rather than pushing the number off the row on a 24-character name |
 | Game — final standings| `/r/:code`, `state === 'done'` after a full house | The same list headed **Final standings** rather than **Standings**, so the room can tell a finished game from a live one without reading the card |
@@ -60,9 +63,14 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — late joiner    | `/r/:code`, joined mid-game, a line already up   | The card's **greyed** inherited marks reading as distinct from both an earned (emerald) mark and an unmarked cell at a glance — a line already complete at join must not look claimable |
 | Game — results under the toast stack | `/r/:code`, a local undo open *and* a remote credit arriving, over a populated results panel | Both bottom rows stacked and unclipped, neither covering the card, and the timeline still reachable by scrolling out from under them |
 | Game — host deck sheet | `/r/:code`, a live game, joined as the host, sheet open | All 40 deck rows, called ones telling apart from uncalled at a glance, **the amber admin chrome distinguishing the sheet from the host's own card**, and the toggle back to the card reachable |
-| Game — undo toast     | `/r/:code`, within 10s of **your own** call      | The toast pinned to the bottom naming the square you called with the **Undo** button beside it — the button on the toast rather than below it, thumb-sized, and neither the label nor the button overflowing on a 30-character label; **covering no part of the card**. The host's own call from the deck sheet opens the same window, so the toast has to sit over the sheet without hiding a row's Call affordance |
-| Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still bottom-pinned, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
+| Game — undo toast     | `/r/:code`, within 10s of **your own** call      | The toast **docked below the card** naming the square you called with the **Undo** button beside it — the button on the toast rather than below it, thumb-sized, and neither the label nor the button overflowing on a 30-character label; **covering no part of the card**. Tap it — "reachable" has to mean the square unmarks, not that the button rendered. The host's own call from the deck sheet opens the same window, so the toast has to sit over the sheet without hiding a row's Call affordance |
+| Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling |
+| Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code, and the rung dropping out rather than reading "full house next" once the ladder is spent |
+| Game — the two surfaces | `/r/:code`, tapping `Card` and `Race`          | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
+| Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
+| Game — a square's prose | `/r/:code`, a card cell held down for 400ms    | D4's `description` in the docked slot, **covering no part of the card**, gone on release — and the release **not** also calling the square, which is the way this can go wrong that no screenshot shows. Drive it with a **second pointer on another cell** too: a resting thumb on a one-handed card once turned the hold into a call for the whole room |
+| Game — what am I looking for | `/r/:code`, the block under the card, open at lights out | All **24** rows and their prose (to ~130 characters, #12's licence) with none overflowing, the toggle thumb-sized and its count reading while the block is shut, and the count falling to `(0)` at a full house |
 
 ### Known-unverified claims inherited from #7
 
@@ -201,8 +209,16 @@ What both earlier readings got wrong:
   motorsport vocabulary, and the next pool pass or the next theme can reach for any of them.
 
 Tracked as **#47** rather than left as prose here. Two things belong in it: the iPad font ceiling,
-and the gate method, since the `scrollWidth` assertion this file recommends is what hid the problem
-three times — see #47's second half before writing another card gate.
+and the gate method, since the `scrollWidth` assertion this file used to recommend is what hid the
+problem three times.
+
+**Both halves were addressed by #13** and #47 is the issue to close them against, not this file.
+The font ceiling is gone — cell text is `3cqw` of the card, and the ratio is asserted across two
+viewport widths, which is the only shape of assertion the defect cannot satisfy. The method is gone
+too: this file no longer prescribes `scrollWidth` anywhere, and `overflow()` in
+`apps/web/gate/measure.ts` is the `Range` measurement instead. The `scrollWidth` mentions that remain
+below are **historical** — descriptions of how #8's, #10's and #11's runs were taken, which is why
+those runs under-reported. Do not read them as method.
 
 ### Known-unverified claims inherited from #4
 
@@ -215,36 +231,120 @@ before treating them as settled:
   with no styling to keep them distinct from the player's name.
 - The home screen's two stacked forms at `phone-small`, inside a `min-h-dvh` centred column.
 
+**Settled by #13's gate run**, except for Home. `gate/lobby.gate.ts` covers the join form, the
+roster with both suffixes, the share link, the host lobby and the two ways a room fails to resolve, at
+all four viewports — they were gated because #13 changed them: the game screen went full-bleed, so the
+page's centred column moved off `page.tsx` and into each pre-game state.
+
+- The share link wraps rather than overflowing, and the roster's `(host)` and `— you` survive.
+- "No room has the code ABCD." and "Could not reach the room." are asserted to be *different* screens,
+  which is the criterion #4 could only eyeball.
+- **A defect, found by that gate and fixed in #13**: `Join` and `Start game` were bare `<button>`
+  elements and therefore **24px tall** at every viewport — the two taps between six friends and a
+  game, on a target no thumb reliably hits. The same class of failure #12 found in its own switcher,
+  and again invisible to review. Both are 44px now.
+
+**Home (`/`) is still ungated** — the one screen in the table with no test, and its #4 criterion above
+still unverified. Tracked as #68, with the note that its buttons have never been measured for tap size
+either, which is the defect #13 found next door.
+
 ## Status of the toolchain
 
-**Playwright is not yet a devDependency of this repo** — the gate above is specified but not yet
-runnable, and no CI job runs it. Adding it belongs to **#13 / #14**, which are the first issues that
-build a real screen to gate.
+**The gate is in the repo and runs, as of #13.** `pnpm --filter @twinion-bingo/web run gate`, in
+`apps/web/gate/`, and in CI as the `gate` job. 24 tests at each of the four matrix viewports, 96 in
+all — `room.gate.ts` for the game screen, `lobby.gate.ts` for everything before the deal. Failures keep
+a trace and a screenshot, which the CI job uploads.
 
-It was previously assigned to #12. **#12 settled without it, deliberately.** That issue prototyped
-the room screen on a throwaway route and verified it with Playwright installed into a scratch
-directory outside the repo — because a route with a deletion date is the wrong thing to hang the
-repo's permanent visual gate off, and a harness that only ever ran against mock state would have
-proved nothing about the real card.
+It was assigned to #12 and then to #13. **#12 settled without it, deliberately** — it prototyped the
+room screen on a throwaway route and verified from a scratch directory outside the repo, because a
+route with a deletion date is the wrong thing to hang the repo's permanent gate off. That cost the
+numbers: **#12's measurements cannot be reproduced**, because the scripts went with the directory. The
+conclusions were confirmed on real hardware; the figures behind them are not repeatable. Preventing
+exactly that is what this file is for, which is why the gate is now a devDependency and a CI job
+rather than a script somebody ran once.
 
-That decision has a cost worth naming here, since this file exists to prevent exactly it: #12's
-recorded measurements **cannot be reproduced**, because the scripts lived in a session-scoped
-scratch directory that has since been wiped. The conclusions are sound and were confirmed on real
-hardware; the numbers behind them are unrepeatable. A gate in the repo is what makes the difference,
-and that is #13 / #14's to add.
-
-Two things learned there that whoever adds the harness should not rediscover:
+Three things it carries forward from #12, each of which cost a wrong result to learn:
 
 - **Drive it, do not read it.** Three defects were invisible to code review and immediate under a
   browser: 22x24px tap targets, a `fixed inset-x-0` wrapper swallowing taps across its full width,
-  and `cqw` silently falling back to viewport units. Use `.tap()` under a device profile with
-  `hasTouch`, not `.click()` in a desktop viewport.
-- **Measure the rendered text, not `scrollWidth`.** See the caution on the per-cell assertion above;
-  #47 carries the full account, including that `scrollWidth` cannot see a transform.
+  and `cqw` silently falling back to viewport units. So the gate uses `.tap()` under `hasTouch`, and
+  `expectThumbSized` exists because 44px is a thing to assert rather than to hope for.
+- **Measure the rendered text, not `scrollWidth`.** `overflow()` in `gate/measure.ts` is a `Range`
+  over the painted line boxes. See #47 for the full account.
+- **WebKit, and exact viewports.** The targets are iPhone and iPad Safari; #12 graded a font decision
+  in Chromium and had to caveat it. And #12 published a set of `phone-small` numbers measured at
+  320x568 against a registry that says 375x667, so the config takes its sizes from the matrix above
+  rather than from a device profile.
 
-Until the harness lands, the matrix and the screen inventory are still the contract: an issue can
-write acceptance criteria against a named viewport, and whoever verifies does it manually at that
-exact size rather than at whatever their window happens to be.
+**What the gate does not cover, said plainly.** It intercepts the API rather than running one, so it
+proves nothing about the API's contract — a field renamed server-side keeps the gate green. That is
+covered by `apps/web/test/` on this side and `apps/api/`'s tests on the other. And it cannot answer
+whether 11px type in a 73px cell *reads* at arm's length with a car moving, which is a question about
+eyes. That stays a hardware pass.
+
+**#13's gate run** (WebKit with `hasTouch`, all four matrix viewports, 96 tests green, the card measured with a `Range` against each cell's content box):
+
+| Viewport | Cell | Font |
+| --- | --- | --- |
+| `phone-small` | 70px | 11.0px |
+| `phone` | 73px | 11.5px |
+| `ipad-11-portrait` | 162px | 24.8px |
+| `ipad-11-landscape` | 138px | 21.2px |
+
+- **Zero cells clipped at any viewport**, at 30-character labels whose longest word is 13
+  (`investigation`) — not the committed pool's 10, which is zero headroom. Unmarked, earned-marked and
+  inherited-marked all three.
+- The iPad cell is now *larger* than the phone cell rather than the same size, which is #47 fixed:
+  cell text is `3cqw` of the card, so characters-per-line holds constant and the type stops outrunning
+  the cell. Cell text is about 40% larger on a phone and 94% larger on a portrait iPad than the card
+  rendered before.
+- **The bottom slot covers no part of the card at any viewport**, asserted as box intersection rather
+  than by eye — and it is now docked in flow rather than pinned, so that is a property of the layout.
+  Driven with a real credit arriving over the stream while a local undo window was open.
+- The card's box is **identical to the pixel** across a round trip through the `Race` tab, and does
+  not move when a call lands.
+- 24 rows of the open-squares list at lights out, descriptions to 127 characters, none overflowing.
+
+**A cell is fitted for the weight a *mark* renders it in**, not for the weight it currently has. A
+marked label is `font-semibold` and therefore wider, and the fit is recomputed only when the label
+*text* changes — so a cell fitted at the regular weight clipped the moment somebody called it, and
+nothing re-fitted it. Fitting for the bolder face up front costs the few shrunk cells a fraction of a
+size while unmarked, and buys a card whose cells never resize mid-race and no forced reflow per call.
+
+**Five seeded regressions, because a gate that has only ever passed is not evidence.** Each was
+reintroduced deliberately and the gate re-run:
+
+| Seeded | Caught |
+| --- | --- |
+| #47 exactly — `clamp(0.5rem,1.7vw,0.8rem)` behind a `max-w-md` page | Yes, at all four — but **only** by `sizes its type against the card`, and only once that test compared two viewport widths (see below) |
+| Shrink-to-fit removed, `cqw` sizing kept | Yes, at `phone-small` and `phone`: `championship` clips by 1.6–2.5px |
+| The bottom slot pinned (`fixed inset-x-0 bottom-0`) again | Yes, at `ipad-11-landscape` — the only viewport where the card is tall enough to reach a pinned row |
+| Cells fitted at the regular weight instead of the marked one | Yes, at `phone`: four `Championship …` cells clip by 0.7–0.8px **only after being tapped** |
+| The long-press flag shared across cells instead of per square | Yes, at all four: a second pointer turns a hold into a `/call` post |
+
+Two findings from that exercise that matter more than the passes:
+
+1. **A clipping check cannot see #47.** With the defect reintroduced, every cell still fitted, because
+   shrink-to-fit repairs the symptom after the fact. The mechanism needs its own assertion.
+2. **A ratio checked at one viewport cannot express "the same ratio everywhere".** The first version of
+   that assertion passed on both iPad projects with the bug in place: behind `max-w-md` the card is
+   448px and the clamp ceiling is 12.8px, which is 2.9% of it — indistinguishable from a correct
+   `3cqw`. The test now resizes within itself and compares, which is the only shape the bug cannot
+   satisfy. Worth remembering for any future per-viewport assertion in this file.
+
+**Two blind spots this file should name, because both hid a real defect in tests written for it.**
+
+1. **Serving a state is not the same as reaching it.** `carries it marked too` opens a card whose marks
+   are already in the first render, so the fit is computed with the bold applied and the clip cannot
+   appear. Only the live unmarked-to-marked transition was broken — the only transition a race performs.
+   A gate test that arrives at a state must also **drive** its way there.
+2. **A gesture needs more than one pointer.** The long-press was gated by holding one cell, which
+   passed while a second pointer anywhere on the card turned that hold into a call for the whole room.
+   A full-bleed card is held in a hand; a resting thumb is an input.
+
+Also worth knowing: the pinned-slot seed is caught at one viewport out of four. That is not a weakness in the
+assertion, it is the geometry — and it is the argument for gating all four rather than only the two
+a phone-layout issue is about.
 
 ## Adding a surface or a screen
 

@@ -18,8 +18,14 @@ export default async function RoomPage({
   const host = requestHeaders.get('host') ?? 'localhost:3000';
   const proto = requestHeaders.get('x-forwarded-proto') ?? 'http';
 
+  /*
+    No column and no padding here. The game screen is full-bleed — a `max-w-md` on
+    the page is what pinned an iPad cell to a phone cell's width while the type went
+    on growing past it (#47) — so each of the screen's states owns its own chrome
+    instead. Everything before the deal keeps the narrow centred column.
+  */
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-6">
+    <main className="min-h-dvh">
       <RoomScreen
         apiUrl={apiUrl}
         code={room}
