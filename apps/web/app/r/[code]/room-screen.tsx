@@ -10,6 +10,7 @@ import {
   retractCall,
   startGame,
   subscribeToRoomEvents,
+  type CardSquare,
   type Game,
   type Mark,
   type RoomEvent,
@@ -17,9 +18,32 @@ import {
 } from '../../room-api';
 import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
-import { Results } from './results';
+import { LookingFor } from './looking-for';
+import { Results, nextPrizeName } from './results';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
+
+/**
+ * Everything before the deal: joining, the lobby, and the three ways a room can
+ * fail to resolve. A centred narrow column, because all of it is prose and a form.
+ * The game screen is not this shape — see the note on the shell below.
+ */
+const COLUMN = 'mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-6';
+
+/**
+ * **Join** and **Start game**, which were bare `<button>` elements and therefore 24px
+ * tall — a target no thumb reliably hits, on the two taps that stand between six
+ * friends and a game. Found by #13's gate rather than by review, which is the same way
+ * #12 found its own 22x24px switcher; `min-h-11` is 44px, Apple's documented minimum.
+ */
+const ACTION =
+  'min-h-11 rounded border border-neutral-700 px-3 font-semibold disabled:text-neutral-500';
+
+/**
+ * The card's two surfaces, per #12's C1. Not a sheet and not a gesture: two whole
+ * screens, one segmented control, and neither ever covering the other.
+ */
+type Tab = 'card' | 'race';
 
 /** Long enough to read who spotted it, short enough not to sit over the card. */
 const TOAST_MS = 4000;
@@ -111,6 +135,20 @@ export function RoomScreen({
    * once is a host who has to work out which one they just tapped.
    */
   const [sheetOpen, setSheetOpen] = useState(false);
+  /**
+   * Which of C1's two surfaces is up. Both stay mounted and the inactive one is
+   * hidden in CSS, so switching back to the card does not re-render it, lose its
+   * scroll position, or reflow the grid — the criterion #13 writes as "no layout
+   * shift or scroll trap".
+   */
+  const [tab, setTab] = useState<Tab>('card');
+  /**
+   * The square a thumb is holding down, and the whole of D4's second field on a
+   * phone: a ~68pt cell has room for `label` and not for `description`. Held state
+   * rather than opened state — it goes on release, so there is nothing to dismiss
+   * and nothing that can be left covering the card.
+   */
+  const [peek, setPeek] = useState<CardSquare | null>(null);
   /**
    * The call this phone just made, offered back for one tap until the window
    * closes. Only ever a row this request appended: losing a tied race hands back
@@ -341,15 +379,31 @@ export function RoomScreen({
     }
   }
 
-  if (load === 'loading') return <p>Loading room {code}…</p>;
-  if (load === 'missing') return <p>No room has the code {code}.</p>;
+  if (load === 'loading') {
+    return (
+      <div className={COLUMN}>
+        <p>Loading room {code}…</p>
+      </div>
+    );
+  }
+  if (load === 'missing') {
+    return (
+      <div className={COLUMN}>
+        <p>No room has the code {code}.</p>
+      </div>
+    );
+  }
   if (load === 'unreachable' || roster === null) {
-    return <p>Could not reach the room.</p>;
+    return (
+      <div className={COLUMN}>
+        <p>Could not reach the room.</p>
+      </div>
+    );
   }
 
   if (roster.you === null) {
     return (
-      <form onSubmit={submitName} className="flex flex-col gap-3">
+      <form onSubmit={submitName} className={COLUMN}>
         <h1 className="text-2xl font-semibold">Join room {code}</h1>
         <label className="flex flex-col gap-1">
           Your name
@@ -362,7 +416,11 @@ export function RoomScreen({
             className="rounded border border-neutral-700 bg-neutral-900 p-2"
           />
         </label>
-        <button type="submit" disabled={joining || name.trim() === ''}>
+        <button
+          type="submit"
+          disabled={joining || name.trim() === ''}
+          className={ACTION}
+        >
           {joining ? 'Joining…' : 'Join'}
         </button>
         {joinFailed && <p role="alert">Could not join that room.</p>}
@@ -401,38 +459,155 @@ export function RoomScreen({
      */
     const finished = game.state === 'done';
 
+    const nextPrize = nextPrizeName(game);
+
+    /**
+     * #12's C1, and it is not D14 as that decision was first written. Three
+     * departures, each of them a thing the prototype measured rather than a
+     * preference:
+     *
+     * - **No swipe-up sheet.** Two whole surfaces and a segmented control. A sheet
+     *   is a thing that covers the card, and a card is what a thumb is on.
+     * - **The bottom slot is docked in flow, not pinned over the card.** The undo
+     *   row and the spotter credit sit below everything, so "covering no part of
+     *   the card" is a property of the layout rather than a measurement that has to
+     *   be re-taken every time something lands in that slot. Variant B could not
+     *   hold that contract at all, which is what ruled it out.
+     * - **The card is full-bleed**, so it is not held to `max-w-md`. That is the
+     *   other half of #47: the cap on the page is what pinned an iPad cell to a
+     *   phone cell's width while the type went on growing.
+     */
     return (
-      <div className="flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">Room {code}</h1>
-        {deck !== null && sheetOpen ? (
-          <DeckSheet deck={deck} onCall={call} finished={finished} />
-        ) : (
-          <CardGrid
-            card={game.card}
-            freeCentre={game.freeCentre}
-            marks={game.marks}
-            inheritedMarks={game.inheritedMarks}
-            onCall={call}
-            canRetract={canRetract}
-            onRetract={setConfirming}
-            finished={finished}
-          />
-        )}
-        {deck !== null && (
-          <button type="button" onClick={() => setSheetOpen(!sheetOpen)}>
-            {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
-          </button>
-        )}
-        {callFailed && <p role="alert">Could not call that square.</p>}
-        {retractFailed && <p role="alert">Could not take that call back.</p>}
-        <Results game={game} />
+      <div className="flex min-h-dvh flex-col">
+        {/*
+          The slim bar. Everything on it is something you want without leaving the
+          card: how you are doing, what the room is playing for next, and who is
+          here. `tabular-nums` because the mark count changes under your eyes and a
+          number that shifts width as it does reads as the layout twitching.
+        */}
+        <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-neutral-800 px-3 py-2">
+          <h1 className="text-sm font-semibold">Room {code}</h1>
+          <p className="text-xs tabular-nums text-neutral-400">
+            {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
+            {nextPrize !== undefined && ` · ${nextPrize} next`} ·{' '}
+            {roster.players.length} here
+          </p>
+        </header>
+
+        <div role="tablist" aria-label="Room" className="flex shrink-0 gap-1 p-2">
+          {(
+            [
+              ['card', 'Card'],
+              ['race', 'Race'],
+            ] as const
+          ).map(([which, caption]) => (
+            <button
+              key={which}
+              type="button"
+              role="tab"
+              id={`tab-${which}`}
+              aria-selected={tab === which}
+              aria-controls={`panel-${which}`}
+              onClick={() => setTab(which)}
+              // `min-h-11` is 44px, Apple's documented minimum. #12 shipped a
+              // prototype whose own switcher was 24px tall and unreachable by
+              // thumb, which is the kind of thing only a device finds.
+              className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+                tab === which
+                  ? 'bg-neutral-800 text-neutral-50'
+                  : 'text-neutral-500'
+              }`}
+            >
+              {caption}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex min-h-0 flex-1">
+          {/*
+            Both panels stay mounted and the inactive one is hidden in CSS rather
+            than unmounted. That is what makes coming back to the card free: the
+            grid is not re-measured, the fit is not re-run, and neither column
+            loses where it was scrolled to. `inert` and `aria-hidden` are belt and
+            braces for the same reason #12 needed them — an off-screen panel that
+            is still hit-testable is a band that swallows taps, and that defect was
+            invisible to review.
+          */}
+          <section
+            role="tabpanel"
+            id="panel-card"
+            aria-labelledby="tab-card"
+            aria-hidden={tab !== 'card'}
+            inert={tab !== 'card'}
+            className={`min-w-0 flex-1 overflow-y-auto p-1 ${
+              tab === 'card' ? 'block' : 'hidden'
+            }`}
+          >
+            {/*
+              The card is square and a phone is not, so on a short viewport — a
+              phone on its side — the height is what binds rather than the width.
+              Capping on `dvh` keeps the whole card on screen instead of letting it
+              run off the bottom of its own column.
+            */}
+            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_8rem)] flex-col gap-3">
+              {deck !== null && sheetOpen ? (
+                <DeckSheet deck={deck} onCall={call} finished={finished} />
+              ) : (
+                <>
+                  <CardGrid
+                    card={game.card}
+                    freeCentre={game.freeCentre}
+                    marks={game.marks}
+                    inheritedMarks={game.inheritedMarks}
+                    onCall={call}
+                    canRetract={canRetract}
+                    onRetract={setConfirming}
+                    onPeek={setPeek}
+                    finished={finished}
+                  />
+                  <LookingFor game={game} />
+                </>
+              )}
+              {deck !== null && (
+                <button
+                  type="button"
+                  onClick={() => setSheetOpen(!sheetOpen)}
+                  className="min-h-11 rounded border border-amber-700 px-3 text-sm font-semibold text-amber-200"
+                >
+                  {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
+                </button>
+              )}
+              {callFailed && <p role="alert">Could not call that square.</p>}
+              {retractFailed && <p role="alert">Could not take that call back.</p>}
+            </div>
+          </section>
+
+          <section
+            role="tabpanel"
+            id="panel-race"
+            aria-labelledby="tab-race"
+            aria-hidden={tab !== 'race'}
+            inert={tab !== 'race'}
+            className={`min-w-0 flex-1 overflow-y-auto p-3 ${
+              tab === 'race' ? 'block' : 'hidden'
+            }`}
+          >
+            <Results game={game} />
+          </section>
+        </div>
+
         {/**
-         * The bottom slot, which two different pieces of news share: #8's credit
-         * for whoever spotted a call, and D8's undo for the call this phone just
-         * made. They stack rather than take turns, because they are not about the
-         * same event — hiding one behind the other would drop a remote spotter's
-         * credit entirely, since its four seconds run whether or not it is on
-         * screen.
+         * The bottom slot, docked. Three things share it, and all three are about
+         * something that just happened rather than something to go and read:
+         *
+         * - D4's prose for the square under a thumb, for as long as it is held.
+         * - #8's credit for whoever spotted a call.
+         * - D8's undo for the call this phone just made.
+         *
+         * The credit and the undo stack rather than take turns, because they are
+         * not about the same event — hiding one behind the other would drop a
+         * remote spotter's credit entirely, since its four seconds run whether or
+         * not it is on screen.
          *
          * The single exception is the credit for the very call the undo row is
          * already naming: your own tap, announced twice, one line apart. That one
@@ -444,38 +619,55 @@ export function RoomScreen({
          * the full house lands on the very tap the window is offering to undo.
          * The credit toast stays — it is news, not an offer.
          */}
-        {(undo !== null || toast !== null) && (
-          <div className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md flex-col gap-1">
-            {toast !== null && toast.id !== undo?.seq && (
-              /**
-               * `status` rather than `alert`: a call is news, not a problem, and
-               * an assertive live region would interrupt a screen reader
-               * mid-square. Pinned to the bottom so it never covers the card.
-               */
-              <p
-                role="status"
-                className="rounded-t bg-emerald-800 p-3 text-center text-emerald-50"
+        <div className="shrink-0">
+          {peek !== null && (
+            /*
+              Not a live region. The prose is already on the cell's `title`, which
+              is how a screen reader reaches it, and announcing it here as well
+              would say the same square twice.
+            */
+            <div
+              // The gate's hook for this panel. It needs one: asserting the prose is
+              // absent by searching for its *text* passes just as happily when the
+              // panel never renders at all, which would make "a tap is not a peek"
+              // true for the wrong reason.
+              data-prose
+              className="border-t border-neutral-700 bg-neutral-800 px-3 py-2 text-sm"
+            >
+              <p className="font-semibold">{peek.label}</p>
+              <p className="text-neutral-300">{peek.description}</p>
+            </div>
+          )}
+          {toast !== null && toast.id !== undo?.seq && (
+            /**
+             * `status` rather than `alert`: a call is news, not a problem, and an
+             * assertive live region would interrupt a screen reader mid-square.
+             */
+            <p
+              role="status"
+              className="bg-emerald-800 p-3 text-center text-sm text-emerald-50"
+            >
+              {toast.text}
+            </p>
+          )}
+          {undo !== null && !finished && (
+            <div
+              role="status"
+              className="flex items-center justify-between gap-3 border-t border-emerald-700 bg-emerald-800 p-3 text-sm text-emerald-50"
+            >
+              <span className="min-w-0">
+                Called {labelFor(game, undo.squareId)}
+              </span>
+              <button
+                type="button"
+                onClick={() => void retract(undo)}
+                className="min-h-11 shrink-0 rounded border border-emerald-200 px-3 font-semibold"
               >
-                {toast.text}
-              </p>
-            )}
-            {undo !== null && !finished && (
-              <div
-                role="status"
-                className="flex items-center justify-between gap-3 rounded-t bg-emerald-800 p-3 text-emerald-50"
-              >
-                <span>Called {labelFor(game, undo.squareId)}</span>
-                <button
-                  type="button"
-                  onClick={() => void retract(undo)}
-                  className="shrink-0 rounded border border-emerald-200 px-3 py-1 font-semibold"
-                >
-                  Undo
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+                Undo
+              </button>
+            </div>
+          )}
+        </div>
         {confirming !== null && (
           /**
            * D8's slow path. Past the reflex window a correction is deliberate, so
@@ -507,7 +699,7 @@ export function RoomScreen({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={COLUMN}>
       <h1 className="text-2xl font-semibold">Room {code}</h1>
       <p>Share this link: {shareLink}</p>
       <h2 className="font-semibold">Players</h2>
@@ -521,7 +713,12 @@ export function RoomScreen({
         ))}
       </ul>
       {youAreHost && (
-        <button type="button" onClick={start} disabled={starting}>
+        <button
+          type="button"
+          onClick={start}
+          disabled={starting}
+          className={ACTION}
+        >
           {starting ? 'Dealing…' : 'Start game'}
         </button>
       )}

@@ -206,6 +206,23 @@ function stream() {
   });
 }
 
+/**
+ * Get to C1's second surface the way a player does.
+ *
+ * The prizes, the standings and the timeline are not under the card any more — they
+ * are a whole screen of their own behind a segmented control (#12's C1, #13), and the
+ * card's panel is hidden from the accessibility tree while they are up and vice
+ * versa. So a test that reads them taps the tab first, and finds its heading by role
+ * rather than by text: `findByText` would keep passing against markup no player could
+ * reach, which is the mistake this project has already made once by measuring the
+ * wrong thing about the card.
+ */
+async function openRace() {
+  fireEvent.click(await screen.findByRole('tab', { name: 'Race' }));
+
+  return screen.findByRole('tabpanel', { name: 'Race' });
+}
+
 beforeEach(() => {
   window.localStorage.clear();
 });
@@ -354,6 +371,250 @@ describe('the card itself', () => {
  * D1's two halves: the tap that calls an event for everyone holding it, and the
  * credit that comes back on every device.
  */
+/**
+ * C1's structure, and the three ways it departs from D14 as that decision was first
+ * written — each of them something #12 measured on real hardware rather than a
+ * preference. No swipe-up sheet: two whole surfaces and a segmented control, because
+ * a sheet is a thing that covers the card and the card is what a thumb is on.
+ */
+describe('the card and the race as two surfaces', () => {
+  it('opens on the card, with the race a tap away and not before', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    await screen.findByLabelText('Your card');
+    expect(screen.getByRole('tab', { name: 'Card' }).getAttribute('aria-selected')).toBe('true');
+
+    // Not merely off-screen: hidden from the accessibility tree, and `inert`, so
+    // the panel below the fold cannot swallow a tap meant for the card.
+    expect(screen.queryByRole('tabpanel', { name: 'Race' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Standings' })).toBeNull();
+
+    const race = await openRace();
+    expect(within(race).getByRole('heading', { name: 'Standings' })).toBeDefined();
+    expect(within(race).getByRole('heading', { name: 'Timeline' })).toBeDefined();
+  });
+
+  /**
+   * Both panels stay mounted, which is the point: the grid is not re-measured, the
+   * shrink-to-fit is not re-run and neither column loses where it was scrolled to.
+   * What changes is only which one is reachable.
+   */
+  it('puts the card out of reach while the race is up, and hands it back', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    await openRace();
+    expect(screen.queryByRole('tabpanel', { name: 'Card' })).toBeNull();
+    // Still mounted, though, and that is the point: coming back to it costs no
+    // re-render, no re-measure of the grid and no lost scroll position.
+    expect(screen.getByLabelText('Your card')).toBeDefined();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Card' }));
+    expect(screen.getByRole('tabpanel', { name: 'Card' })).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'Standings' })).toBeNull();
+  });
+});
+
+/**
+ * The slim bar: everything you want without leaving the card.
+ */
+describe('the slim bar', () => {
+  it('says your mark count, what the room plays for next, and who is here', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [
+        { squareId: 'f1.v1:t:1', seq: 101, actorPlayerId: host.id },
+        { squareId: 'f1.v1:t:2', seq: 102, actorPlayerId: guest.id },
+      ],
+      prizes: [{ seq: 90, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    // The first rung has gone, so the rung being played for is the second — D5's
+    // ladder is climbed in order and only the next one is worth naming.
+    expect(await screen.findByText('2 marks · two lines next · 2 here')).toBeDefined();
+  });
+
+  it('stops naming a rung once the full house has gone', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      gameState: 'done',
+      prizes: [
+        { seq: 90, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' },
+        { seq: 91, prizeKind: 'TWO_LINES', playerId: guest.id, name: 'Bea' },
+        { seq: 92, prizeKind: 'FULL_HOUSE', playerId: guest.id, name: 'Bea' },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    // Not "full house next" and not an empty gap where a rung was: there is
+    // nothing left to play for, so the bar stops claiming there is.
+    expect(await screen.findByText('0 marks · 2 here')).toBeDefined();
+  });
+});
+
+/**
+ * D4's second field on a phone. A ~68pt cell has room for `label` and not for
+ * `description`, so the prose is on a hold — and because the same cell's short press
+ * calls the square for the whole room, the two gestures have to stay told apart.
+ */
+describe('a square`s prose', () => {
+  it('reveals the description while the square is held, and not after', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    try {
+      stubRoom({ you: host, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+      const square = await screen.findByRole('button', { name: 'Square 5' });
+
+      fireEvent.pointerDown(square);
+      expect(screen.queryByText('What square 5 means.')).toBeNull();
+
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.getByText('What square 5 means.')).toBeDefined();
+
+      // Nothing to dismiss, so nothing that can be left covering the card.
+      fireEvent.pointerUp(square);
+      expect(screen.queryByText('What square 5 means.')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  /**
+   * The one that matters. A hold that has fired has to swallow the click behind it,
+   * or asking what a square means marks it for the whole room.
+   */
+  it('does not call the square the hold was asking about', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    try {
+      const room = stubRoom({ you: host, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+      const square = await screen.findByRole('button', { name: 'Square 5' });
+
+      fireEvent.pointerDown(square);
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      fireEvent.pointerUp(square);
+      fireEvent.click(square);
+
+      expect(
+        room.fetchMock.mock.calls.some(([url]) => (url as string).endsWith('/call')),
+      ).toBe(false);
+      expect(square.getAttribute('aria-pressed')).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  /**
+   * A scroll gesture that starts on a cell arrives as `pointercancel`, and without
+   * it a flick down the card would leave a square's prose on screen.
+   */
+  it('gives the prose up when the gesture is cancelled', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    try {
+      stubRoom({ you: host, liveFromTheStart: true });
+
+      render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+      const square = await screen.findByRole('button', { name: 'Square 5' });
+
+      fireEvent.pointerDown(square);
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+      fireEvent.pointerCancel(square);
+
+      expect(screen.queryByText('What square 5 means.')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+/**
+ * The list is the whole difference between the prototype's C and its C1, and C1 is
+ * what #12 settled on: a card of 24 short phrases is a set of reminders, and the
+ * argument a room actually has is whether the thing on screen counted.
+ */
+describe('what am I looking for', () => {
+  it('is shut, counting the squares still open', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: host.id }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    // The count is the only part of the list that reads while it is shut, which is
+    // why it is in the heading rather than inside the block.
+    const toggle = await screen.findByRole('button', {
+      name: 'What am I looking for (23)',
+    });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByText('What square 5 means.')).toBeNull();
+  });
+
+  /**
+   * Open squares only. A marked square is answered, and carrying it would make the
+   * list longest at the moment it is least useful — so it shrinks from 24 rows at
+   * lights out to nothing at a full house.
+   */
+  it('lists the open squares with their prose, and no marked one', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:3', seq: 7, actorPlayerId: host.id }],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'What am I looking for (23)' }),
+    );
+
+    expect(screen.getByText('What square 5 means.')).toBeDefined();
+    expect(screen.queryByText('What square 3 means.')).toBeNull();
+  });
+
+  /**
+   * An inherited mark is *marked*, so it is not open — the same rule the card's
+   * greying follows, read the other way round.
+   */
+  it('leaves out a mark a late joiner walked in on', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [{ squareId: 'f1.v1:t:4', seq: 7, actorPlayerId: host.id }],
+      inheritedMarks: ['f1.v1:t:4'],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'What am I looking for (23)' }),
+    );
+
+    expect(screen.queryByText('What square 4 means.')).toBeNull();
+  });
+});
+
 describe('calling a square', () => {
   it('posts the square you tapped, and marks it once the server says so', async () => {
     const room = stubRoom({ you: host, liveFromTheStart: true });
@@ -930,7 +1191,9 @@ describe('prizes, standings and the timeline', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    const list = (await screen.findByText('Prizes')).parentElement!;
+    const panel = await openRace();
+    const list = within(panel).getByRole('heading', { name: 'Prizes' })
+      .parentElement!;
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual(['first line — Bea', 'two lines — Ash']);
@@ -945,7 +1208,9 @@ describe('prizes, standings and the timeline', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    const list = (await screen.findByText('Standings')).parentElement!;
+    const panel = await openRace();
+    const list = within(panel).getByRole('heading', { name: 'Standings' })
+      .parentElement!;
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual(['Ash2', 'Bea0']);
@@ -956,7 +1221,11 @@ describe('prizes, standings and the timeline', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    expect(await screen.findByText('Final standings')).toBeDefined();
+    expect(
+      within(await openRace()).getByRole('heading', {
+        name: 'Final standings',
+      }),
+    ).toBeDefined();
   });
 
   /**
@@ -975,7 +1244,9 @@ describe('prizes, standings and the timeline', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    const list = (await screen.findByText('Timeline')).parentElement!;
+    const panel = await openRace();
+    const list = within(panel).getByRole('heading', { name: 'Timeline' })
+      .parentElement!;
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual(['+42:10Bea spotted Square 9', '+04:02Ash spotted Square 3']);
@@ -997,7 +1268,9 @@ describe('prizes, standings and the timeline', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    const list = (await screen.findByText('Timeline')).parentElement!;
+    const panel = await openRace();
+    const list = within(panel).getByRole('heading', { name: 'Timeline' })
+      .parentElement!;
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual(['+11:00Bea spotted a square']);
@@ -1093,11 +1366,9 @@ describe('a replayed log', () => {
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
-    const read = async () => {
-      const panel = (await screen.findByText('Timeline')).parentElement!.parentElement!;
-
-      return [...panel.querySelectorAll('li')].map((item) => item.textContent);
-    };
+    const race = await openRace();
+    const read = async () =>
+      [...race.querySelectorAll('li')].map((item) => item.textContent);
 
     const before = await read();
     expect(before).toEqual([
