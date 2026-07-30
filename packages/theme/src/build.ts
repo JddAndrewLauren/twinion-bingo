@@ -16,6 +16,13 @@ import type {
  */
 export const LABEL_MAX_CHARS = 30;
 
+/**
+ * Set by the iPad: a card cell stops growing at ~77px while its text does not,
+ * so an 11-character unbreakable run overflows horizontally on `ipad-11-*`.
+ * A live defect (#47); until it is fixed the pool works around it.
+ */
+export const RUN_MAX_CHARS = 10;
+
 const PLACEHOLDER = /\{([^}]*)\}/g;
 
 /**
@@ -28,6 +35,19 @@ export function composeThemeId(meta: {
   poolVersion: string;
 }): string {
   return `${meta.id}.${meta.poolVersion}`;
+}
+
+/**
+ * A label's unbreakable runs: the text between one wrap opportunity and the
+ * next. Whitespace breaks and is dropped; a hyphen breaks *after* itself, so it
+ * stays with the run it ends and counts towards its width. Punctuation hanging
+ * off a word does not break at all.
+ */
+function unbreakableRuns(label: string): string[] {
+  return label
+    .split(/\s+/)
+    .flatMap((word) => word.split(/(?<=-)/))
+    .filter((run) => run.length > 0);
 }
 
 /** Fields of an entity that are not pairings to another entity type. */
@@ -193,6 +213,13 @@ export function buildPool(source: ThemeSource): Pool {
       errors.add(
         `square "${square.id}" has a ${square.label.length}-char label, over the ${LABEL_MAX_CHARS} cap: "${square.label}"`,
       );
+    }
+    for (const run of unbreakableRuns(square.label)) {
+      if (run.length > RUN_MAX_CHARS) {
+        errors.add(
+          `square "${square.id}" has a ${run.length}-char unbreakable run "${run}", over the ${RUN_MAX_CHARS} ceiling: "${square.label}"`,
+        );
+      }
     }
   }
 

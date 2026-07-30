@@ -1,4 +1,10 @@
-export { LABEL_MAX_CHARS, buildPool, composeThemeId, serializePool } from './build.js';
+export {
+  LABEL_MAX_CHARS,
+  RUN_MAX_CHARS,
+  buildPool,
+  composeThemeId,
+  serializePool,
+} from './build.js';
 export {
   POOL_FILENAME,
   buildAllThemes,

@@ -40,6 +40,11 @@ function source(patch: Partial<ThemeSource> = {}): ThemeSource {
   };
 }
 
+/** One hand-crafted square, so a test can vary nothing but the label. */
+function handcraftedWithLabel(label: string) {
+  return { key: 'one', label, description: '', tier: 'rare' as const, exclusivityGroup: 'one' };
+}
+
 describe('buildPool', () => {
   it('expands a template against its entities, resolving pairings by name', () => {
     const pool = buildPool(source());
@@ -123,6 +128,30 @@ describe('buildPool', () => {
       );
 
     expect(build).toThrow(/35-char label, over the 30 cap/);
+  });
+
+  it('accepts a label whose longest unbreakable run is 10 characters', () => {
+    const build = () => buildPool(source({ handcrafted: [handcraftedWithLabel('Hulkenberg out')] }));
+
+    expect(build).not.toThrow();
+  });
+
+  it('fails on an unbreakable run over 10 characters', () => {
+    const build = () => buildPool(source({ handcrafted: [handcraftedWithLabel('Championship over')] }));
+
+    expect(build).toThrow(/12-char unbreakable run "Championship", over the 10 ceiling/);
+  });
+
+  it('accepts a long word that a hyphen breaks', () => {
+    const build = () => buildPool(source({ handcrafted: [handcraftedWithLabel('2026 Regs Re-Explained')] }));
+
+    expect(build).not.toThrow();
+  });
+
+  it('counts hanging punctuation as part of the run it touches', () => {
+    const build = () => buildPool(source({ handcrafted: [handcraftedWithLabel('That was Dangerous!"')] }));
+
+    expect(build).toThrow(/11-char unbreakable run "Dangerous!"", over the 10 ceiling/);
   });
 
   it('fails on a duplicate square id', () => {
