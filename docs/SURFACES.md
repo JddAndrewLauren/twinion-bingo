@@ -191,11 +191,14 @@ What both earlier readings got wrong:
   labels with `.ljust(30, 'X')`, which manufactured 11-character unbreakable runs; the 2px readings
   it reported were vertical and spurious. Nothing overflows *vertically* at any viewport or word
   length measured.
-- **Neither "latent" nor "12 of 24" is right.** The committed 47-square F1 pool's longest single
-  word is **exactly 10 characters**, and no label exceeds it — which is why #8's and #10's runs
-  passed on real labels, and why nothing is broken on screen today. But that is zero headroom, not
-  safety: #16 authors this pool to ~180 squares, and *investigation* (13), *championship* (12),
-  *disqualified* (12) and *reprimanded* (11) are ordinary motorsport vocabulary.
+- **Neither "latent" nor "12 of 24" is right.** The committed F1 pool's longest single word is
+  **exactly 10 characters**, and no label exceeds it — which is why #8's and #10's runs passed on
+  real labels, and why nothing is broken on screen today. The v2 rewrite (#57–#60) did not move it:
+  at 300 squares nothing runs over 10, and 27 squares sit exactly on the ceiling. (One label carries
+  a 12-character *hyphenated* word, `Re-Explained`, which breaks at the hyphen — a gate that splits
+  on whitespace alone will read it as an overflow it is not.) But ten is zero headroom, not safety:
+  *investigation* (13), *championship* (12), *disqualified* (12) and *reprimanded* (11) are ordinary
+  motorsport vocabulary, and the next pool pass or the next theme can reach for any of them.
 
 Tracked as **#47** rather than left as prose here. Two things belong in it: the iPad font ceiling,
 and the gate method, since the `scrollWidth` assertion this file recommends is what hid the problem

@@ -13,7 +13,7 @@
  *
  * - `short` — <=16 characters. What the cap would look like if #16 were told to
  *   write tersely: the control in the other direction from `real`.
- * - `real` — the committed 47-square pool's own longest labels. Longest single
+ * - `real` — the committed F1 pool's own longest labels. Longest single
  *   word 10 characters, which per docs/SURFACES.md is *exactly* the width an iPad
  *   cell fits. This is what is on screen today.
  * - `cap`  — plausible labels at the cap whose long words are 11-13 characters:

@@ -19,10 +19,11 @@ import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
 const db = createDb(testDatabaseUrl ?? 'postgres://unused');
 
 /**
- * The synthetic pool, keyed the way a room's `theme_id` names it. The committed
- * F1 pool cannot supply D6's deck until #16 authors it to ~180 squares, so a room
- * created here is pointed at a pool that can — the composer's refusal of the real
- * one is `deck.test.ts`'s subject, not this suite's.
+ * The synthetic pool, keyed the way a room's `theme_id` names it. This suite is
+ * about rooms and games rather than about theme content, so a room created here
+ * is pointed at a pool whose counts are pinned in the fixture and cannot shift
+ * under it when someone edits `themes/f1/` — the real pool is `deck.test.ts`'s
+ * subject, not this suite's.
  */
 const fixture = JSON.parse(
   readFileSync(joinPath(import.meta.dirname, 'fixtures/pool-180.json'), 'utf8'),
