@@ -139,12 +139,56 @@ describe('the replay script', () => {
     expect(offCard).toStrictEqual([]);
   });
 
-  /** D8's three paths: the toast, the dialog, and the host's unrestricted one. */
-  it('exercises all three correction paths', () => {
+  /**
+   * The half of D8 the server enforces: your own call, or any call if you are
+   * the host. The graduated friction on top of it — one tap inside ten seconds,
+   * a confirmation after — is the client's and is covered in the web suite, not
+   * here: a retraction over HTTP looks the same whichever button sent it.
+   */
+  it('takes back two calls as their caller and one as the host', () => {
+    const calledBy = new Map(
+      actions.flatMap((action) =>
+        action.kind === 'call' && action.tag !== undefined
+          ? [[action.tag, action.player] as const]
+          : [],
+      ),
+    );
     const retracts = actions.filter((action) => action.kind === 'retract');
 
-    expect(retracts).toHaveLength(3);
-    expect(retracts.filter((action) => action.player === 0)).toHaveLength(1);
+    expect(
+      retracts.map((action) =>
+        action.kind === 'retract'
+          ? { by: action.player, madeBy: calledBy.get(action.target) }
+          : null,
+      ),
+    ).toStrictEqual([
+      { by: calledBy.get('fast'), madeBy: calledBy.get('fast') },
+      { by: 0, madeBy: calledBy.get('host-target') },
+      { by: calledBy.get('slow'), madeBy: calledBy.get('slow') },
+    ]);
+    // The host's is the one that is somebody else's call to take back.
+    expect(calledBy.get('host-target')).not.toBe(0);
+  });
+
+  /**
+   * One of the two self-retractions names a call the log has moved well past —
+   * far enough that the client offering it would have been offering the dialog
+   * rather than the toast. `target_seq` pointing a long way below the head is
+   * the part of that the server is on the hook for.
+   */
+  it('leaves the log to move past a call before that call is taken back', () => {
+    const tickMs = 1500;
+    const called = scenario.steps.findIndex((step) =>
+      step.actions.some((action) => action.kind === 'call' && action.tag === 'slow'),
+    );
+    const takenBack = scenario.steps.findIndex((step) =>
+      step.actions.some(
+        (action) => action.kind === 'retract' && action.target === 'slow',
+      ),
+    );
+
+    expect(called).toBeGreaterThanOrEqual(0);
+    expect((takenBack - called) * tickMs).toBeGreaterThan(10_000);
   });
 
   it('puts two devices on one square in one tick, twice', () => {
@@ -294,10 +338,11 @@ describe('the independent reducer', () => {
     ]);
   });
 
-  it('credits the timeline to whoever spotted each call', () => {
+  /** Newest first, as CONTEXT.md defines the timeline — not log order. */
+  it('credits the timeline to whoever spotted each call, newest first', () => {
     expect(timelineOf(cards, liveCalls(events, 'game'))).toStrictEqual([
-      { seq: 4, squareId: 'b', playerId: 'p1', name: 'Bo' },
       { seq: 9, squareId: 'a', playerId: 'p0', name: 'Ada' },
+      { seq: 4, squareId: 'b', playerId: 'p1', name: 'Bo' },
     ]);
   });
 

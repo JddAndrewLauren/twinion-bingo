@@ -161,13 +161,16 @@ function gameFor(stage: Stage, calls: Mark[]): Game {
             { seq: 61, prizeKind: 'FULL_HOUSE', playerId: LONG_NAME.id, name: LONG_NAME.name },
           ];
 
-  const timeline: TimelineEntry[] = calls.map((call, index) => ({
-    seq: call.seq,
-    squareId: call.squareId,
-    elapsed: `+${String(index * 7).padStart(2, '0')}:${String((index * 13) % 60).padStart(2, '0')}`,
-    playerId: call.actorPlayerId,
-    name: ROSTER.players.find((player) => player.id === call.actorPlayerId)!.name,
-  }));
+  // Newest first, as the API sends it — the stamps still climb with the call.
+  const timeline: TimelineEntry[] = calls
+    .map((call, index) => ({
+      seq: call.seq,
+      squareId: call.squareId,
+      elapsed: `+${String(index * 7).padStart(2, '0')}:${String((index * 13) % 60).padStart(2, '0')}`,
+      playerId: call.actorPlayerId,
+      name: ROSTER.players.find((player) => player.id === call.actorPlayerId)!.name,
+    }))
+    .reverse();
 
   return {
     id: GAME_ID,

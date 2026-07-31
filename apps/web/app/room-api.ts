@@ -97,7 +97,10 @@ export type Game = {
   prizes: PrizeAward[];
   /** Every player by raw mark count, derived server-side on every read. */
   standings: Standing[];
-  /** The race timeline: live calls with elapsed stamps and their spotter. */
+  /**
+   * The race timeline: live calls with elapsed stamps and their spotter, newest
+   * first as the API sends it — rendered in the order it arrives.
+   */
   timeline: TimelineEntry[];
   /**
    * How far down the room's log `marks` accounts for, in stream event ids. Held

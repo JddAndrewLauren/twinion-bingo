@@ -143,6 +143,9 @@ export class EventStream {
   /** The `id` of the last frame, which is what `Last-Event-ID` resumes from. */
   private lastEventId = 0;
 
+  /** Settled once this open's response headers are in, or it failed. */
+  private connected: Promise<void> = Promise.resolve();
+
   constructor(
     private readonly baseUrl: string,
     private readonly code: string,
@@ -157,15 +160,38 @@ export class EventStream {
    * Opens, or re-opens after a drop. A reconnect sends the last id it saw, so
    * the server replays precisely the rows this device missed — the resume path
    * the whole realtime design rests on.
+   *
+   * Fire-and-forget by design: a device does not block on its socket. `ready()`
+   * is how a caller that must not race the connection waits for it.
    */
   open(): void {
     const controller = new AbortController();
     this.controller = controller;
 
-    void this.read(controller).catch((error: unknown) => {
+    let settle = (): void => {};
+    this.connected = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+
+    void this.read(controller, settle).catch((error: unknown) => {
+      settle();
       if (controller.signal.aborted) return;
       this.failure = error instanceof Error ? error : new Error(String(error));
     });
+  }
+
+  /**
+   * Resolves once the SSE response is in — the connection is established, the
+   * server is inside the loop that will write to it, and its cursor is fixed —
+   * or once the attempt failed, in which case `failure` says so.
+   *
+   * Without it, `open()` returning proves nothing: a stream still inside its
+   * `fetch` when the game starts would replay the backlog on connect and look
+   * exactly like one that was there all along, which is the way a concurrency
+   * sweep passes without ever having held the connections it claims to.
+   */
+  async ready(): Promise<void> {
+    await this.connected;
   }
 
   close(): void {
@@ -173,7 +199,10 @@ export class EventStream {
     this.controller = undefined;
   }
 
-  private async read(controller: AbortController): Promise<void> {
+  private async read(
+    controller: AbortController,
+    connected: () => void,
+  ): Promise<void> {
     const response = await fetch(`${this.baseUrl}/rooms/${this.code}/stream`, {
       headers: {
         accept: 'text/event-stream',
@@ -187,6 +216,8 @@ export class EventStream {
     if (!response.ok || response.body === null) {
       throw new Error(`the stream answered ${response.status}`);
     }
+
+    connected();
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();

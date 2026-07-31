@@ -98,14 +98,17 @@ export function standingsOf(
     .sort((left, right) => right.marks - left.marks);
 }
 
-/** Every live call, credited — the elapsed stamp is the server's to format. */
+/**
+ * Every live call, credited, newest first — the order CONTEXT.md defines the
+ * timeline in. The elapsed stamp is the server's to format.
+ */
 export function timelineOf(
   cards: readonly SimCard[],
   calls: readonly ReducedCall[],
 ): ReducedTimelineEntry[] {
   const named = new Map(cards.map((card) => [card.playerId, card.name]));
 
-  return calls.map((call) => ({
+  return [...calls].reverse().map((call) => ({
     seq: call.seq,
     squareId: call.squareId,
     playerId: call.playerId,

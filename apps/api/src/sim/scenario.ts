@@ -51,7 +51,13 @@ export type ScenarioOptions = {
   offlineCalls?: number;
 };
 
-/** D8's dialog threshold. A "slow" undo has to land on the far side of it. */
+/**
+ * D8's dialog threshold. The friction it graduates is the client's — the server
+ * has no undo window and cannot tell a tap inside it from one outside — so what
+ * the "slow" retraction buys here is not the dialog path but a retraction of a
+ * call the log has since moved well past. The toast-versus-dialog behaviour is
+ * covered where it exists, in `apps/web/test/game-screen.test.tsx`.
+ */
 const UNDO_TOAST_MS = 10_000;
 
 /** At most this many calls are spent waiting the threshold out; then, ticks. */
@@ -61,7 +67,9 @@ const GAP_CALLS = 4;
  * The scripted race, in order:
  *
  * 1. a warm-up of ordinary calls, shared squares first;
- * 2. the three correction paths, plus the re-call race a retraction opens up;
+ * 2. the corrections the server can be held to — a player taking back their own
+ *    call, the same player taking back one the log has moved past, and the host
+ *    taking back somebody else's — plus the re-call race a retraction opens up;
  * 3. two devices calling one square in the same tick;
  * 4. a device off the air for a stint, then resumed;
  * 5. the march up the ladder to the full house;
@@ -157,8 +165,10 @@ export function buildScenario(
     .find((action) => action.kind === 'call' && action.player !== 0);
   if (hostTarget?.kind === 'call') hostTarget.tag = 'host-target';
 
-  // 2. Corrections. The slow undo's square is chosen off the closer's card so
-  // that retiring it cannot stand between the closer and the full house.
+  // 2. Corrections, as the server sees them: who may take back what, and a
+  // RETRACT naming its CALL. The slow retraction's square is chosen off the
+  // closer's card so retiring it cannot stand between the closer and the full
+  // house.
   const slowSquare = nextSquare(
     (id) => !hands[closer]!.squareIds.includes(id),
   );
@@ -174,7 +184,7 @@ export function buildScenario(
   const fastCaller = fastSquare === undefined ? 0 : callerFor(fastSquare);
   if (fastSquare !== undefined) {
     callStep('corrections', fastSquare, fastCaller, 'fast');
-    // Inside the ten seconds: one tap, no dialog.
+    // Straight back: a player retracting their own call at the head of the log.
     steps.push({ phase: 'corrections', actions: [{ kind: 'retract', player: fastCaller, target: 'fast' }] });
     called.delete(fastSquare);
   }
@@ -200,11 +210,12 @@ export function buildScenario(
     }
   }
 
-  // Wait out D8's ten-second threshold, which is the difference between the
-  // one-tap toast and the confirmation dialog. A few calls fill the time and
-  // then the room simply watches the race: the deck is forty squares and the
-  // phases after this one need most of them, so a fast `--tick-ms` must not be
-  // able to spend the whole deck getting to one retraction.
+  // Put rows between the call and the retraction that names it — enough of them
+  // to outlast D8's ten-second window, so the client this rehearses is the one
+  // that would have shown the dialog. A few calls fill the time and then the room
+  // simply watches the race: the deck is forty squares and the phases after this
+  // one need most of them, so a fast `--tick-ms` must not be able to spend the
+  // whole deck getting to one retraction.
   if (slowSquare !== undefined) {
     const gap = Math.ceil(UNDO_TOAST_MS / tickMs) + 1;
     for (let filler = 0; filler < GAP_CALLS && steps.length - slowCalledAt < gap; filler += 1) {
@@ -216,7 +227,7 @@ export function buildScenario(
       steps.push({ phase: 'corrections', actions: [] });
     }
 
-    // Their own call, well past the toast: the client's dialog path (D8).
+    // Their own call, well below the head of the log.
     steps.push({ phase: 'corrections', actions: [{ kind: 'retract', player: slowCaller, target: 'slow' }] });
     called.delete(slowSquare);
     retired.add(slowSquare);

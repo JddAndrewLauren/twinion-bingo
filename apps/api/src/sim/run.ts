@@ -22,6 +22,7 @@ import { buildScenario, type Action, type SimHand } from './scenario.js';
  * HTTP, against a real room of headless players.
  *
  *     pnpm sim [--base-url URL] [--players 5] [--tick-ms 1500] [--sweep]
+ *              [--start-delay-ms 0] [--park]
  *
  * You cannot rehearse a race in real time, so this is the rehearsal. It plays
  * the script in `scenario.ts` against a running API, re-derives everything out
@@ -37,6 +38,11 @@ import { buildScenario, type Action, type SimHand } from './scenario.js';
  *
  * On failure it prints the table, the diffs, and the room code and game id, and
  * leaves every row in the database for you to go and look at.
+ *
+ * Two flags exist only for the procedures in that runbook, which need a room a
+ * human can be part of: `--start-delay-ms` holds joining open before the game
+ * starts, and `--park` stops before the march so the room is left mid-race with a
+ * live game rather than played out to its full house.
  */
 
 type Options = {
@@ -45,6 +51,10 @@ type Options = {
   tickMs: number;
   sweep: boolean;
   timeoutMs: number;
+  /** A pause after the room exists, for real devices to join it (runbook). */
+  startDelayMs: number;
+  /** Stop before the march, leaving a live game behind (runbook). */
+  park: boolean;
 };
 
 /** The raised `soft_limit` the room has to hold (PLAN.md's verification list). */
@@ -65,6 +75,8 @@ function parseOptions(argv: string[]): Options {
     tickMs: 1500,
     sweep: false,
     timeoutMs: 360_000,
+    startDelayMs: 0,
+    park: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -90,8 +102,14 @@ function parseOptions(argv: string[]): Options {
       case '--timeout-ms':
         options.timeoutMs = Number(value());
         break;
+      case '--start-delay-ms':
+        options.startDelayMs = Number(value());
+        break;
       case '--sweep':
         options.sweep = true;
+        break;
+      case '--park':
+        options.park = true;
         break;
       default:
         throw new Error(`unknown flag ${String(flag)}`);
@@ -104,6 +122,12 @@ function parseOptions(argv: string[]): Options {
   if (!Number.isInteger(options.tickMs) || options.tickMs < 100) {
     throw new Error('--tick-ms must be at least 100');
   }
+  if (!Number.isInteger(options.startDelayMs) || options.startDelayMs < 0) {
+    throw new Error('--start-delay-ms must be a whole number of milliseconds');
+  }
+  // The pause is time the run spends doing nothing, so it cannot come out of the
+  // deadline that is there to catch a hung stream.
+  options.timeoutMs += options.startDelayMs;
 
   return options;
 }
@@ -179,6 +203,18 @@ for (let index = 1; index < options.players; index += 1) {
 }
 console.log(`room ${host.code}`);
 
+// The room exists and the game does not, which is the only window a real device
+// can join in and be in the game from lights out rather than as a late joiner.
+// `--start-delay-ms` holds it open — the runbook's phones join here, so the
+// traffic they watch is this room's.
+if (options.startDelayMs > 0) {
+  console.log(
+    `joining is open for ${Math.round(options.startDelayMs / 1000)}s — ` +
+      `open room ${host.code} on every device that is watching, then wait`,
+  );
+  await sleep(options.startDelayMs);
+}
+
 // 2. Every device holds its stream from before the game starts, which is how it
 //    learns the game started at all.
 const streams = players.map(
@@ -191,8 +227,20 @@ const spectators = options.sweep
     )
   : [];
 
+// Awaited, not slept on: a spectator still inside its `fetch` when the game
+// starts would replay the whole log on connect and be indistinguishable from one
+// that held the connection throughout — which is how a sweep passes without ever
+// having held the twenty connections it is there to prove.
 for (const stream of [...streams, ...spectators]) stream.open();
-await sleep(500);
+await Promise.all([...streams, ...spectators].map((stream) => stream.ready()));
+
+checkThat(
+  'every stream was connected before the game started',
+  [...streams, ...spectators].every((stream) => stream.failure === undefined),
+  [...streams, ...spectators]
+    .filter((stream) => stream.failure !== undefined)
+    .map((stream) => ({ stream: stream.label, failure: String(stream.failure) })),
+);
 
 // 3. The deal, and the cards it produced — the script is built from those.
 const started = await host.startGame();
@@ -297,6 +345,7 @@ async function act(action: Action): Promise<void> {
     case 'resume': {
       resumedAt = appendedHead;
       stream.open();
+      await stream.ready();
       console.log(
         `  player ${action.player} back, resuming from ${resumedFrom}; ` +
           `the room reached ${appendedHead} while it was away`,
@@ -319,6 +368,11 @@ const startedAt = Date.now();
 let phase = '';
 
 for (const step of scenario.steps) {
+  // A parked run plays everything that cannot close the game and stops there:
+  // the march exists to fill a card to the full house, and the full house is a
+  // one-way door (D5, ADR-0003).
+  if (options.park && (step.phase === 'march' || step.phase === 'post-done')) break;
+
   if (step.phase !== phase) {
     phase = step.phase;
     console.log(`[${phase}]`);
@@ -346,6 +400,58 @@ for (const step of scenario.steps) {
 }
 
 console.log(`replay done in ${Math.round((Date.now() - startedAt) / 1000)}s`);
+
+/**
+ * `--park`: a room left mid-race on purpose, and the two runbook procedures a
+ * finished game is no good for.
+ *
+ * The autostop measurement is an authenticated *call* waking a sleeping machine
+ * while the game is still live — a done game answers 409 and would time the
+ * wrong thing — so this hands over what one real call later needs: a player's
+ * token, the game, and a square that player holds and nobody has called. And the
+ * real-device resume needs a room two phones can sit in while it has traffic,
+ * which is the same room and the same live game.
+ *
+ * Nothing derived is asserted here, and that is the point: the room is shared
+ * with devices this run does not hold the cards of, so the standings and the
+ * ladder are not the sim's to check. What it does report is whether the setup
+ * itself worked — every call and retraction the script made, and one row per
+ * contested square.
+ */
+if (options.park) {
+  // A non-host, so the call that wakes the machine is scope-checked against a
+  // card (D7) rather than waved through by the host's whole-deck exemption.
+  const parked = players[1]!;
+  const spare = (hands[1]?.squareIds ?? []).find(
+    (squareId) => !liveByLedger.has(squareId),
+  );
+
+  clearTimeout(timeout);
+  run.log = streams[0]?.events ?? [];
+  const setUp = report(run);
+  for (const stream of [...streams, ...spectators]) stream.close();
+
+  console.log(`\nparked: room ${host.code}, game ${started.id} — still live.`);
+  console.log(
+    `${liveByLedger.size} squares called; ${String(spare)} is one nobody has, ` +
+      `and it is on ${parked.label}'s card.`,
+  );
+  console.log('\nleave it alone, then time the call that wakes it:\n');
+  console.log(
+    `  curl -s -o /dev/null -w 'cold start: %{time_total}s\\n' \\\n` +
+      `    -X POST ${options.baseUrl}/games/${started.id}/call \\\n` +
+      `    -H 'authorization: Bearer ${parked.token}' \\\n` +
+      `    -H 'content-type: application/json' \\\n` +
+      `    -d '{"square_id":"${String(spare)}"}'\n`,
+  );
+  console.log('and read the game back to confirm nothing was lost:\n');
+  console.log(
+    `  curl -s ${options.baseUrl}/rooms/${host.code}/game \\\n` +
+      `    -H 'authorization: Bearer ${parked.token}'\n`,
+  );
+
+  process.exit(setUp ? 0 : 1);
+}
 
 // 5. Let the hold-back and the poll catch up before asking anybody anything.
 let head = -1;
@@ -488,12 +594,14 @@ check(
     name: entry.name,
   })),
 );
+// Newest first (CONTEXT.md), so the stamps count *down* the list — a timeline
+// whose elapsed column climbed as you read down it would be in log order.
 checkThat(
-  'the timeline reads as elapsed game time, never going backwards',
+  'the timeline reads as elapsed game time, newest row first',
   serverTimeline.every(
     (entry, index) =>
       /^\+\d{2,}:\d{2}$/.test(entry.elapsed) &&
-      (index === 0 || entry.elapsed >= serverTimeline[index - 1]!.elapsed),
+      (index === 0 || entry.elapsed <= serverTimeline[index - 1]!.elapsed),
   ),
   serverTimeline.map((entry) => entry.elapsed),
 );
@@ -512,7 +620,12 @@ check(
   [...rowsBySquare.entries()].sort(),
 );
 
-// Corrections.
+// Corrections, as far as HTTP can see them: the server's rule about who may take
+// back what, and a RETRACT naming its CALL. D8's graduated friction — one tap
+// inside ten seconds, a confirmation dialog after — is a client behaviour and is
+// gated in `apps/web/test/game-screen.test.tsx`; a retraction over the wire looks
+// identical whichever of the two sent it, so nothing here can tell them apart and
+// nothing here claims to.
 for (const retraction of retractions) {
   const row = log.find((event) => event.kind === 'RETRACT' && event.seq === retraction.seq);
 
@@ -521,10 +634,29 @@ for (const retraction of retractions) {
     row?.targetSeq,
   );
 }
+const retractRows = log.filter(
+  (event) => event.kind === 'RETRACT' && event.gameId === started.id,
+);
+check('every retraction the sim made is a RETRACT row', 3, retractRows.length);
+
+// Who was allowed to take back what: your own call, or anyone's if you host.
 check(
-  'all three correction paths produced a RETRACT row',
-  3,
-  log.filter((event) => event.kind === 'RETRACT' && event.gameId === started.id).length,
+  'two calls came back by their caller and one by the host',
+  { byCaller: 2, byHost: 1 },
+  retractRows.reduce(
+    (tally, row) => {
+      const called = log.find((event) => event.seq === row.targetSeq);
+      const own = called?.actorPlayerId === row.actorPlayerId;
+
+      return {
+        byCaller: tally.byCaller + (own ? 1 : 0),
+        byHost:
+          tally.byHost +
+          (!own && row.actorPlayerId === host.player.id ? 1 : 0),
+      };
+    },
+    { byCaller: 0, byHost: 0 },
+  ),
 );
 checkThat(
   'a retracted square nobody called again is marked nowhere',
