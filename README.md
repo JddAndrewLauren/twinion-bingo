@@ -74,6 +74,18 @@ the repo root (the deploy path, which is the only place it has ever broken), and
 migration chain twice against an ephemeral service container and then runs the truncating suites
 with `TEST_DATABASE_URL` set — see **Database** below.
 
+One gate is not in CI, because it needs a running server and real minutes:
+
+```bash
+pnpm sim            # a scripted race against a live room, ~70s, exit 0 or a table of diffs
+pnpm sim --sweep    # ...plus 20 simultaneous SSE spectators
+```
+
+`pnpm dev` has to be up. It is the deployment check rather than regression coverage, and
+`--base-url` re-points it at Fly — see [docs/verification-runbook.md](docs/verification-runbook.md),
+which also carries the two checks a script cannot make (a real phone in airplane mode, and Fly's
+cold-start gap).
+
 ## Database
 
 The bingo tables live in their own `bingo` schema of the Supabase project shared with the
