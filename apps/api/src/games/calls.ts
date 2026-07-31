@@ -170,24 +170,23 @@ export function markedSquares(
 
 /**
  * The squares that count towards this player's win claims: the marks whose call
- * landed at or after they joined.
+ * landed at or after their current claim boundary.
  *
- * A late joiner's card arrives correctly marked — it is the same derivation
- * everyone else's runs — but nobody walks in at lap 50 and claims the line the
- * room spent an hour filling in. `join_seq` is the sequence number of the
- * player's own PLAYER_JOINED row, so "after I joined" and "later in the log" are
- * the same comparison, with no clock involved.
+ * A player's card always arrives correctly marked — it is the same derivation
+ * everyone else's runs — but nobody claims a line the room completed before
+ * that player's current boundary. A re-roll moves the boundary forward too, so
+ * a mark inherited by the replacement card is visible but cannot win a prize.
  */
 export function claimableSquares(
   squareIds: readonly string[],
   calls: readonly LiveCall[],
-  joinSeq: number,
+  claimBoundarySeq: number,
 ): Set<string> {
   const held = new Set(squareIds);
 
   return new Set(
     calls
-      .filter((call) => call.seq >= joinSeq && held.has(call.squareId))
+      .filter((call) => call.seq >= claimBoundarySeq && held.has(call.squareId))
       .map((call) => call.squareId),
   );
 }

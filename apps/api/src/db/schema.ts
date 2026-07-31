@@ -32,6 +32,7 @@ export const roomEventKind = bingo.enum('room_event_kind', [
   'CALL',
   'RETRACT',
   'PRIZE',
+  'CARD_REROLLED',
 ]);
 
 /** The win ladder of D5: one line, then two lines, then a full house. */
@@ -85,9 +86,9 @@ export const games = bingo.table('games', {
 });
 
 /**
- * A card is a fixed list of square IDs and nothing else. Marks are derived from
- * the call log, never stored — that is the one idea the whole design follows
- * from, so this table must never grow a mark column.
+ * A card is a fixed list of square IDs plus claim-boundary metadata. Marks are
+ * derived from the call log, never stored — that is the one idea the whole
+ * design follows from, so this table must never grow a mark column.
  */
 export const cards = bingo.table(
   'cards',
@@ -100,6 +101,8 @@ export const cards = bingo.table(
       .references(() => players.id),
     /** 24 earnable squares; the centre is free (D4). */
     squareIds: text('square_ids').array().notNull(),
+    /** The room-log sequence that reset this card's claim boundary, if any. */
+    latestRerollSeq: bigint('latest_reroll_seq', { mode: 'bigint' }),
   },
   (table) => [primaryKey({ columns: [table.gameId, table.playerId] })],
 );

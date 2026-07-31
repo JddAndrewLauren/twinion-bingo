@@ -71,6 +71,7 @@ correct late-joiner state, and cheap corrections. It **requires** stable determi
 | **D12** | **Next.js 16 / React 19 / Tailwind v4, manifest + icons, no service worker.** |
 | **D13** | **Room ≠ game.** Room = persistent group (code, theme, roster). Game = one session (deck, cards, log, winners). Same code for Saturday's sprint and Sunday's race, all season. |
 | **D14** | **Two layouts in v1: phone and 11" iPad.** Prototype-gated. |
+| **D15** | **Clean cards may re-roll immediately and without a limit.** A re-roll replaces the card, appends a `CARD_REROLLED` event, and resets its claim boundary. |
 
 ### D2 — why a separate service
 
@@ -232,8 +233,17 @@ something structurally different (a non-racing theme) has been through it.
 ### D13 — lifecycle details
 
 Late joiners get a card from the same deck and it arrives correctly marked (free from the model).
-Win detection fires only on calls at or after their `join_seq`, so nobody walks in at lap 50 and
-claims a line. A line already complete at join renders greyed and unclaimable.
+Win detection fires only on calls at or after the player's current claim boundary: `join_seq` until
+the first re-roll, then the latest `CARD_REROLLED` sequence. A line already complete at either
+boundary renders greyed and unclaimable.
+
+### D15 — clean-card re-rolls
+
+A player may re-roll immediately and repeatedly while their current card has no live marks. Each
+accepted re-roll replaces all 24 memberships from the same game deck, appends `CARD_REROLLED`, and
+sets the card's claim boundary to that event's room sequence. Earlier live calls remain marks and
+count in standings, but become inherited and cannot contribute to a prize; calls after the re-roll
+remain earned and prize-eligible. The operation is serialized with calls by the game-row lock.
 
 Timeline entries use **elapsed game time** (`+42:10`), not lap numbers — there is no live timing feed
 and hand-entered laps aren't worth the friction.
@@ -261,9 +271,9 @@ rooms        code(4) PK, theme_id, host_player_id, created_at
 players      id PK, room_code, name, token(opaque), join_seq, last_seen_at
 games        id PK, room_code, theme_id, deck(square_id[]), seed,
              state(lobby|live|done), started_at, ended_at
-cards        game_id, player_id, square_ids[24], PK(game_id, player_id)
+cards        game_id, player_id, square_ids[24], latest_reroll_seq BIGINT NULL, PK(game_id, player_id)
 room_events  seq BIGSERIAL PK, room_code, game_id NULL, actor_player_id, at,
-             kind(PLAYER_JOINED|GAME_STARTED|CALL|RETRACT|PRIZE),
+             kind(PLAYER_JOINED|GAME_STARTED|CALL|RETRACT|PRIZE|CARD_REROLLED),
              square_id NULL, target_seq NULL, prize_kind NULL
              UNIQUE(game_id, square_id) WHERE kind='CALL'   -- dedupe simultaneous calls
 ```
@@ -274,7 +284,8 @@ rather than two. `room_events.seq` is the SSE event id, making resume a single i
 Prizes are recorded as events too, so no separate `prizes` table is needed — standings are read
 from the log.
 
-Cards store `square_ids` and nothing else — marks are computed, never written.
+Cards store `square_ids` and only the claim-boundary metadata needed by re-rolls — marks are
+computed, never written.
 
 Endpoints:
 
@@ -285,6 +296,7 @@ POST /rooms/:code/games           host: draw deck, deal cards, go live
 GET  /rooms/:code/stream          SSE; honours Last-Event-ID; :ping every 25s
 POST /games/:id/call              body {square_id}; verifies square ∈ caller's card (or caller is host)
 POST /games/:id/retract           body {seq}; own call, or any call if host
+POST /games/:id/card/reroll       no body; replaces the caller's clean card
 ```
 
 Room codes are 4 characters from a 24-letter alphabet with `O/0/I/1` removed (~331k combinations,
@@ -332,6 +344,8 @@ Then, specifically:
   lock does the work — ADR-0004). Then retract it and have both call it again: exactly one *new* row.
 - **Late join**: join at `seq > 0`; confirm inherited marks appear, and that a pre-complete line is
   greyed and wins nothing.
+- **Card re-roll**: re-roll a clean card repeatedly; confirm earlier live calls become inherited,
+  stay in standings, and cannot win a prize, while later calls remain earned and eligible.
 - **Corrections**: self-undo inside 10 s with no dialog; after 10 s with a dialog; host retraction of
   another player's call; all three produce RETRACT rows and every client converges.
 - **Drizzle isolation** (safety-critical): run bingo's `drizzle-kit generate` against the shared

@@ -8,12 +8,15 @@ import { createDb } from '../src/db/client.js';
 import {
   CARD_SQUARES,
   DECK_SIZE,
+  MAX_RARE_PER_CARD,
+  MIN_CERTAIN_PER_CARD,
   SOURCE_QUOTA,
   TIER_QUOTA,
   composeDeck,
   dealCard,
 } from '../src/games/deck.js';
 import { defaultThemeId } from '../src/games/pools.js';
+import { LINES } from '../src/games/lines.js';
 import { noTestDatabase, testDatabaseUrl } from './support/test-database.js';
 
 const db = createDb(testDatabaseUrl ?? 'postgres://unused');
@@ -52,6 +55,9 @@ type GameView = {
   card: CardSquare[] | null;
   deck: { squares: CardSquare[]; called: Mark[] } | null;
   marks: Mark[];
+  inheritedMarks: string[];
+  prizes: { prizeKind: string; playerId: string }[];
+  standings: { playerId: string; name: string; marks: number }[];
   streamedThroughSeq: number;
 };
 
@@ -119,6 +125,13 @@ async function retract(
       ...(token === undefined ? {} : { authorization: `Bearer ${token}` }),
     },
     body: JSON.stringify({ seq }),
+  });
+}
+
+async function reroll(gameId: string, token?: string): Promise<Response> {
+  return app.request(`/games/${gameId}/card/reroll`, {
+    method: 'POST',
+    headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
   });
 }
 
@@ -339,7 +352,7 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
 describe.skipIf(noTestDatabase)('the cards table', () => {
   beforeEach(truncate);
 
-  it('holds square_ids and nothing else that could carry a mark', async () => {
+  it('holds square_ids and claim metadata, never a stored mark', async () => {
     const rows = await db.execute<{ column_name: string }>(
       sql`SELECT column_name FROM information_schema.columns
           WHERE table_schema = 'bingo' AND table_name = 'cards'
@@ -348,6 +361,7 @@ describe.skipIf(noTestDatabase)('the cards table', () => {
 
     expect([...rows].map((row) => row.column_name)).toEqual([
       'game_id',
+      'latest_reroll_seq',
       'player_id',
       'square_ids',
     ]);
@@ -363,6 +377,408 @@ describe.skipIf(noTestDatabase)('the cards table', () => {
 
     const [row] = [...rows];
     expect(row!.square_ids).toHaveLength(CARD_SQUARES);
+  });
+});
+
+describe.skipIf(noTestDatabase)('re-rolling a card', () => {
+  beforeEach(truncate);
+
+  it('replaces a clean card with a valid card from the same deck', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const before = (await (await readGame(host.code, host.token)).json()) as GameView;
+
+    const res = await reroll(started.id, host.token);
+
+    expect(res.status).toBe(200);
+    const after = (await res.json()) as GameView;
+    expect(after.id).toBe(started.id);
+    expect(after.card).toHaveLength(CARD_SQUARES);
+
+    const deck = new Set(before.deck!.squares.map((square) => square.id));
+    const card = after.card!;
+    const poolSquareById = new Map(fixture.squares.map((square) => [square.id, square]));
+    expect(card.every((square) => deck.has(square.id))).toBe(true);
+    expect(new Set(card.map((square) => square.id)).size).toBe(CARD_SQUARES);
+    expect(
+      new Set(card.map((square) => poolSquareById.get(square.id)!.exclusivityGroup)).size,
+    ).toBe(CARD_SQUARES);
+    expect(card.filter((square) => square.tier === 'rare').length).toBeLessThanOrEqual(
+      MAX_RARE_PER_CARD,
+    );
+    expect(card.filter((square) => square.tier === 'certain').length).toBeGreaterThanOrEqual(
+      MIN_CERTAIN_PER_CARD,
+    );
+    expect(new Set(card.map((square) => square.id))).not.toEqual(
+      new Set(before.card!.map((square) => square.id)),
+    );
+  });
+
+  it('can re-roll a clean card repeatedly with different memberships', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const first = (await (await reroll(started.id, host.token)).json()) as GameView;
+    const second = (await (await reroll(started.id, host.token)).json()) as GameView;
+
+    const firstIds = new Set(first.card!.map((square) => square.id));
+    const secondIds = new Set(second.card!.map((square) => square.id));
+    expect(secondIds).not.toEqual(firstIds);
+  });
+
+  it('keeps calls made after the re-roll eligible for prizes', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    expect((await reroll(started.id, host.token)).status).toBe(200);
+
+    const refreshed = (await (await readGame(host.code, host.token)).json()) as GameView;
+    const line = LINES[0]!.map((index) => refreshed.card![index]!.id);
+    for (const squareId of line) {
+      expect((await call(started.id, squareId, host.token)).status).toBe(201);
+    }
+
+    const afterCalls = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(afterCalls.prizes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ prizeKind: 'LINE', playerId: host.player.id }),
+      ]),
+    );
+  });
+
+  it('refuses a marked card without changing the card or log', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const originalIds = started.card!.map((square) => square.id);
+    const called = (await (await call(started.id, originalIds[0]!, host.token)).json()) as {
+      seq: number;
+    };
+
+    const res = await reroll(started.id, host.token);
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'your card has a live mark' });
+    const refreshed = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(refreshed.card!.map((square) => square.id)).toEqual(originalIds);
+
+    const events = await db.execute<{ kind: string; seq: string }>(
+      sql`SELECT kind, seq FROM bingo.room_events WHERE room_code = ${host.code} ORDER BY seq`,
+    );
+    expect([...events].map((event) => event.kind)).not.toContain('CARD_REROLLED');
+    expect([...events].find((event) => Number(event.seq) === called.seq)?.kind).toBe(
+      'CALL',
+    );
+  });
+
+  it('allows a re-roll after the blocking call is retracted', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const squareId = started.card![0]!.id;
+    const called = (await (await call(started.id, squareId, host.token)).json()) as {
+      seq: number;
+    };
+
+    expect((await retract(started.id, called.seq, host.token)).status).toBe(201);
+    const res = await reroll(started.id, host.token);
+
+    expect(res.status).toBe(200);
+    expect(
+      new Set(((await res.json()) as GameView).card!.map((square) => square.id)),
+    ).not.toEqual(new Set(started.card!.map((square) => square.id)));
+  });
+
+  it('requires authentication and leaves unknown games without writes', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    expect((await reroll(started.id)).status).toBe(401);
+    expect((await reroll(started.id, 'not-a-token')).status).toBe(401);
+    expect((await reroll('nonsense', host.token)).status).toBe(404);
+    expect(
+      (await reroll('00000000-0000-4000-8000-000000000000', host.token)).status,
+    ).toBe(404);
+
+    const events = await db.execute<{ kind: string }>(
+      sql`SELECT kind FROM bingo.room_events WHERE room_code = ${host.code}`,
+    );
+    expect([...events].map((event) => event.kind)).not.toContain('CARD_REROLLED');
+  });
+
+  it('exhausts the seeded attempts when the deck has no other membership', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const originalIds = started.card!.map((square) => square.id);
+
+    await db.execute(
+      sql`UPDATE bingo.games SET deck = ARRAY[${sql.join(
+        originalIds.map((id) => sql`${id}`),
+        sql`, `,
+      )}]::text[] WHERE id = ${started.id}`,
+    );
+
+    const res = await reroll(started.id, host.token);
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'no different card could be dealt' });
+    const events = await db.execute<{ kind: string }>(
+      sql`SELECT kind FROM bingo.room_events WHERE game_id = ${started.id}`,
+    );
+    expect([...events].map((event) => event.kind)).not.toContain('CARD_REROLLED');
+  });
+
+  it('returns the stored reroll event boundary for the player and game', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const res = await reroll(started.id, host.token);
+    expect(res.status).toBe(200);
+    const refreshed = (await res.json()) as GameView;
+
+    const rows = await db.execute<{
+      event_seq: string;
+      event_room_code: string;
+      event_game_id: string;
+      event_actor_player_id: string;
+      latest_reroll_seq: string;
+    }>(
+      sql`SELECT e.seq AS event_seq, e.room_code AS event_room_code,
+                 e.game_id AS event_game_id, e.actor_player_id AS event_actor_player_id,
+                 c.latest_reroll_seq
+          FROM bingo.room_events AS e
+          INNER JOIN bingo.cards AS c
+            ON c.game_id = e.game_id AND c.player_id = e.actor_player_id
+          WHERE e.kind = 'CARD_REROLLED' AND e.game_id = ${started.id}`,
+    );
+    const [row] = [...rows];
+
+    expect(row).toMatchObject({
+      event_room_code: host.code,
+      event_game_id: started.id,
+      event_actor_player_id: host.player.id,
+      latest_reroll_seq: row!.event_seq,
+    });
+    expect(refreshed.card!.map((square) => square.id)).toHaveLength(CARD_SQUARES);
+  });
+
+  it('404s a player who has no card and refuses a finished game', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    await db.execute(
+      sql`INSERT INTO bingo.players (room_code, name, token, join_seq)
+          VALUES (${host.code}, 'No card', 'no-card-token', 999)`,
+    );
+    const noCard = await reroll(started.id, 'no-card-token');
+    expect(noCard.status).toBe(404);
+    expect(await noCard.json()).toEqual({ error: 'you have no card in this game' });
+
+    await db.execute(sql`UPDATE bingo.games SET state = 'done' WHERE id = ${started.id}`);
+    const finished = await reroll(started.id, host.token);
+    expect(finished.status).toBe(409);
+    expect(await finished.json()).toEqual({ error: 'this game has finished' });
+  });
+
+  it('serializes a guest call against a re-roll using the current card', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const guestView = (await (await readGame(host.code, guest.token)).json()) as GameView;
+    const row = await gameRow(host.code);
+    const byId = new Map(fixture.squares.map((square) => [square.id, square]));
+    const deck = row.deck.map((id) => byId.get(id)!);
+    const oldIds = guestView.card!.map((square) => square.id);
+    const oldSet = new Set(oldIds);
+    let replacement: string[] | undefined;
+
+    for (let attempt = 0; attempt < 200; attempt += 1) {
+      const candidate = dealCard(
+        deck,
+        `${row.seed}:${guest.player.id}:${guest.player.joinSeq}:${attempt}`,
+        guest.player.id,
+      );
+      const candidateSet = new Set(candidate);
+      if (
+        candidateSet.size !== oldSet.size ||
+        [...candidateSet].some((id) => !oldSet.has(id))
+      ) {
+        replacement = candidate;
+        break;
+      }
+    }
+
+    const oldOnly = oldIds.find((id) => !replacement!.includes(id));
+    expect(oldOnly).toBeDefined();
+
+    const [called, rerolled] = await Promise.all([
+      call(started.id, oldOnly!, guest.token),
+      reroll(started.id, guest.token),
+    ]);
+
+    if (rerolled.status === 200) {
+      expect(called.status).toBe(403);
+      expect(await called.json()).toEqual({ error: 'that square is not on your card' });
+    } else {
+      expect(rerolled.status).toBe(409);
+      expect(await called.json()).toMatchObject({ appended: true });
+      expect(await rerolled.json()).toEqual({ error: 'your card has a live mark' });
+    }
+  });
+
+  it('resets the claim boundary when older deck calls enter the replacement card', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const original = new Set(started.card!.map((square) => square.id));
+    const outside = started.deck!.squares
+      .map((square) => square.id)
+      .filter((id) => !original.has(id));
+
+    for (const squareId of outside) {
+      expect((await call(started.id, squareId, host.token)).status).toBe(201);
+    }
+
+    const res = await reroll(started.id, host.token);
+    expect(res.status).toBe(200);
+    const refreshed = (await res.json()) as GameView;
+
+    expect(refreshed.inheritedMarks.length).toBeGreaterThan(0);
+    expect(refreshed.marks.map((mark) => mark.squareId)).toEqual(
+      expect.arrayContaining(refreshed.inheritedMarks),
+    );
+    expect(
+      refreshed.standings.find((standing) => standing.playerId === host.player.id)?.marks,
+    ).toBe(refreshed.marks.length);
+  });
+
+  /**
+   * The whole point of the boundary: a line can look complete on the grid and still
+   * win nothing. Retracting the inherited calls and making them again — the only
+   * change being which side of the boundary they sit on — hands the prize over.
+   */
+  it('never lets an inherited mark complete a line, until it is called again', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const original = new Set(started.card!.map((square) => square.id));
+    const seqBySquare = new Map<string, number>();
+
+    for (const squareId of started.deck!.squares.map((square) => square.id)) {
+      if (original.has(squareId)) continue;
+      const res = await call(started.id, squareId, host.token);
+      expect(res.status).toBe(201);
+      seqBySquare.set(squareId, ((await res.json()) as { seq: number }).seq);
+    }
+
+    const rerolled = await reroll(started.id, host.token);
+    expect(rerolled.status).toBe(200);
+    const refreshed = (await rerolled.json()) as GameView;
+    const cardIds = refreshed.card!.map((square) => square.id);
+    const inherited = new Set(refreshed.inheritedMarks);
+    expect(inherited.size).toBeGreaterThan(0);
+
+    // Every card index sits on a row and a column, so an inherited square always
+    // has a line to spoil.
+    const line = LINES.find((candidate) =>
+      candidate.some((index) => inherited.has(cardIds[index]!)),
+    );
+    expect(line).toBeDefined();
+    const lineIds = line!.map((index) => cardIds[index]!);
+
+    for (const squareId of lineIds.filter((id) => !inherited.has(id))) {
+      expect((await call(started.id, squareId, host.token)).status).toBe(201);
+    }
+
+    const gated = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(gated.marks.map((mark) => mark.squareId)).toEqual(
+      expect.arrayContaining(lineIds),
+    );
+    expect(gated.prizes).toEqual([]);
+
+    for (const squareId of lineIds.filter((id) => inherited.has(id))) {
+      expect(
+        (await retract(started.id, seqBySquare.get(squareId)!, host.token)).status,
+      ).toBe(201);
+      expect((await call(started.id, squareId, host.token)).status).toBe(201);
+    }
+
+    const earned = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(earned.prizes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ prizeKind: 'LINE', playerId: host.player.id }),
+      ]),
+    );
+  });
+
+  it('refuses a second re-roll while an inherited mark sits on the replacement card', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const original = new Set(started.card!.map((square) => square.id));
+
+    for (const squareId of started.deck!.squares.map((square) => square.id)) {
+      if (original.has(squareId)) continue;
+      expect((await call(started.id, squareId, host.token)).status).toBe(201);
+    }
+
+    const first = await reroll(started.id, host.token);
+    expect(first.status).toBe(200);
+    const refreshed = (await first.json()) as GameView;
+    expect(refreshed.inheritedMarks.length).toBeGreaterThan(0);
+
+    const second = await reroll(started.id, host.token);
+
+    expect(second.status).toBe(409);
+    expect(await second.json()).toEqual({ error: 'your card has a live mark' });
+    const after = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(after.card!.map((square) => square.id)).toEqual(
+      refreshed.card!.map((square) => square.id),
+    );
+
+    const events = await db.execute<{ seq: string }>(
+      sql`SELECT seq FROM bingo.room_events
+          WHERE game_id = ${started.id} AND kind = 'CARD_REROLLED'`,
+    );
+    expect([...events]).toHaveLength(1);
+  });
+
+  it("leaves the other player's card, boundary and marks untouched", async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const guestView = (await (await readGame(host.code, guest.token)).json()) as GameView;
+    const guestIds = new Set(guestView.card!.map((square) => square.id));
+    const hostIds = started.card!.map((square) => square.id);
+
+    // A square only the host holds: it marks the host's card while leaving the
+    // guest's clean enough to re-roll.
+    const onlyHost = hostIds.find((id) => !guestIds.has(id));
+    expect(onlyHost).toBeDefined();
+    expect((await call(started.id, onlyHost!, host.token)).status).toBe(201);
+    const hostBefore = (await (await readGame(host.code, host.token)).json()) as GameView;
+
+    const rerolled = await reroll(started.id, guest.token);
+
+    expect(rerolled.status).toBe(200);
+    expect(new Set(((await rerolled.json()) as GameView).card!.map((s) => s.id))).not.toEqual(
+      guestIds,
+    );
+    const hostAfter = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(hostAfter.card!.map((square) => square.id)).toEqual(hostIds);
+    expect(hostAfter.marks).toEqual(hostBefore.marks);
+    expect(hostAfter.inheritedMarks).toEqual([]);
+
+    const events = await db.execute<{ seq: string; actor_player_id: string }>(
+      sql`SELECT seq, actor_player_id FROM bingo.room_events
+          WHERE game_id = ${started.id} AND kind = 'CARD_REROLLED'`,
+    );
+    const [rerollEvent] = [...events];
+    expect([...events]).toHaveLength(1);
+    expect(rerollEvent!.actor_player_id).toBe(guest.player.id);
+
+    const cards = await db.execute<{ player_id: string; latest_reroll_seq: string | null }>(
+      sql`SELECT player_id, latest_reroll_seq FROM bingo.cards WHERE game_id = ${started.id}`,
+    );
+    const boundaries = new Map(
+      [...cards].map((row) => [row.player_id, row.latest_reroll_seq]),
+    );
+    expect(boundaries.get(host.player.id)).toBeNull();
+    expect(boundaries.get(guest.player.id)).toBe(rerollEvent!.seq);
   });
 });
 

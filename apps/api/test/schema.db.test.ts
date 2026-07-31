@@ -112,4 +112,26 @@ describe.skipIf(noTestDatabase)('the bingo schema', () => {
       expect(row.indexdef).not.toMatch(/UNIQUE/i);
     }
   });
+
+  it('includes the card re-roll event kind', async () => {
+    const rows = await sql<{ enumlabel: string }[]>`
+      SELECT enumlabel FROM pg_enum
+      JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+      JOIN pg_namespace ON pg_namespace.oid = pg_type.typnamespace
+      WHERE pg_namespace.nspname = 'bingo' AND pg_type.typname = 'room_event_kind'
+      ORDER BY pg_enum.enumsortorder`;
+
+    expect(rows.map((row) => row.enumlabel)).toContain('CARD_REROLLED');
+  });
+
+  it('stores the latest card re-roll sequence as a nullable bigint', async () => {
+    const [column] = await sql<
+      { data_type: string; is_nullable: string }[]
+    >`
+      SELECT data_type, is_nullable FROM information_schema.columns
+      WHERE table_schema = 'bingo' AND table_name = 'cards'
+        AND column_name = 'latest_reroll_seq'`;
+
+    expect(column).toEqual({ data_type: 'bigint', is_nullable: 'YES' });
+  });
 });
