@@ -160,7 +160,7 @@ export type GameView = {
   prizes: PrizeAward[];
   /** Every player by raw mark count, derived on read like everything else. */
   standings: Standing[];
-  /** The race timeline: live calls, elapsed stamps, and who spotted each. */
+  /** The race timeline: live calls newest first, stamped and credited. */
   timeline: TimelineEntry[];
   /**
    * How far down the room's log these marks account for, in stream event ids. A

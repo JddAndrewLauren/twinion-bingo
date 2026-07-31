@@ -84,7 +84,7 @@ export function Results({ game }: { game: Game }) {
           <p className="text-neutral-400">Nothing called yet.</p>
         ) : (
           <ol className="flex flex-col gap-1">
-            {[...game.timeline].reverse().map((entry) => (
+            {game.timeline.map((entry) => (
               <li key={entry.seq} className="flex gap-2">
                 {/*
                   Elapsed game time, not a lap number — there is no timing feed,

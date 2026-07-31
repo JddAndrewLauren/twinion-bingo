@@ -1362,9 +1362,10 @@ describe('prizes, standings and the timeline', () => {
     stubRoom({
       you: host,
       liveFromTheStart: true,
+      // As the API sends it: newest first, which is also how it is painted.
       timeline: [
-        { seq: 8, squareId: 'f1.v1:t:3', elapsed: '+04:02', playerId: host.id, name: 'Ash' },
         { seq: 14, squareId: 'f1.v1:t:9', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
+        { seq: 8, squareId: 'f1.v1:t:3', elapsed: '+04:02', playerId: host.id, name: 'Ash' },
       ],
     });
 

@@ -9,6 +9,7 @@
     "lint": "pnpm -r lint",
     "pool:build": "pnpm --filter @twinion-bingo/theme run pool:build",
     "db:workspace": "pnpm --filter @twinion-bingo/api db:workspace",
+    "sim": "pnpm --filter @twinion-bingo/api sim",
     "test": "pnpm -r test"
   }
 }

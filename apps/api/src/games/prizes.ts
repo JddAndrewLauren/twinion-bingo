@@ -212,6 +212,12 @@ export function standings(
  *
  * A retracted call is not in `calls` and so is not in the timeline: the timeline
  * says what happened, and the log's memory of a correction is the log's business.
+ *
+ * Newest first, which is the order the domain defines it in (CONTEXT.md) and the
+ * order a phone held at arm's length reads: what just happened is at the top of
+ * the list rather than a scroll below it. `calls` arrive oldest-first, so this is
+ * where the order is turned — once, on the way out of the API, rather than in
+ * every client that renders it.
  */
 export function timeline(
   hands: readonly Hand[],
@@ -220,7 +226,7 @@ export function timeline(
 ): TimelineEntry[] {
   const named = new Map(hands.map((hand) => [hand.playerId, hand.name]));
 
-  return calls.map((call) => ({
+  return [...calls].reverse().map((call) => ({
     seq: call.seq,
     squareId: call.squareId,
     elapsed: elapsedStamp(startedAt, call.at),

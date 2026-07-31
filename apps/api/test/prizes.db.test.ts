@@ -383,7 +383,7 @@ describe.skipIf(noTestDatabase)('standings and the timeline', () => {
     ]);
   });
 
-  it('lists calls with an elapsed stamp and the crediting player', async () => {
+  it('lists calls newest first, with an elapsed stamp and the crediting player', async () => {
     const host = await createRoom('Ash');
     const started = (await (
       await post(`/rooms/${host.code}/games`, host.token)
@@ -395,7 +395,7 @@ describe.skipIf(noTestDatabase)('standings and the timeline', () => {
 
     const timeline = (await view(host.code, host.token)).timeline;
 
-    expect(timeline.map((entry) => entry.squareId)).toEqual([first, second]);
+    expect(timeline.map((entry) => entry.squareId)).toEqual([second, first]);
     expect(timeline.every((entry) => entry.name === 'Ash')).toBe(true);
     expect(timeline.every((entry) => /^\+\d{2,}:\d{2}$/.test(entry.elapsed))).toBe(
       true,

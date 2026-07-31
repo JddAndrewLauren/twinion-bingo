@@ -9,6 +9,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:workspace": "tsx src/db/provision-workspace.ts",
+    "sim": "tsx src/sim/run.ts",
     "typecheck": "tsc",
     "lint": "eslint .",
     "test": "vitest run"
