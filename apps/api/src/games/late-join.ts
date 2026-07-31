@@ -2,7 +2,7 @@ import type { Pool } from '@twinion-bingo/theme';
 import { and, eq } from 'drizzle-orm';
 import type { Tx } from '../db/client.js';
 import { cards, games } from '../db/schema.js';
-import { dealCard, type Deck } from './deck.js';
+import { dealCard, deckSquares } from './deck.js';
 import { poolFor } from './pools.js';
 
 /**
@@ -45,26 +45,5 @@ export async function dealLateJoinCard(
       live.seed,
       playerId,
     ),
-  });
-}
-
-/**
- * The stored deck is a list of ids; dealing needs the squares themselves, for
- * their exclusivity groups — a card must never hold two squares one event would
- * mark.
- */
-function deckSquares(pool: Pool, deck: readonly string[]): Deck {
-  const byId = new Map(pool.squares.map((square) => [square.id, square]));
-
-  return deck.map((id) => {
-    const square = byId.get(id);
-
-    if (square === undefined) {
-      throw new Error(
-        `the live deck holds square "${id}", which theme ${pool.themeId} has no square for`,
-      );
-    }
-
-    return square;
   });
 }

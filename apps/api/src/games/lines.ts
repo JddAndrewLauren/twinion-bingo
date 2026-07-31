@@ -38,8 +38,8 @@ function buildLines(): number[][] {
 /**
  * How many of the card's lines are complete, given the square ids that count for
  * this player. The card is the fixed list of ids; `counting` is whatever the
- * caller decided is claimable — which for a late joiner is narrower than what is
- * merely marked (see `claimableSquares`).
+ * caller decided is claimable — which can be narrower than what is merely marked
+ * when the player joined late or re-rolled (see `claimableSquares`).
  */
 export function completedLines(
   squareIds: readonly string[],

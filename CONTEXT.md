@@ -1,6 +1,6 @@
 # Context: TwinIon Bingo
 
-The language this project speaks. `PLAN.md` holds the design and its numbered decisions (D1–D14);
+The language this project speaks. `PLAN.md` holds the design and its numbered decisions (D1–D15);
 this file holds the words, so that an issue, a test name and a type all reach for the same one.
 
 Where a term traces to a decision, the decision is named. Where it has a home in the code, that is
@@ -20,7 +20,7 @@ only state in which a square may be called; `done` is terminal and one-way (ADR-
 
 **Room event** — an appended row in `room_events`, the log both containers are read out of. Every
 row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-ID`. Kinds:
-`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`.
+`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`, `CARD_REROLLED`.
 
 ## Squares and where they come from
 
@@ -82,6 +82,12 @@ fresh `CALL` row at a higher `seq` rather than an edit of the old one. So one sq
 several `CALL` rows over a game, of which at most one is live — the credit in the timeline and the
 standings goes to whoever made the *live* one (ADR-0004).
 
+**Re-roll** — an authenticated `POST /games/:id/card/reroll` with no body. It immediately replaces
+the player's card, as often as they want, while the current card has no live marks (D15). It appends
+a `CARD_REROLLED` row and stores that row's sequence as the card's latest claim boundary. Candidate
+cards are deterministic from the game seed, player, previous boundary, and attempt number; a pure
+reordering is not a different card.
+
 **Undo window** — the fast path of D8: for a few seconds after your own call, a one-tap undo row,
 no confirmation. Past it, the slow path — tap your own marked square, confirm, retract.
 
@@ -123,10 +129,11 @@ That is consistency with the card, not secrecy — the stream already ships `squ
 **Late join** — joining a room whose game is already `live`. The joiner is dealt a card from the
 deck already in play, not a fresh draw (`apps/api/src/games/late-join.ts`).
 
-**Inherited mark** — a mark on a late joiner's card for a call made *before* they joined. It counts
-towards the standings but towards no win of theirs (`claimableSquares` gates on `joinSeq`), and it
-renders grey rather than green — so a line that was already complete at join reads as something to
-look at rather than something to claim.
+**Inherited mark** — a live mark on the current card for a call made before its current claim
+boundary, whether that boundary came from joining or re-rolling. It counts towards the standings
+but towards no win (`claimableSquares` gates on `claimBoundarySeq`), and it renders grey rather than
+green — so a line already complete at the boundary reads as something to look at rather than
+something to claim.
 
 ## The two layouts
 

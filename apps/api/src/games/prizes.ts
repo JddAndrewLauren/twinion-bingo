@@ -40,7 +40,7 @@ export type TimelineEntry = {
 export type Hand = {
   playerId: string;
   name: string;
-  joinSeq: number;
+  claimBoundarySeq: number;
   squareIds: string[];
 };
 
@@ -83,7 +83,7 @@ export async function settleWinLadder(
   const counting = new Map(
     hands.map((hand) => [
       hand.playerId,
-      claimableSquares(hand.squareIds, calls, hand.joinSeq),
+      claimableSquares(hand.squareIds, calls, hand.claimBoundarySeq),
     ]),
   );
 
@@ -124,17 +124,25 @@ export async function settleWinLadder(
 
 /** Every card in the game, with the player it was dealt to. */
 export async function readHands(db: Db | Tx, gameId: string): Promise<Hand[]> {
-  return db
+  const rows = await db
     .select({
       playerId: players.id,
       name: players.name,
-      joinSeq: players.joinSeq,
+      playerJoinSeq: players.joinSeq,
+      latestRerollSeq: cards.latestRerollSeq,
       squareIds: cards.squareIds,
     })
     .from(cards)
     .innerJoin(players, eq(players.id, cards.playerId))
     .where(eq(cards.gameId, gameId))
     .orderBy(asc(players.joinSeq));
+
+  return rows.map((row) => ({
+    playerId: row.playerId,
+    name: row.name,
+    claimBoundarySeq: Number(row.latestRerollSeq ?? row.playerJoinSeq),
+    squareIds: row.squareIds,
+  }));
 }
 
 async function awardedKinds(
@@ -180,10 +188,10 @@ export async function readPrizes(
 
 /**
  * Standings by raw mark count (D5) — every mark on the card, including any the
- * room called before a late joiner arrived. That is deliberately not the gated
- * count the ladder uses: the gate exists so nobody *claims* a line they did not
- * watch for, while the standings are the plain "how much of your card came up"
- * number, and applying the gate to both would punish a latecomer twice.
+ * room called before a player joined or re-rolled. That is deliberately not the
+ * gated count the ladder uses: the gate exists so nobody *claims* a line they did
+ * not watch for, while the standings are the plain "how much of your card came
+ * up" number, and applying the gate to both would punish the player twice.
  *
  * Ties are left tied and ordered by join order, because a tie-break would be an
  * answer to a question D5 does not ask.

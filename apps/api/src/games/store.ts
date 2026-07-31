@@ -10,9 +10,10 @@ import {
   claimableSquares,
   liveCallFor,
   liveCalls,
+  markedSquares,
   type Mark,
 } from './calls.js';
-import { composeDeck, dealCard } from './deck.js';
+import { composeDeck, dealCard, deckSquares } from './deck.js';
 import { poolFor } from './pools.js';
 import {
   readHands,
@@ -77,6 +78,27 @@ export class GameNotLive extends Error {
   constructor(state: string) {
     super(`this game is ${state}, not live`);
     this.name = 'GameNotLive';
+  }
+}
+
+export class CardNotFound extends Error {
+  constructor() {
+    super('you have no card in this game');
+    this.name = 'CardNotFound';
+  }
+}
+
+export class CardMarked extends Error {
+  constructor() {
+    super('your card has a live mark');
+    this.name = 'CardMarked';
+  }
+}
+
+export class NoDifferentCard extends Error {
+  constructor() {
+    super('no different card could be dealt');
+    this.name = 'NoDifferentCard';
   }
 }
 
@@ -147,11 +169,11 @@ export type GameView = {
   marks: Mark[];
   /**
    * The square ids in `marks` this player cannot claim with: calls that landed
-   * before they joined. Empty for anyone who was in the room when the game
-   * started, which is everybody in the ordinary case.
+   * before their current claim boundary. Empty for a player whose current card
+   * has no inherited marks.
    *
-   * It is sent so the card can grey them. A line already complete when a late
-   * joiner arrived is theirs to look at and not to win with, and a cell that
+   * It is sent so the card can grey them. A line already complete when a player
+   * joined or re-rolled is theirs to look at and not to win with, and a cell that
    * looked exactly like an earned one would make that rule arrive as a surprise
    * at the moment the prize went elsewhere.
    */
@@ -290,7 +312,7 @@ export async function startGame(
       dealt.map((hand) => ({
         playerId: hand.playerId,
         name: roster.find((player) => player.id === hand.playerId)!.name,
-        joinSeq: 0,
+        claimBoundarySeq: 0,
         squareIds: hand.squareIds,
       })),
       [],
@@ -373,14 +395,14 @@ export async function readGame(
           .filter((mark): mark is Mark => mark !== undefined);
 
   /**
-   * Win detection counts only calls at or after this player's `join_seq`, so a
-   * mark they walked in on is theirs to look at and not to win with. The card
-   * greys exactly this set.
+   * Win detection counts only calls at or after this player's claim boundary, so
+   * a mark they walked in on — or inherited through a re-roll — is theirs to
+   * look at and not to win with. The card greys exactly this set.
    */
   const claimable =
     hand === undefined
       ? new Set<string>()
-      : claimableSquares(hand.squareIds, calls, hand.joinSeq);
+      : claimableSquares(hand.squareIds, calls, hand.claimBoundarySeq);
 
   return {
     id: game.id,
@@ -405,6 +427,103 @@ export async function readGame(
     timeline: timeline(hands, calls, game.startedAt),
     streamedThroughSeq,
   };
+}
+
+const REROLL_ATTEMPTS = 200;
+
+/**
+ * Replaces one player's clean card. The game row lock makes the cleanliness
+ * check, candidate selection, event append, and card replacement one ordered
+ * operation with calls, so a concurrent call cannot authorize itself against a
+ * card that this operation has already replaced.
+ */
+export async function rerollCard(
+  db: Db,
+  pools: Map<string, Pool>,
+  gameId: string,
+  playerId: string,
+): Promise<GameView> {
+  const roomCode = await db.transaction(async (tx) => {
+    const [game] = await tx
+      .select({
+        roomCode: games.roomCode,
+        themeId: games.themeId,
+        deck: games.deck,
+        seed: games.seed,
+        state: games.state,
+      })
+      .from(games)
+      .where(eq(games.id, gameId))
+      .for('update');
+
+    if (game === undefined) throw new CardNotFound();
+    if (game.state !== 'live') throw new GameNotLive(game.state);
+
+    const [hand] = await tx
+      .select({
+        squareIds: cards.squareIds,
+        latestRerollSeq: cards.latestRerollSeq,
+        playerJoinSeq: players.joinSeq,
+      })
+      .from(cards)
+      .innerJoin(players, eq(players.id, cards.playerId))
+      .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+
+    if (hand === undefined) throw new CardNotFound();
+
+    const calls = await liveCalls(tx, gameId);
+    if (markedSquares(hand.squareIds, calls).length > 0) {
+      throw new CardMarked();
+    }
+
+    const pool = poolFor(pools, game.themeId);
+    const deck = deckSquares(pool, game.deck);
+    const claimBoundarySeq = Number(
+      hand.latestRerollSeq ?? hand.playerJoinSeq,
+    );
+    let replacement: string[] | undefined;
+
+    for (let attempt = 0; attempt < REROLL_ATTEMPTS; attempt += 1) {
+      const candidate = dealCard(
+        deck,
+        `${game.seed}:${playerId}:${claimBoundarySeq}:${attempt}`,
+        playerId,
+      );
+
+      if (!sameMembership(candidate, hand.squareIds)) {
+        replacement = candidate;
+        break;
+      }
+    }
+
+    if (replacement === undefined) throw new NoDifferentCard();
+
+    const [event] = await tx
+      .insert(roomEvents)
+      .values({
+        roomCode: game.roomCode,
+        gameId,
+        actorPlayerId: playerId,
+        kind: 'CARD_REROLLED',
+      })
+      .returning({ seq: roomEvents.seq });
+
+    if (event === undefined) {
+      throw new Error('appending CARD_REROLLED added no row');
+    }
+
+    await tx
+      .update(cards)
+      .set({ squareIds: replacement, latestRerollSeq: event.seq })
+      .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+
+    return game.roomCode;
+  });
+
+  const view = await readGame(db, pools, roomCode, playerId);
+  if (view === undefined) throw new Error('re-rolled game disappeared');
+
+  return view;
 }
 
 /**
@@ -438,32 +557,36 @@ export async function callSquare(
   playerId: string,
   squareId: string,
 ): Promise<CallResult> {
-  const [game] = await db
-    .select({
-      roomCode: games.roomCode,
-      deck: games.deck,
-      hostPlayerId: rooms.hostPlayerId,
-    })
-    .from(games)
-    .innerJoin(rooms, eq(rooms.code, games.roomCode))
-    .where(eq(games.id, gameId));
-
-  if (game === undefined) throw new NotOnYourCard(squareId);
-
-  if (playerId === game.hostPlayerId) {
-    if (!game.deck.includes(squareId)) throw new NotInDeck(squareId);
-  } else {
-    const [hand] = await db
-      .select({ squareIds: cards.squareIds })
-      .from(cards)
-      .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
-
-    if (hand === undefined) throw new NotOnYourCard(squareId);
-    if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
-  }
-
   return await db.transaction(async (tx) => {
     await assertLive(tx, gameId);
+
+    // Card scope is deliberately read only after the game lock. A concurrent
+    // re-roll may replace this player's card while a call is waiting, and the
+    // call must be authorized by whichever card the serialized order leaves in
+    // the database, never by the replaced card it read beforehand.
+    const [game] = await tx
+      .select({
+        roomCode: games.roomCode,
+        deck: games.deck,
+        hostPlayerId: rooms.hostPlayerId,
+      })
+      .from(games)
+      .innerJoin(rooms, eq(rooms.code, games.roomCode))
+      .where(eq(games.id, gameId));
+
+    if (game === undefined) throw new NotOnYourCard(squareId);
+
+    if (playerId === game.hostPlayerId) {
+      if (!game.deck.includes(squareId)) throw new NotInDeck(squareId);
+    } else {
+      const [hand] = await tx
+        .select({ squareIds: cards.squareIds })
+        .from(cards)
+        .where(and(eq(cards.gameId, gameId), eq(cards.playerId, playerId)));
+
+      if (hand === undefined) throw new NotOnYourCard(squareId);
+      if (!hand.squareIds.includes(squareId)) throw new NotOnYourCard(squareId);
+    }
 
     // After the lock, and this ordering is the whole fix (ADR-0004). A tap
     // arriving in the same tick waits on `assertLive` until the first one has
@@ -667,4 +790,16 @@ function describeCard(pool: Pool, squareIds: string[]): CardSquare[] {
       tier: square.tier,
     };
   });
+}
+
+function sameMembership(first: readonly string[], second: readonly string[]): boolean {
+  if (first.length !== second.length) return false;
+
+  const firstSet = new Set(first);
+  const secondSet = new Set(second);
+
+  return (
+    firstSet.size === secondSet.size &&
+    [...firstSet].every((id) => secondSet.has(id))
+  );
 }

@@ -73,6 +73,23 @@ export class DeckCompositionError extends Error {
  */
 export type Deck = PoolSquare[];
 
+/** Resolves a stored deck of ids back to the pool squares needed for dealing. */
+export function deckSquares(pool: Pool, deck: readonly string[]): Deck {
+  const byId = new Map(pool.squares.map((square) => [square.id, square]));
+
+  return deck.map((id) => {
+    const square = byId.get(id);
+
+    if (square === undefined) {
+      throw new Error(
+        `the live deck holds square "${id}", which theme ${pool.themeId} has no square for`,
+      );
+    }
+
+    return square;
+  });
+}
+
 /**
  * Draws the room's deck. Every card in the game is dealt from this one deck
  * rather than independently from the pool — 24 of 40 puts each square on ~3.6 of

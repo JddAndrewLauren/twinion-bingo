@@ -8,14 +8,18 @@ import { findPlayerByToken, RoomNotFound } from '../rooms/store.js';
 import { DeckCompositionError } from './deck.js';
 import {
   callSquare,
+  CardMarked,
+  CardNotFound,
   CallNotFound,
   GameAlreadyLive,
   GameNotLive,
+  NoDifferentCard,
   NotHost,
   NotInDeck,
   NotOnYourCard,
   NotYourCall,
   readGame,
+  rerollCard,
   retractCall,
   roomCodeForGame,
   startGame,
@@ -90,6 +94,40 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
     return game === undefined
       ? c.json({ error: 'this room has no game yet' }, 404)
       : c.json(game);
+  });
+
+  routes.post('/games/:id/card/reroll', async (c) => {
+    const id = c.req.param('id');
+    if (!UUID.test(id)) return c.json({ error: 'no game with that id' }, 404);
+
+    const code = await roomCodeForGame(db, id);
+    if (code === undefined) return c.json({ error: 'no game with that id' }, 404);
+
+    const token = bearerToken(c.req.header('authorization'));
+    const you =
+      token === undefined ? undefined : await findPlayerByToken(db, code, token);
+
+    if (you === undefined) {
+      return c.json({ error: 'a player token is required' }, 401);
+    }
+
+    try {
+      return c.json(await rerollCard(db, pools, id, you.id));
+    } catch (error) {
+      if (error instanceof CardNotFound) {
+        return c.json({ error: 'you have no card in this game' }, 404);
+      }
+      if (error instanceof CardMarked) {
+        return c.json({ error: 'your card has a live mark' }, 409);
+      }
+      if (error instanceof NoDifferentCard) {
+        return c.json({ error: 'no different card could be dealt' }, 409);
+      }
+      if (error instanceof GameNotLive) {
+        return c.json({ error: 'this game has finished' }, 409);
+      }
+      throw error;
+    }
   });
 
   /**
