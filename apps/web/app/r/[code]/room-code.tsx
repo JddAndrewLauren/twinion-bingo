@@ -15,6 +15,12 @@
  * `code` is always exactly four characters (`CODE_LENGTH` in `room-api.ts`'s
  * callers), so splitting on `[...code]` rather than assuming ASCII is a
  * precaution that costs nothing here.
+ *
+ * `text-2xl` is the *unskinned* size — the fallback every skin without a rule of
+ * its own still reads at. Pit Wall's own 38px/52px is in `globals.css`
+ * (`.skin-code span`), because it is the handoff's number for one skin and not a
+ * shared default; putting it here would make the other three inherit a size
+ * their own tables do not name.
  */
 export function RoomCode({ code }: { code: string }) {
   return (
@@ -23,7 +29,7 @@ export function RoomCode({ code }: { code: string }) {
         <span
           key={index}
           aria-hidden
-          className="flex flex-1 items-center justify-center rounded border border-rule text-2xl font-bold"
+          className="flex flex-1 items-center justify-center rounded-skin border border-rule text-2xl font-bold"
         >
           {character}
         </span>

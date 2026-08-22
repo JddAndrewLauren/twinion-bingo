@@ -699,7 +699,7 @@ export function RoomScreen({
                 itself, so "Your name" sits above the box (README's per-theme
                 description) rather than inside it.
               */}
-              <div className="skin-field rounded border border-rule bg-raised p-2">
+              <div className="skin-field rounded-skin border border-rule bg-raised p-2">
                 <input
                   id="join-name"
                   name="name"
@@ -711,16 +711,26 @@ export function RoomScreen({
                 />
               </div>
             </div>
+            {/*
+              `skin-action-primary` is the accent-fill hook, and it is *here*
+              rather than on `ACTION_BUTTON` deliberately. The handoff gives the
+              filled treatment to this screen's single primary action; no mock
+              puts an accent-filled button on the card screen (where red is the
+              free centre and the call banner's rule) or on the home screen,
+              whose two forms are co-equal and would end up with two competing
+              full-red primaries. `ACTION_BUTTON` still supplies the 44px
+              minimum, the border and the padding every submit button shares.
+            */}
             <button
               type="submit"
               disabled={joining || name.trim() === ''}
-              className={ACTION_BUTTON}
+              className={`${ACTION_BUTTON} skin-action-primary`}
             >
               {/*
                 "Enter room" rather than the handoff's literal "ENTER ROOM":
                 `lobby.gate.ts` and `test/room-screen.test.tsx` name this button
                 by its accessible text, and #104 keeps that text in sentence
-                case and lets `[data-skin='pitwall'] .action-button`'s
+                case and lets `[data-skin='pitwall'] .skin-action-primary`'s
                 `text-transform: uppercase` carry the visual, the same pattern
                 the roster's `HOST` tag uses — rather than baking upper case
                 into the DOM text every skin and every screen reader gets.
@@ -938,7 +948,7 @@ export function RoomScreen({
               // `min-h-11` is 44px, Apple's documented minimum. #12 shipped a
               // prototype whose own switcher was 24px tall and unreachable by
               // thumb, which is the kind of thing only a device finds.
-              className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+              className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
                 tab === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
               }`}
             >
@@ -1036,7 +1046,10 @@ export function RoomScreen({
                       promise is "a different 24", not 24 different squares. And it is
                       only the calls that land on the *new* card that arrive grey.
                     */
-                    <p id="reroll-consequence" className="text-sm text-muted">
+                    <p
+                      id="reroll-consequence"
+                      className="skin-note text-sm text-muted"
+                    >
                       A different 24 from the same deck. Any square already called
                       that lands on the new card arrives grey: it still counts in the
                       standings, but it can never win you a prize.
@@ -1059,7 +1072,7 @@ export function RoomScreen({
                 <button
                   type="button"
                   onClick={() => setSheetOpen(!sheetOpen)}
-                  className="min-h-11 rounded border border-amber-700 px-3 text-sm font-semibold text-amber-200"
+                  className="min-h-11 rounded-skin border border-amber-700 px-3 text-sm font-semibold text-amber-200"
                 >
                   {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
                 </button>
@@ -1121,7 +1134,7 @@ export function RoomScreen({
                   aria-selected={pane === which}
                   aria-controls={`pane-${which}`}
                   onClick={() => setPane(which)}
-                  className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+                  className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
                     pane === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
                   }`}
                 >
@@ -1229,7 +1242,7 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(undo)}
-                className="min-h-11 shrink-0 rounded border border-emerald-200 px-3 font-semibold"
+                className="min-h-11 shrink-0 rounded-skin border border-emerald-200 px-3 font-semibold"
               >
                 Undo
               </button>
@@ -1248,7 +1261,7 @@ export function RoomScreen({
             aria-label="Take back this call"
             className="fixed inset-0 flex items-center justify-center bg-black/70 p-4"
           >
-            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-rule bg-raised p-4">
+            <div className="flex w-full max-w-xs flex-col gap-3 rounded-skin border border-rule bg-raised p-4">
               <p>
                 Take back {labelFor(game, confirming.squareId)}? It unmarks for
                 everyone holding it.
@@ -1263,14 +1276,14 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(confirming)}
-                className="min-h-11 rounded border border-rule-strong font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Take it back
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-11 rounded border border-rule-strong font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Keep it
               </button>

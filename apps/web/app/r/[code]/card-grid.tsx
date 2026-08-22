@@ -59,7 +59,7 @@ const LONG_PRESS_MS = 400;
  * hides the cell and cancels the gesture.
  */
 const CELL =
-  'flex h-full w-full touch-manipulation select-none items-center justify-center overflow-hidden rounded border p-1 text-center leading-tight';
+  'flex h-full w-full touch-manipulation select-none items-center justify-center overflow-hidden rounded-skin border p-1 text-center leading-tight';
 
 /**
  * Does the label's *rendered* text leave the cell's content box?

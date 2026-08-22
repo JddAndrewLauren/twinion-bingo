@@ -275,32 +275,62 @@ body {
  * (`.skin-code`, `.skin-field`, `.skin-cell`, `.skin-roster`, `.skin-progress-*`,
  * `.skin-banner*`) rather than a per-skin component.
  */
+/*
+ * **The UI face is set on the skin root, not per component.** The handoff's own
+ * pitwall screens put `font-family:'JetBrains Mono',ui-monospace,monospace` on
+ * the *whole* screen container — join and card alike — and the README defines
+ * Pit Wall as "monospace data type". Setting it on six selectors (which is what
+ * this block did at review round 1) left the headings, the field labels, the
+ * slim bar, "looking for", the dialogs and the entire home screen in the default
+ * sans on the default skin.
+ *
+ * `[data-skin]` is on `<html>` (`layout.tsx`), so this inherits everywhere. It
+ * does *not* reach the card's square labels: `card-grid.tsx` puts
+ * `cardFont.className` on the grid itself, and a descendant's own declaration
+ * beats an inherited value regardless of specificity — which is exactly how the
+ * handoff draws it (the grid and the "looking for" label are the two places its
+ * pitwall screens switch to Roboto Condensed).
+ */
 [data-skin='pitwall'] {
   --skin-font-ui: var(--font-jetbrains-mono), ui-monospace, monospace;
-}
-
-/* Room code: four boxed characters (README's "Room code treatment per theme"). */
-[data-skin='pitwall'] .skin-code {
+  /* The handoff's square-label face, reachable from a rule rather than only from
+     `card-font.ts` — "looking for" asks for it too. */
+  --skin-font-label: var(--font-roboto-condensed), sans-serif;
   font-family: var(--skin-font-ui);
 }
+
+/*
+ * Room code: four boxed characters (README's "Room code treatment per theme").
+ * `font-size` is the handoff's own 38px phone / 52px iPad, on both of which the
+ * README and `Bingo Screens.dc.html` agree. The corner comes from
+ * `rounded-skin` at the call site now (`--skin-radius: 0`), so there is no
+ * `border-radius` here.
+ */
 [data-skin='pitwall'] .skin-code span {
   aspect-ratio: 1 / 1.15;
   background-color: var(--skin-raised);
-  border-color: rgba(255, 255, 255, 0.14);
-  border-radius: 0;
+  border-color: var(--skin-rule-strong);
+  font-size: 38px;
   font-weight: 700;
 }
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-code span {
+    font-size: 52px;
+  }
+}
 
-/* Name field: ruled box with the red caret bar at the right edge. */
+/*
+ * Name field: ruled box with the red caret bar at the right edge. The handoff's
+ * padding (14px) and text size (17px) rather than the unskinned `p-2`/16px —
+ * globals.css is unlayered, so these beat the utilities without `!important`.
+ */
 [data-skin='pitwall'] .skin-field {
   position: relative;
   background-color: var(--skin-raised);
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: var(--skin-rule-strong);
   border-bottom: 2px solid var(--skin-accent);
-  border-radius: 0;
-}
-[data-skin='pitwall'] .skin-field input {
-  font-family: var(--skin-font-ui);
+  padding: 14px;
+  font-size: 17px;
 }
 [data-skin='pitwall'] .skin-field::after {
   content: '';
@@ -313,34 +343,39 @@ body {
   transform: translateY(-50%);
 }
 
-/* Primary action — every `ACTION_BUTTON` user, per this issue's "route it
-   through ACTION_BUTTON rather than around it". */
-[data-skin='pitwall'] .action-button {
-  font-family: var(--skin-font-ui);
+/*
+ * The join screen's primary action — **that one button**, not every
+ * `ACTION_BUTTON` user. Round 1 hung this on a bare `action-button` hook carried
+ * by the shared constant, which also red-filled the home screen's two co-equal
+ * submits and the card screen's *Re-roll card* and *Start game*; no mock in
+ * `docs/design/` shows an accent-filled button on either screen, and on the card
+ * screen red is spoken for by the free centre and the banner's top rule. So the
+ * class sits at the single call site in `room-screen.tsx` and the shared
+ * constant carries only the 44px minimum it always did.
+ */
+[data-skin='pitwall'] .skin-action-primary {
   background-color: var(--skin-accent);
   border: none;
-  border-radius: 0;
   color: var(--skin-surface);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-[data-skin='pitwall'] .action-button:disabled {
+[data-skin='pitwall'] .skin-action-primary:disabled {
   background-color: var(--skin-raised);
   color: var(--skin-muted-soft);
 }
 
-/* Roster: indexed rows, a cyan HOST/YOU tag, hairline row separators. */
-[data-skin='pitwall'] .skin-roster {
-  font-family: var(--skin-font-ui);
-}
+/* Roster: indexed rows, a cyan HOST/YOU tag, hairline row separators. The 9px
+   vertical padding is the handoff's own; the unskinned class is `py-1.5`. */
 [data-skin='pitwall'] .skin-roster-heading {
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 [data-skin='pitwall'] .skin-roster li {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--skin-rule-soft);
+  padding-block: 9px;
 }
 [data-skin='pitwall'] .skin-roster-index {
   opacity: 0.35;
@@ -369,9 +404,71 @@ body {
     height: 4px;
   }
 }
+/*
+ * The numeral is the *iPad* half of this region, and only that.
+ * `Bingo Screens.dc.html` — which wins over the README — draws the phone card
+ * screen as the 12-segment bar alone, with the count carried by the slim bar's
+ * own `8/24 · L34`; the large numeral (34px/700) appears only on the desktop
+ * screen's left column, where there is a column to put it in. Reading "a large
+ * numeral below" as unconditional put a second copy of the header's own number
+ * on a phone and cost 40px of a 667px viewport, which is what tipped the re-roll
+ * consequence off the bottom of `phone-small`.
+ *
+ * `display: none` costs nothing to a reader: the `<p>` is already `aria-hidden`,
+ * and the count is on the `role="progressbar"` above it as both `aria-label` and
+ * `aria-valuenow`.
+ */
 [data-skin='pitwall'] .skin-progress-number {
-  font-family: var(--skin-font-ui);
+  display: none;
+}
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-progress-number {
+    display: block;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+/*
+ * Secondary explanatory prose sitting beside a control — Pit Wall's own body
+ * size, 12px, not the app's default 14px.
+ *
+ * This is the one place the UI face has a *measurable* consequence rather than
+ * only a visual one. JetBrains Mono is materially wider than the default sans at
+ * the same size, which is why the handoff's pitwall screens set body copy at
+ * 10-12px where this app's unskinned default is 14-16px. At 14px monospace the
+ * re-roll consequence gains a line and pushes itself 8px off the bottom of
+ * `phone-small` (`room.gate.ts`'s "states the consequence without clipping a
+ * line of it"). 12px is the handoff's number for exactly this kind of copy, and
+ * fixing the *type scale* is the honest fix; trimming the paragraph or capping
+ * the column would be fixing the measurement instead.
+ */
+[data-skin='pitwall'] .skin-note {
+  font-size: 12px;
+}
+
+/*
+ * "Looking for" (one of this issue's *Regions to build*, and missed entirely at
+ * review round 1): hairline separators, a bold condensed label over a smaller,
+ * dimmer description. The separators the component already draws are
+ * `divide-rule-soft`/`border-rule-soft`, which is this skin's own `.06` hairline,
+ * so only the type pair needs saying here.
+ */
+[data-skin='pitwall'] .skin-looking {
+  border-color: var(--skin-rule);
+}
+[data-skin='pitwall'] .skin-looking-label {
+  font-family: var(--skin-font-label);
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+[data-skin='pitwall'] .skin-looking-desc {
+  color: var(--skin-muted-soft);
+  font-size: 10.5px;
+  line-height: 1.35;
 }
 
 /*
@@ -387,11 +484,21 @@ body {
  * splitting its text into a label span plus a name span, which the handoff's
  * own "CALLED · 2s AGO" plus a separate square name would otherwise call for.
  */
+/*
+ * `border-top` in full rather than `border-color` alone: the undo row carries a
+ * `border-t` utility and so picked up a bare colour, but the spotter-credit
+ * `<p role="status">` has no border utility at all — so the handoff's red top
+ * rule was simply absent from half the banner, including the very element the
+ * gate measures.
+ *
+ * No `!important`: globals.css sits outside Tailwind's `@layer utilities`, so
+ * every rule in this block already beats a utility on the same element. The three
+ * that were here would have fought slices 4-6 for nothing.
+ */
 [data-skin='pitwall'] .skin-banner {
-  background-color: var(--skin-elevated) !important;
-  border-color: var(--skin-accent) !important;
-  color: var(--skin-ink) !important;
-  font-family: var(--skin-font-ui);
+  background-color: var(--skin-elevated);
+  border-top: 1px solid var(--skin-accent);
+  color: var(--skin-ink);
 }
 
 /*
@@ -404,7 +511,6 @@ body {
  * the single utility classes they replace.
  */
 [data-skin='pitwall'] .skin-cell {
-  border-radius: 0;
   transition:
     background-color 140ms ease-out,
     border-color 140ms ease-out;
@@ -416,17 +522,35 @@ body {
 }
 /*
  * Inherited — invented for #104, since the mocks show only base/marked/free.
- * A dulled *base* cell rather than a claim: barely lighter than the raised
- * surface (`rgba(255,255,255,.06)`, the same wash as a row separator) with the
- * field-border tone (`.14`) and the label dropped to `--skin-muted-soft`. It
- * reads as neither the crisp, higher-contrast base cell nor the cyan earned
- * one — "a line already complete at the boundary must not look claimable"
- * (`CONTEXT.md`), read here as "must not look like an open cell either".
+ *
+ * **A materially heavier white wash, and the label left at full ink.** Round 1
+ * used `rgba(255,255,255,.06)` with the label dimmed to `--skin-muted-soft`, and
+ * that was two mistakes in one rule. The fill composited over `--skin-surface` to
+ * `rgb(25,25,26)` against an unmarked cell's `rgb(18,18,20)` — CIE ΔE 3.3, at the
+ * threshold of a just-noticeable difference for a patch this size, so the whole
+ * three-way distinction rested on the label; and that label then sat at 3.35:1 on
+ * its own cell at 11px, under AA, in an app that runs a `/legibility` gate for
+ * exactly this.
+ *
+ * `.20` composites to `rgb(59,59,60)`: ΔE 19.4 from unmarked and 16.6 from
+ * earned, both at or above the ΔE 17.1 that separates earned from unmarked — the
+ * step the mocks themselves ship, and therefore the honest yardstick. With the
+ * fill carrying the state, the label has no work to do and stays at full ink
+ * (9.14:1), so nothing here is legible only by being distinguishable.
+ *
+ * Why *lighter grey* and not a dimmer cyan: cyan means "you called it" in this
+ * skin (the marked fill, the `HOST` tag, the progress bar), and an inherited mark
+ * is precisely the one a late joiner did *not* call. A cell filled in flat grey
+ * reads as already answered rather than as claimable — "a line already complete
+ * at the boundary must not look claimable" (`CONTEXT.md`) — while staying inside
+ * Pit Wall's own neutral rule family. `skin-pitwall.gate.ts` measures all three
+ * pairwise, composited to opaque sRGB, so this is a number the gate holds rather
+ * than a claim in a comment.
  */
 [data-skin='pitwall'] .skin-cell[data-mark='inherited'] {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: var(--skin-muted-soft);
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--skin-ink);
 }
 /* Hover (pointer only, README's *Hover (desktop)*): border brightens. */
 @media (hover: hover) and (pointer: fine) {

@@ -15,6 +15,12 @@
  * fixed at 12 rather than derived from `total`, because the handoff's bar is a
  * coarse readout, not one tick per square — a 24-segment bar over 24 squares
  * would just be the grid again.
+ *
+ * `role="progressbar"` with the three `aria-value*` attributes, rather than
+ * `role="img"`: the 12 segments are a coarse *rendering* of `marks/total`, and a
+ * progress bar is what a reader is actually being handed. The `aria-label` stays
+ * the same sentence either way, so it is still the thing the gate and the unit
+ * tests query on.
  */
 const SEGMENTS = 12;
 
@@ -23,8 +29,11 @@ export function ProgressReadout({ marks, total }: { marks: number; total: number
 
   return (
     <div
-      role="img"
+      role="progressbar"
       aria-label={`${marks} of ${total} marked`}
+      aria-valuenow={marks}
+      aria-valuemin={0}
+      aria-valuemax={total}
       className="skin-progress flex flex-col gap-1"
     >
       <div className="skin-progress-track flex">

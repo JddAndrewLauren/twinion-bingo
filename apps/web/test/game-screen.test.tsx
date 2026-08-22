@@ -679,7 +679,7 @@ describe('the progress readout', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     expect(
-      await screen.findByRole('img', { name: '2 of 24 marked' }),
+      await screen.findByRole('progressbar', { name: '2 of 24 marked' }),
     ).toBeDefined();
   });
 
@@ -689,7 +689,7 @@ describe('the progress readout', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     expect(
-      await screen.findByRole('img', { name: '0 of 24 marked' }),
+      await screen.findByRole('progressbar', { name: '0 of 24 marked' }),
     ).toBeDefined();
   });
 });
