@@ -64,7 +64,7 @@
       "id": "driver_blend_line",
       "entityType": "driver",
       "label": "{driver} blend line penalty",
-      "description": "{driver} is penalised for crossing the blend line entering pit lane, a tight call on a street circuit.",
+      "description": "{driver} is penalised for crossing the blend line on the way out of the pits, before the merge point.",
       "exclusivityGroup": "blend_line:{driver}",
       "tierByEntityTier": {
         "contender": "medium",
@@ -149,7 +149,7 @@
       "entityType": "driver",
       "label": "{driver} wins the shootout",
       "description": "{driver} leads the field to the checkered flag on a two-lap shootout restart.",
-      "exclusivityGroup": "shootout_winner",
+      "exclusivityGroup": "race_winner",
       "tierByEntityTier": {
         "contender": "rare",
         "midfield": "rare",

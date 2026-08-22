@@ -81,6 +81,9 @@ const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = 
   start: {
     403: 'Only the host can start the game.',
     409: 'This room already has a game.',
+    // #76's own example: the theme's pool cannot fill a deck. Nothing the host
+    // can do about it, and the diagnosis that says why is in the console.
+    503: 'This theme cannot fill a game right now.',
   },
   call: {
     403: 'That square is not yours to call.',

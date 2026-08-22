@@ -324,7 +324,11 @@ describe('starting a game', () => {
     expect(within(grid).getByText('Square 0')).toBeDefined();
   });
 
-  it('says so when the API will not start a game', async () => {
+  /**
+   * #76's motivating case: the deck-composition 503. The player gets a sentence
+   * that says the theme is the problem, not the generic "could not start".
+   */
+  it('reads a 503 on start as the theme being unable to fill a game', async () => {
     stubRoom({ you: host });
     vi.stubGlobal(
       'fetch',
@@ -345,7 +349,10 @@ describe('starting a game', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Start game' }));
 
-    expect(await screen.findByRole('alert')).toBeDefined();
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain(
+      'This theme cannot fill a game right now.',
+    );
   });
 
   /**
