@@ -17,6 +17,19 @@ async function expectThemeButton(page: Page): Promise<void> {
 }
 
 /**
+ * #108: the die beside it, on these same two screens, disabled rather than
+ * hidden — there is no card here to re-roll, but the handoff draws the die on
+ * every header ("join and card alike"), so it stays present and legible as
+ * unavailable rather than absent.
+ */
+async function expectDisabledDie(page: Page): Promise<void> {
+  const die = page.getByRole('button', { name: 'Re-roll card' });
+  await expect(die).toBeVisible();
+  await expect(die).toBeDisabled();
+  await expectThumbSized(die.locator('[data-hit-expand]'), "the die's hit element");
+}
+
+/**
  * Everything before the deal, which `docs/SURFACES.md` has carried as "signed off by
  * eye" since #4 — the criteria that made it write that file in the first place.
  *
@@ -43,6 +56,7 @@ test.describe('joining', () => {
     await expectThumbSized(submit, 'the Join button');
 
     await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 });
@@ -63,6 +77,7 @@ test.describe('the lobby', () => {
     await expect(rows.filter({ hasText: '— you' })).toHaveCount(1);
     await expectNoRowClipped(rows, 'the roster');
     await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 
@@ -77,6 +92,7 @@ test.describe('the lobby', () => {
     await expect(start).toBeInViewport();
     await expectThumbSized(start, 'the Start game button');
     await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 

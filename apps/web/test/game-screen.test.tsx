@@ -1739,8 +1739,12 @@ describe('re-rolling a clean card', () => {
     expect(screen.getByRole('button', { name: 'Square 0' })).toBeDefined();
   });
 
-  /** No game, no card, nothing to re-roll — the lobby half of `canReroll`. */
-  it('offers no re-roll in the lobby', async () => {
+  /**
+   * #108: the die is on every header, "join and card alike" per the handoff, so
+   * the lobby no longer omits it the way #112's below-the-grid button did — it
+   * is disabled instead, since there is no card yet to re-roll.
+   */
+  it('offers the die disabled in the lobby, where there is no card yet', async () => {
     stubRoom({ you: guest });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -1748,7 +1752,8 @@ describe('re-rolling a clean card', () => {
     await screen.findByText('Players');
     expect(screen.queryByLabelText('Your card')).toBeNull();
 
-    expect(rerollButton()).toBeNull();
+    expect(rerollButton()).not.toBeNull();
+    expect((rerollButton() as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('withdraws the offer once a call has marked the card', async () => {

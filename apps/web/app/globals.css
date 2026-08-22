@@ -222,3 +222,37 @@ body {
 .skin-glyph-spin {
   animation: skin-glyph-rotate 180ms linear;
 }
+
+/*
+ * The dice's colour (`die-button.tsx`), per docs/design/README.md's "Header
+ * controls" section — chosen per **surface**, not per skin, so it stays scoped
+ * to `[data-die-surface]` rather than joining the token layer above. One
+ * literal value per skin, matching the muted label text beside the die in that
+ * bar. These are the handoff's real numbers for the surfaces that exist today —
+ * see the note below the Confetti rule for the one surface the handoff draws
+ * and this build does not have yet.
+ */
+[data-skin='pitwall'] svg[data-die-surface] {
+  color: rgba(232, 232, 234, 0.6);
+}
+[data-skin='slipstream'] svg[data-die-surface] {
+  color: rgba(255, 255, 255, 0.55);
+}
+[data-skin='scorecard'] svg[data-die-surface] {
+  color: #2b2118;
+}
+[data-skin='confetti'] svg[data-die-surface] {
+  color: rgba(32, 24, 15, 0.55);
+}
+/*
+ * Confetti's second value, `rgba(255, 255, 255, 0.85)`, belongs to the blue
+ * `#2f6bff` card header the handoff draws — and no component paints that
+ * background yet (#106, "Skins, slice 5: Confetti", is what lands it). The rule is
+ * "match the muted label beside it on that same bar", so the surface-correct
+ * value for the game header *as it exists today* is the cream bar's value
+ * above, which is what the die therefore keeps: white-on-cream is precisely
+ * the invisible die this rule exists to prevent. #106 adds the
+ * `svg[data-die-surface='card']` override in the same commit as the blue
+ * header; `data-die-surface` is already on the `<svg>` so that is a one-rule
+ * change, and `die-button.tsx`'s `surface` prop already distinguishes the two.
+ */

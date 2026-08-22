@@ -3,6 +3,7 @@
 import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
 import { ACTION_BUTTON } from '../../action-button';
+import { DieButton } from '../../die-button';
 import { readToken, storeToken } from '../../player-token';
 import { DEFAULT_SKIN, type Skin } from '../../skin';
 import { SkinButton } from '../../skin-button';
@@ -328,6 +329,14 @@ export function RoomScreen({
    */
   const celebrated = useRef(new Set<string>());
 
+  /**
+   * #108: the Theme button of whichever header is on screen, so the die beside
+   * it can measure and match its height. One ref rather than one per header —
+   * the three headers are mutually exclusive branches of this same render, so
+   * only one `SkinButton` is ever mounted against it at a time.
+   */
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -647,7 +656,21 @@ export function RoomScreen({
         */}
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-2xl font-semibold">Join room {code}</h1>
-          <SkinButton initialSkin={initialSkin} />
+          {/*
+            #108: the die belongs on every header per the handoff ("join and
+            card alike"), but there is no card to re-roll here — disabled with
+            no reason text, the same convention a plain `disabled` attribute
+            already carries on every other button in this screen.
+          */}
+          <div className="flex items-stretch gap-[10px]">
+            <DieButton
+              disabled
+              pending={false}
+              surface="join"
+              matchHeightOf={themeButtonRef}
+            />
+            <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
+          </div>
         </div>
         <label className="flex flex-col gap-1">
           Your name
@@ -796,36 +819,50 @@ export function RoomScreen({
             It is also the tightest row in the app, and this group is what made it
             tight: `px-2` and `gap-2` here rather than `px-3`/`gap-3` are what buy it
             back, same as before #103. What changed is what has to fit beside the
-            stats line — the room code (~82px), a reserved dice slot and the Theme
-            button (~44px each) and Share (~55px) — which is why the stats line
-            itself had to come down from ~200px to under ~110px rather than the
-            other way around. `room.gate.ts` still counts the lines.
+            stats line — the room code (~82px), the die and the Theme button, and
+            Share (~55px) — which is why the stats line itself had to come down
+            from ~200px to under ~110px rather than the other way around. The two
+            controls lay out at their *visible* widths (#108 measures the die at
+            ~26px square, the Theme button at ~60px), each with a 44px hit element
+            that adds no layout width; the `gap-[10px]` rather than `gap-2` is what
+            keeps those two hit boxes from overlapping. `room.gate.ts` still counts
+            the lines, and now measures both.
 
             The row also went `items-baseline` -> `items-center`: the control group
-            below is `items-stretch` so the dice slot's `aspect-square` can track the
-            Theme button's height, and a baseline-aligned parent gives a stretched
-            child nothing to align to. `legibility/page.tsx`, which stands in for this
-            header, was moved with it so the two do not drift.
+            below is `items-stretch` for the Theme button's own box, and a
+            baseline-aligned parent gives a stretched child nothing to align to.
+            `legibility/page.tsx`, which stands in for this header, was moved with
+            it so the two do not drift.
           */}
-          <div className="flex shrink-0 items-stretch gap-2">
+          <div className="flex shrink-0 items-stretch gap-[10px]">
             {/*
-              The dice's reserved slot (#103's brief: "reserve the dice's slot but
-              do not build the dice" — slice 7 owns the die itself). A real,
-              disabled button rather than a bare gap, so the width this issue's
-              arithmetic depends on is enforced by the layout rather than by a
-              convention slice 7 could forget. `aspect-square` against
-              `items-stretch` on this row makes its side track the Theme button's
-              own box height automatically — the design handoff's own "a
-              stretch-based flex row also works" — so neither button has a
-              hardcoded size for slice 7 to invalidate.
+              #108: the real die, in the slot #103 reserved. It carries no
+              hardcoded side, but not by the CSS route #103's placeholder used:
+              `aspect-square` against `items-stretch` measures a 0px width in
+              the WebKit build this project gates against, so `die-button.tsx`
+              sets its box in pixels from a `ResizeObserver` on the Theme button
+              beside it instead. See that file's doc block for the measurement.
+
+              Mounted only while `canReroll` holds *and* the deck sheet is down,
+              exactly like #112's button it replaces: both of those are #112's
+              decisions, kept rather than reopened, per this issue's brief. A
+              card with a mark does not get the offer back later, so a
+              disabled-forever die would be furniture; and behind the sheet there
+              is no card on screen to re-roll — which is also what keeps the
+              `aria-describedby` target below in the document whenever the die
+              is offered.
             */}
-            <button
-              type="button"
-              disabled
-              aria-label="Dice"
-              className="aspect-square rounded-skin border border-rule-soft opacity-50"
-            />
-            <SkinButton initialSkin={initialSkin} />
+            {canReroll && !sheetOpen && (
+              <DieButton
+                onClick={() => void reroll()}
+                disabled={rerolling}
+                pending={rerolling}
+                surface="card"
+                describedById="reroll-consequence"
+                matchHeightOf={themeButtonRef}
+              />
+            )}
+            <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
           </div>
           <ShareRoom code={code} shareLink={shareLink} />
         </header>
@@ -900,14 +937,15 @@ export function RoomScreen({
               Capping on `dvh` keeps the whole card on screen instead of letting it
               run off the bottom of its own column.
 
-              `12rem` rather than `8rem` since #87: the re-roll slot beneath the grid
-              is reserved permanently, so its 56px (44 plus the `gap-3`) is chrome
-              at every moment of a game rather than only while the offer stands.
-              At all four matrix viewports this is a no-op — width binds at each of
-              them — and it only does work on a rotated phone, which is the short
-              viewport the cap exists for.
+              Back to `8rem` since #108: #87/#112's re-roll slot beneath the grid
+              was reserved permanently, which is what pushed this to `12rem`, but
+              #108 moves the control into the header — there is no longer a
+              reserved row in this column for the cap to hold room for. At all
+              four matrix viewports this is a no-op — width binds at each of
+              them — and it only ever did work on a rotated phone, which is the
+              short viewport the cap exists for.
             */}
-            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_12rem)] flex-col gap-3">
+            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_8rem)] flex-col gap-3">
               {deck !== null && sheetOpen ? (
                 <DeckSheet
                   deck={deck}
@@ -928,33 +966,21 @@ export function RoomScreen({
                     onPeek={setPeek}
                     finished={finished}
                   />
-                  {/*
-                    Directly beneath the card it re-rolls (#87), and reserved whether
-                    or not the offer stands, so nothing below jumps when the first
-                    call marks the card and withdraws the button. Hidden rather than
-                    shown-disabled because a card with a mark is not one that becomes
-                    re-rollable again later: the offer is over, and a permanently dead
-                    button is furniture.
-
-                    Immediate, with no confirmation step — #87 asks for the action to
-                    be one tap. The consequence ADR-0006 attaches to it is stated
-                    beside the button instead of gating it.
-                  */}
-                  <div className="min-h-11">
-                    {canReroll && (
-                      <button
-                        type="button"
-                        onClick={() => void reroll()}
-                        disabled={rerolling}
-                        aria-describedby="reroll-consequence"
-                        className={ACTION_BUTTON}
-                      >
-                        {rerolling ? 'Re-rolling…' : 'Re-roll card'}
-                      </button>
-                    )}
-                  </div>
                   {canReroll && (
                     /*
+                      #108: the button that used to sit here (and its permanently
+                      reserved `min-h-11` slot) moved into the header as the die —
+                      the design handoff's placement, and the slot has nothing left
+                      to reserve now that the control is gone from this column.
+
+                      The consequence stays here rather than following the button
+                      into the header: there is "~6px of slack" up there for a
+                      whole sentence, and this column has room. `aria-describedby`
+                      on the header's die button still points at this id — that
+                      attribute is a document-wide id reference, not a DOM-adjacency
+                      one, so it reaches here exactly as it reached the button
+                      immediately above it before.
+
                       Careful not to over-claim in either direction. ADR-0006 rejects
                       only a replacement whose membership set is unchanged, so the
                       promise is "a different 24", not 24 different squares. And it is
@@ -991,7 +1017,17 @@ export function RoomScreen({
               {callFailed !== null && <p role="alert">{callFailed}</p>}
               {retractFailed !== null && <p role="alert">{retractFailed}</p>}
               {rerollFailed !== null && <p role="alert">{rerollFailed}</p>}
-              {rerolled && <p role="status">New card dealt.</p>}
+              {/*
+                #108: the die is icon-only, so this is now the only way its
+                success state reaches a screen reader — `sr-only` rather than
+                dropped, since the acceptance criterion is "announced without
+                visible text", not "not announced".
+              */}
+              {rerolled && (
+                <p role="status" className="sr-only">
+                  New card dealt.
+                </p>
+              )}
             </div>
           </section>
 
@@ -1200,7 +1236,16 @@ export function RoomScreen({
       {/* #103's brand bar — same reasoning as the join form's above. */}
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Room {code}</h1>
-        <SkinButton initialSkin={initialSkin} />
+        {/* #108: same "disabled, no card yet" reasoning as the join form's die. */}
+        <div className="flex items-stretch gap-[10px]">
+          <DieButton
+            disabled
+            pending={false}
+            surface="join"
+            matchHeightOf={themeButtonRef}
+          />
+          <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
+        </div>
       </div>
       <ShareRoom code={code} shareLink={shareLink} />
       <h2 className="font-semibold">Players</h2>
