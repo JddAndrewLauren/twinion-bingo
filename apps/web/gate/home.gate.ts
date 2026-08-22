@@ -86,6 +86,21 @@ test.describe('the home screen', () => {
     await expectNoHorizontalScroll(page);
   });
 
+  /**
+   * #103: the Theme button mounts here too, beside the page's own `<h1>` — the
+   * first of the four surfaces its acceptance criteria name.
+   */
+  test('offers the Theme button, thumb-sized, without pushing anything off screen', async ({
+    page,
+  }) => {
+    await openHome(page);
+
+    const theme = page.getByRole('button', { name: 'Theme' });
+    await expect(theme).toBeVisible();
+    await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
+    await expectNoHorizontalScroll(page);
+  });
+
   test('does not shift the layout when the health line settles on success', async ({ page }) => {
     const { resolveHealth } = await openHome(page, { holdHealth: true, healthOutcome: 'ok' });
 

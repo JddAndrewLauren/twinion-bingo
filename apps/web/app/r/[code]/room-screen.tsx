@@ -4,6 +4,8 @@ import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
 import { ACTION_BUTTON } from '../../action-button';
 import { readToken, storeToken } from '../../player-token';
+import { DEFAULT_SKIN, type Skin } from '../../skin';
+import { SkinButton } from '../../skin-button';
 import {
   ApiError,
   callSquare,
@@ -228,10 +230,16 @@ export function RoomScreen({
   apiUrl,
   code,
   shareLink,
+  // Defaults to `pitwall` rather than being required, so every existing
+  // `<RoomScreen>` call site in `test/` — none of which know about #103 — keeps
+  // rendering exactly what it did. The real callers (`r/[code]/page.tsx`) always
+  // pass the request's actual skin.
+  initialSkin = DEFAULT_SKIN,
 }: {
   apiUrl: string;
   code: string;
   shareLink: string;
+  initialSkin?: Skin;
 }) {
   const [load, setLoad] = useState<Load>('loading');
   const [roster, setRoster] = useState<Roster | null>(null);
@@ -632,7 +640,15 @@ export function RoomScreen({
   if (roster.you === null) {
     return (
       <form onSubmit={submitName} className={COLUMN}>
-        <h1 className="text-2xl font-semibold">Join room {code}</h1>
+        {/*
+          #103's brand bar: this state had no top bar at all before, just the
+          bare `<h1>` — the Theme button needed somewhere to hang, so this row
+          is it.
+        */}
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-semibold">Join room {code}</h1>
+          <SkinButton initialSkin={initialSkin} />
+        </div>
         <label className="flex flex-col gap-1">
           Your name
           <input
@@ -753,26 +769,64 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-rule-soft px-2 py-2">
-          <h1 className="text-sm font-semibold">Room {code}</h1>
-          <p className="min-w-0 text-xs tabular-nums text-muted">
-            {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
-            {nextPrize !== undefined && ` · ${nextPrize} next`} ·{' '}
+        <header className="flex shrink-0 items-center justify-between gap-2 border-b border-rule-soft px-2 py-2">
+          <h1 className="shrink-0 text-sm font-semibold">Room {code}</h1>
+          {/*
+            #103 shortened this from "24 marks · full house next · 12 here" (once
+            199.7px at 375 CSS px) to your mark count over the card's own 24, plus
+            who is here — `· <rung> next` moves into a `hidden lg:inline` span so
+            it survives only at `ipad-11-landscape`, which is the one viewport with
+            the width to spare for it. Mounting the dice's reserved slot and the
+            Theme button beside the room code and Share left no other way to hold
+            this on one line at `phone-small` — see the header row's own note below
+            for the arithmetic.
+          */}
+          <p className="min-w-0 flex-1 text-xs tabular-nums text-muted">
+            {game.marks.length}/{game.card.length}
+            {nextPrize !== undefined && (
+              <span className="hidden lg:inline"> · {nextPrize} next</span>
+            )}
+            {' · '}
             {roster.players.length} here
           </p>
           {/*
             The bar is the one node both layouts and both game states share, so a
             latecomer can be pulled into a race already running from anywhere.
 
-            It is also the tightest row in the app, and the third item is what made it
+            It is also the tightest row in the app, and this group is what made it
             tight: `px-2` and `gap-2` here rather than `px-3`/`gap-3` are what buy it
-            back. Measured at 375 CSS px against the *worst* line rather than the one
-            on screen — "24 marks · full house next · 12 here" is 199.7px, the room
-            code is 81.7px and the trigger is 55.2px, inside the 343px the row has —
-            about 6px of slack. Wrapping is the failure and it is silent: a second line
-            is not clipped, does not scroll the page and takes 25px out of the card. So
-            `room.gate.ts` counts the lines.
+            back, same as before #103. What changed is what has to fit beside the
+            stats line — the room code (~82px), a reserved dice slot and the Theme
+            button (~44px each) and Share (~55px) — which is why the stats line
+            itself had to come down from ~200px to under ~110px rather than the
+            other way around. `room.gate.ts` still counts the lines.
+
+            The row also went `items-baseline` -> `items-center`: the control group
+            below is `items-stretch` so the dice slot's `aspect-square` can track the
+            Theme button's height, and a baseline-aligned parent gives a stretched
+            child nothing to align to. `legibility/page.tsx`, which stands in for this
+            header, was moved with it so the two do not drift.
           */}
+          <div className="flex shrink-0 items-stretch gap-2">
+            {/*
+              The dice's reserved slot (#103's brief: "reserve the dice's slot but
+              do not build the dice" — slice 7 owns the die itself). A real,
+              disabled button rather than a bare gap, so the width this issue's
+              arithmetic depends on is enforced by the layout rather than by a
+              convention slice 7 could forget. `aspect-square` against
+              `items-stretch` on this row makes its side track the Theme button's
+              own box height automatically — the design handoff's own "a
+              stretch-based flex row also works" — so neither button has a
+              hardcoded size for slice 7 to invalidate.
+            */}
+            <button
+              type="button"
+              disabled
+              aria-label="Dice"
+              className="aspect-square rounded-skin border border-rule-soft opacity-50"
+            />
+            <SkinButton initialSkin={initialSkin} />
+          </div>
           <ShareRoom code={code} shareLink={shareLink} />
         </header>
 
@@ -1143,7 +1197,11 @@ export function RoomScreen({
 
   return (
     <div className={COLUMN}>
-      <h1 className="text-2xl font-semibold">Room {code}</h1>
+      {/* #103's brand bar — same reasoning as the join form's above. */}
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Room {code}</h1>
+        <SkinButton initialSkin={initialSkin} />
+      </div>
       <ShareRoom code={code} shareLink={shareLink} />
       <h2 className="font-semibold">Players</h2>
       <ul>

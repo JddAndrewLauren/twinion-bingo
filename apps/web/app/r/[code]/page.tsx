@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { currentSkin } from '../../current-skin';
 import { siteOrigin } from '../../site-origin';
 import { RoomScreen } from './room-screen';
 
@@ -64,6 +65,11 @@ export default async function RoomPage({
   // is the same one the unfurl and the canonical tag name.
   const base = await siteOrigin();
 
+  // #103: the skin every SkinButton this screen mounts opens on — read here
+  // rather than in the client `RoomScreen`, the same server-cookie read
+  // `layout.tsx` and `page.tsx` already make.
+  const skin = await currentSkin();
+
   /*
     No column and no padding here. The game screen is full-bleed — a `max-w-md` on
     the page is what pinned an iPad cell to a phone cell's width while the type went
@@ -76,6 +82,7 @@ export default async function RoomPage({
         apiUrl={apiUrl}
         code={room}
         shareLink={`${base}/r/${room}`}
+        initialSkin={skin}
       />
     </main>
   );

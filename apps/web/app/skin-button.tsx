@@ -29,6 +29,16 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
  * force the glyph's spin animation to restart every press (`key={spins}`) —
  * "no state beyond the current skin" the handoff asks for, read literally as
  * no *skin* state beyond it. `spins` never decides what renders.
+ *
+ * **Hit target vs. visual box (#103).** The button's own padding/border/line-box
+ * decides its *visible* size — nothing here hardcodes a height, so it grows on
+ * its own once a later slice's skin-specific type and border land. A separate
+ * `span`, absolutely positioned and sized to `max(100%, 44px)` on each axis,
+ * expands the *tappable* area to the 44×44 minimum without adding a pixel of
+ * layout width: it paints outside the button's own box but is still hit-tested
+ * there because it is a positioned descendant of the (also positioned) button,
+ * and a tap on it still fires the button's own `onClick` by ordinary bubbling.
+ * The gate asserts *this* element, not the glyph or the label.
  */
 export function SkinButton({ initialSkin }: { initialSkin: Skin }) {
   const [skin, setSkin] = useState<Skin>(initialSkin);
@@ -44,7 +54,12 @@ export function SkinButton({ initialSkin }: { initialSkin: Skin }) {
   }
 
   return (
-    <button type="button" onClick={press} aria-label="Theme">
+    <button
+      type="button"
+      onClick={press}
+      aria-label="Theme"
+      className="relative inline-flex items-center gap-1 rounded-skin border border-rule px-2 py-1 text-xs text-ink"
+    >
       {/*
         Remounted every press (`key={spins}`) so the 360° spin — declared once,
         skin-agnostically, in `globals.css` — restarts rather than being a no-op
@@ -58,6 +73,12 @@ export function SkinButton({ initialSkin }: { initialSkin: Skin }) {
         ↻
       </span>
       <span> Theme</span>
+      {/* The hit-target expander — see the note above the component. */}
+      <span
+        aria-hidden
+        data-hit-expand
+        className="absolute inset-0 m-auto h-[max(100%,44px)] w-[max(100%,44px)]"
+      />
     </button>
   );
 }

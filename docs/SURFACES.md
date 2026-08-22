@@ -27,8 +27,11 @@ issue acceptance criteria, so a criterion can say "at `phone-small`" and mean so
 | `ipad-11-portrait`   | 834 × 1194    | iPad Pro 11" upright                          |
 | `ipad-11-landscape`  | 1194 × 834    | iPad Pro 11" on its side — #14's two-pane case |
 
-Dark is the only theme (`globals.css` is bare Tailwind v4 and the components hardcode
-`neutral-900`/`neutral-700`); there is no light-mode gate until a light mode exists.
+There are four skins now, two of them light (#102, #103) — the Theme button in every screen's top
+bar reaches Confetti and Scorecard from any surface, so "dark is the only theme" stopped being true
+once that control existed. There is still no per-skin gate: the matrix above is about viewport, not
+skin, and every gate run in this file exercises whichever skin the browser opens on (`pitwall`, the
+cookie's default) rather than sweeping all four.
 
 ## Surface: web
 
@@ -46,6 +49,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 
 | Screen                | Route / state                                    | What the capture has to show                                                                                             |
 | --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Header — skin controls | `/`, `/r/:code` needing a name, `/r/:code` in the lobby, and the game header | The **Theme button**, present and tappable in the top bar of all four surfaces: pressing it advances the fixed skin cycle without a remount — a live game's SSE stream survives four consecutive presses at `phone`. Its *hit* element (not its visible box) is ≥44×44 at `phone-small`/`phone`, and it sits beside a **reserved dice slot** (#103; the die itself is slice 7's) without the two 44px targets overlapping. On the game header specifically, the slim bar's stats line shortens to `n/24 · m here` to buy back the width both controls cost, with `· <rung> next` dropping to a `hidden lg:inline` span — absent at `phone-small`/`phone`, present at `ipad-11-landscape` |
 | Home                  | `/`                                              | The two stacked forms ("Start a room", "Join with a code") both reachable without scrolling past one; the API health line |
 | Room — needs a name   | `/r/:code`, roster `you === null`                | The name form and heading fit; the disabled/enabled button state is legible                                               |
 | Room — roster         | `/r/:code`, joined                               | The room code heading, **Share room** where the share link used to be printed (#88 — the link itself is in the dialog now), and the roster with `(host)` and `— you` |
