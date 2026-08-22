@@ -662,6 +662,39 @@ describe('the slim bar', () => {
 });
 
 /**
+ * #104's progress readout: a second, purely-derived view of `marks.length` against
+ * 24 — no state of its own, so it can never disagree with the slim bar's own count.
+ */
+describe('the progress readout', () => {
+  it('reads the mark count against 24 straight from game state', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [
+        { squareId: 'f1.v1:t:1', seq: 101, actorPlayerId: host.id },
+        { squareId: 'f1.v1:t:2', seq: 102, actorPlayerId: guest.id },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('img', { name: '2 of 24 marked' }),
+    ).toBeDefined();
+  });
+
+  it('reads 0 of 24 on a fresh card', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('img', { name: '0 of 24 marked' }),
+    ).toBeDefined();
+  });
+});
+
+/**
  * D4's second field on a phone. A ~68pt cell has room for `label` and not for
  * `description`, so the prose is on a hold — and because the same cell's short press
  * calls the square for the whole room, the two gestures have to stay told apart.

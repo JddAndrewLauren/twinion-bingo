@@ -51,7 +51,8 @@ cookie's default) rather than sweeping all four.
 | --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | Header — skin controls | `/`, `/r/:code` needing a name, `/r/:code` in the lobby, and the game header | The **Theme button**, present and tappable in the top bar of all four surfaces: pressing it advances the fixed skin cycle without a remount — a live game's SSE stream survives four consecutive presses at `phone`. Its *hit* element (not its visible box) is ≥44×44 at `phone-small`/`phone`. On the three `/r/:code` surfaces it sits beside the **die** (#108, which replaced #103's disabled placeholder) without the two 44×44 hit targets overlapping — both expanders are compared, now that the die has one — and the die's own visible box is square and equal to this button's rendered height, measured on first render and again after each press of a full turn of the skin cycle, since a skin's type scale is what moves that height. On `/` there is **no die**: it has no card, no game and no room, so the Theme button stands alone there and `home.gate.ts` asserts that (#108 names "the join and lobby headers", and the handoff's "join screen" is `/r/:code` needing a name). On the game header the die is enabled and tappable while the card is clean and the game is live, gone once the card has a mark or the game is done, and gone while the host deck sheet is up (#112's rule, unchanged: no card on screen, nothing to re-roll); on the join and lobby headers it is always present but disabled, since there is no card yet to re-roll. On the game header specifically, the slim bar's stats line shortens to `n/24 · m here` to buy back the width both controls cost, with `· <rung> next` dropping to a `hidden lg:inline` span — absent at `phone-small`/`phone`, present at `ipad-11-landscape` |
 | Home                  | `/`                                              | The two stacked forms ("Start a room", "Join with a code") both reachable without scrolling past one; the API health line |
-| Room — needs a name   | `/r/:code`, roster `you === null`                | The name form and heading fit; the disabled/enabled button state is legible                                               |
+| Room — needs a name   | `/r/:code`, roster `you === null`                | The name form and heading fit; the disabled/enabled button state is legible. **#104**: the four-character **room code**, the ruled name field and the **indexed roster** (with a `Host` tag) are structural pieces this state did not have before — present and unclipped at `phone-small`/`phone`, reachable without scrolling past the primary action; at `ipad-11-landscape` the roster sits beside the code column, not under it |
+| Game — progress readout | `/r/:code`, a live game                          | **#104**: a second progress readout above the grid, distinct from the slim bar's own `n/24` line — a pure function of `game.marks.length` against 24, so it carries no state of its own and cannot disagree with the header |
 | Room — roster         | `/r/:code`, joined                               | The room code heading, **Share room** where the share link used to be printed (#88 — the link itself is in the dialog now), and the roster with `(host)` and `— you` |
 | Room — loading        | `/r/:code` before the roster resolves            | The single-line state does not shift the layout when it resolves                                                          |
 | Room — missing        | `/r/:code` with an unknown code                  | "No room has the code XXXX." reads as an answer, not an error page                                                        |
@@ -739,6 +740,60 @@ rather than adding or removing a case):
   everything else in the column (where `expectWholeOnScreen` fails at `phone-small`, since it lands
   past 667px) — both worse than the movement, so it is left as a known reflow rather than papered
   over.
+
+**#104's gate run** (WebKit with `hasTouch`, all four matrix viewports, 266 tests green and 38
+skipped — the layout-specific skips, unchanged in count from #87's run since this issue adds no new
+layout-gated surface): Pit Wall retuned to the handoff's real tokens, plus the structural pieces the
+app did not have — the join screen's boxed room code, ruled name field and indexed roster; the
+card's progress readout; and the earned/inherited cell distinction routed through the skin rather
+than left as the app's old hardcoded emerald/grey.
+
+- **The card's own cell/font table is unchanged, confirmed by measurement rather than by argument.**
+  This issue's brief says Pit Wall's label face (Roboto Condensed) and cell metrics do not move, so
+  the numbers below are pasted from the *same* `sizes its type against the card` run this branch
+  and the unmodified `main` both produce byte-identical:
+
+  | Viewport | Cell | Font |
+  | --- | --- | --- |
+  | `phone-small` | 70px | 11.0px |
+  | `phone` | 73px | 11.5px |
+  | `ipad-11-portrait` | 162px | 24.8px |
+  | `ipad-11-landscape` | 108px | 16.7px |
+
+  The `ipad-11-landscape` figure is **108px / 16.7px**, not the **138px / 21.2px** #13's own run
+  recorded — confirmed to be pre-existing drift from #14's/#87's later work on the two-pane column
+  widths, not something this issue moved: reverting every change in this branch and re-running the
+  same gate against the base commit (8eee6b7) reproduces 108px/16.7px identically. #47's own
+  reconciliation table is left as `docs/SURFACES.md` already had it rather than corrected here,
+  since correcting it is not this issue's brief.
+
+- **Earned, inherited and unmarked resolve to three distinct computed `background-color`s** on a
+  late joiner's card (`gate/skin-pitwall.gate.ts`), which is new: before this issue every skin
+  rendered the same hardcoded emerald/grey regardless of `data-skin`. **The inherited treatment is
+  invented**, since the mocks show only base/marked/free — a barely-lighter wash on the raised
+  surface (`rgba(255,255,255,.06)`, the same tone as a row separator) with the field-border colour
+  (`rgba(255,255,255,.14)`) and the label dropped to `--skin-muted-soft`, so it reads as a dulled
+  base cell rather than a claim, and as neither the base cell nor the cyan earned one.
+- **The progress readout reads the room's own state and adds none of its own**: 0/24 at lights out
+  and 12/24 against the fixture's mid-race stage (`room-fixture.ts`'s own count, not the handoff's
+  illustrative 8), both derived from `game.marks.length`/`game.card.length` at render time.
+- **The call banner stays docked and unstyled-as-`fixed`**: `expectClearOfTheCard` holds for the
+  spotter-credit toast and the undo row, both now Pit Wall's `#141416`/red-border treatment, and
+  neither computes `position: fixed`.
+- **Focus**: the primary action's focused outline is `2px solid rgb(255, 46, 46)` — the accent —
+  under `:focus-visible`, asserted by colour and width rather than by "some outline exists", since a
+  browser's own default focus ring already has a non-zero width and would pass a weaker check for
+  the wrong reason.
+- **Seeded regressions, run and reverted**: `[data-skin='pitwall'] .skin-cell[data-mark='earned']`'s
+  background forced to `--skin-raised` (the base surface) fails `gives earned, inherited and
+  unmarked cells three distinct fills` on the "earned vs unmarked" comparison; the focus rule's
+  selector broken to a non-matching class fails `rings the primary action…` on the 2px
+  width, both restored and re-green after.
+- **A disclosed copy change.** The handoff's literal button text is "ENTER ROOM"; this issue keeps
+  the accessible name **"Enter room"** (sentence case, `text-transform: uppercase` carrying the
+  visual) and updates `lobby.gate.ts`'s and `test/room-screen.test.tsx`'s five references from
+  **"Join"** accordingly — a genuine, disclosed rename to match the brief's own primary-action copy,
+  not a loosened assertion.
 
 ## Adding a surface or a screen
 

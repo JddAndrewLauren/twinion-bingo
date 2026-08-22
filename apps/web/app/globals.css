@@ -13,13 +13,12 @@
  * classes at all: a component names the role once in its JSX and every skin's
  * block re-resolves it, so no component carries a per-skin class map.
  *
- * `pitwall`'s block is deliberately **today's exact app colours** (Tailwind's
- * own `neutral-*`/`emerald-400`), not the handoff's real Pit Wall design
- * (`#0a0a0b`, `#00e0c8`, …) — the handoff and this issue's brief both say Pit
- * Wall's real look ships in its own slice. The other three skins' values ARE the
- * handoff's real numbers (`docs/design/README.md` § *Design tokens*); they are
- * unreachable until the theme button is mounted (a later slice), and landing
- * them here keeps every skin's CSS in one commit.
+ * `pitwall`'s block carried **today's exact app colours** (Tailwind's own
+ * `neutral-*`/`emerald-400`) rather than the handoff's real Pit Wall design
+ * through #102 and #103 — the handoff and #102's own brief both said Pit
+ * Wall's real look ships in its own slice, which is what #104 is. Its block
+ * below is now the handoff's real numbers (`docs/design/README.md` § *Design
+ * tokens* → **Pit Wall**), the same as the other three skins' always were.
  *
  * **Why three surface tiers, three rules, three muted tiers and two inks
  * rather than one of each.** This slice is a rename, not a repaint: the app it
@@ -62,60 +61,64 @@
 }
 
 /*
- * Every Pit Wall value is copied verbatim from `tailwindcss/theme.css` rather
- * than transcribed as the hex everyone remembers, and that is not pedantry:
- * Tailwind v4 authors its palette in oklch, and `#a3a3a3` — v3's `neutral-400`,
- * and the value this token layer first shipped — is **not** v4's `neutral-400`.
- * It resolves two levels lighter (163,163,163 against 161,161,161), so writing
- * the familiar hex quietly repainted every piece of secondary text in the app.
- * Copying Tailwind's own declarations makes the identity hold by provenance
- * instead of by arithmetic. The hex in each comment is the shade's v3 spelling,
- * for readers, not the value in use.
+ * Pit Wall's real values, from `docs/design/README.md` § *Design tokens* →
+ * **Pit Wall** (#104). Surface/raised/banner map to the three surface tiers in
+ * the order the handoff lists them; ink is the one text colour it names, so
+ * `ink`/`ink-strong` collapse onto it plus a touch brighter for the tier the app
+ * already needed (the selected switcher segment, the share dialog). Muted is
+ * given as a single range (`rgba(232,232,234,.4–.55)`), so the three tiers take
+ * its two ends and its midpoint, the same pattern #102 used for the other three
+ * skins' own single-range values.
+ *
+ * Rules are four numbers, not three (`.06` row separators, `.09` rules, `.1`
+ * cell borders, `.14` field borders), one more than this layer's tiers. `rule`
+ * takes `.1` rather than `.09` so the token driving both a hairline *and* a
+ * card cell's border (`card-grid.tsx`'s `border-rule bg-raised`) matches the
+ * cell exactly; `.09` and `.1` are a hundredth of full white apart, which nothing
+ * in this app can tell apart by eye.
  */
 :root,
 [data-skin='pitwall'] {
   /* Surfaces, page upward: the page, a panel/field/dialog/unmarked cell, and
      the one step above that — a selected switcher segment and the peek panel. */
-  --skin-surface: oklch(14.5% 0 none); /* neutral-950, ≈#0a0a0a */
-  --skin-raised: oklch(20.5% 0 none); /* neutral-900, ≈#171717 */
-  --skin-elevated: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
+  --skin-surface: #0a0a0b;
+  --skin-raised: #121214;
+  --skin-elevated: #141416; /* the handoff's "banner" tier */
 
-  /* Body text, and the brighter ink the selected switcher segment and the share
-     dialog have always used. */
-  --skin-ink: oklch(97% 0 none); /* neutral-100, ≈#f5f5f5 */
-  --skin-ink-strong: oklch(98.5% 0 none); /* neutral-50, ≈#fafafa */
+  /* Body text. The handoff names one ink; `-strong` is the same colour pushed a
+     touch brighter, for the tier the app already needed (a selected switcher
+     segment, the share dialog) and that no skin before this one had to give a
+     real second value. */
+  --skin-ink: #e8e8ea;
+  --skin-ink-strong: #f5f5f6;
 
-  /* Secondary text, dimmest (an inactive switcher segment, disabled submit
-     text) to nearly-body (the peek panel's prose — the readable half of "a tap
-     is not a peek", which is why it is not the same grey as a caption). */
-  --skin-muted-soft: oklch(55.6% 0 none); /* neutral-500, ≈#737373 */
-  --skin-muted: oklch(70.8% 0 none); /* neutral-400, ≈#a1a1a1 */
-  --skin-muted-strong: oklch(87% 0 none); /* neutral-300, ≈#d4d4d4 */
+  /* Secondary text — the handoff's one range (`rgba(232,232,234,.4–.55)`), its
+     two ends and its midpoint. */
+  --skin-muted-soft: rgba(232, 232, 234, 0.4);
+  --skin-muted: rgba(232, 232, 234, 0.475);
+  --skin-muted-strong: rgba(232, 232, 234, 0.55);
 
-  /* Rules: hairlines and row separators, the default control/field border, and
-     a dialog's secondary buttons. */
-  --skin-rule-soft: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
-  --skin-rule: oklch(37.1% 0 none); /* neutral-700, ≈#404040 */
-  --skin-rule-strong: oklch(43.9% 0 none); /* neutral-600, ≈#525252 */
+  /* Rules: hairlines/row separators (`.06`), the general rule (`.1`, doubling as
+     every cell border), and a field border (`.14`). */
+  --skin-rule-soft: rgba(255, 255, 255, 0.06);
+  --skin-rule: rgba(255, 255, 255, 0.1);
+  --skin-rule-strong: rgba(255, 255, 255, 0.14);
 
-  /* The free centre, which is its own element in the handoff (§ *Square cell
-     per theme*, "Center (free)") rather than a plain surface plus a plain rule —
-     an accent wash in every skin. Pit Wall's real wash is that slice's work;
-     these are today's neutrals so this slice stays inert. */
-  --skin-free-surface: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
-  --skin-free-rule: oklch(55.6% 0 none); /* neutral-500, ≈#737373 */
+  /* The free centre (§ *Square cell per theme*, "Center (free)"): the handoff's
+     `rgba(255,46,46,.18)` wash over a `#ff2e2e` border. */
+  --skin-free-surface: rgba(255, 46, 46, 0.18);
+  --skin-free-rule: #ff2e2e;
 
-  /* Pit Wall's accent, from the handoff (§ *Design tokens*: "Accent `#ff2e2e`").
-     Today's app has no accent at all, so unlike every value above there is no
-     "today's colour" to hold: no component names `accent` yet (its uses arrive
-     with Pit Wall's own slice), which is what makes carrying the handoff's real
-     number here inert rather than a repaint. */
+  /* Accent, unchanged from #102 — it was already the handoff's real number,
+     since no component read it before this slice. */
   --skin-accent: #ff2e2e;
-  /* The app's existing "marked" colour (emerald), kept literal on the marked
-     cell itself per this issue's "semantic mark colours may stay literal"
-     carve-out — mirrored here so the token exists, though nothing reads it yet. */
-  --skin-marked: oklch(76.5% 0.177 163.223); /* emerald-400, ≈#34d399 */
-  --skin-radius: 0.25rem; /* Tailwind's default `rounded` */
+  /* Marked, retuned from the app's old literal emerald to the handoff's real
+     cyan. The marked *cell*'s own fill/border stay literal in `card-grid.tsx`
+     (they need a second, invented colour for the inherited state that no
+     single token could also carry — see that file's own comment), but this
+     token now carries Pit Wall's real number for whatever else names `marked`. */
+  --skin-marked: #00e0c8;
+  --skin-radius: 0px; /* "Radius 0 everywhere" */
 }
 
 [data-skin='slipstream'] {
@@ -256,3 +259,190 @@ body {
  * header; `data-die-surface` is already on the `<svg>` so that is a one-rule
  * change, and `die-button.tsx`'s `surface` prop already distinguishes the two.
  */
+
+/*
+ * #104 — Pit Wall's *structure*, everything the "Where per-skin styling lives"
+ * section of this issue's brief says is not token-shaped: hairline rules,
+ * letter-spacing on uppercase labels, the segmented progress bar, and JetBrains
+ * Mono for UI and data (square labels stay Roboto Condensed — `card-font.ts`
+ * is untouched). Every rule below is scoped to `[data-skin='pitwall']`, so the
+ * other three skins render exactly as they did before this issue; each of
+ * `card-grid.tsx`, `room-code.tsx`, `roster-preview.tsx` and `progress-readout.tsx`
+ * renders the same class names for every skin, and it is only these selectors
+ * that turn them into Pit Wall's real look.
+ *
+ * One React tree, four skins — the reason every one of these is a class
+ * (`.skin-code`, `.skin-field`, `.skin-cell`, `.skin-roster`, `.skin-progress-*`,
+ * `.skin-banner*`) rather than a per-skin component.
+ */
+[data-skin='pitwall'] {
+  --skin-font-ui: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* Room code: four boxed characters (README's "Room code treatment per theme"). */
+[data-skin='pitwall'] .skin-code {
+  font-family: var(--skin-font-ui);
+}
+[data-skin='pitwall'] .skin-code span {
+  aspect-ratio: 1 / 1.15;
+  background-color: var(--skin-raised);
+  border-color: rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  font-weight: 700;
+}
+
+/* Name field: ruled box with the red caret bar at the right edge. */
+[data-skin='pitwall'] .skin-field {
+  position: relative;
+  background-color: var(--skin-raised);
+  border-color: rgba(255, 255, 255, 0.14);
+  border-bottom: 2px solid var(--skin-accent);
+  border-radius: 0;
+}
+[data-skin='pitwall'] .skin-field input {
+  font-family: var(--skin-font-ui);
+}
+[data-skin='pitwall'] .skin-field::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 1px;
+  height: 20px;
+  background-color: var(--skin-accent);
+  transform: translateY(-50%);
+}
+
+/* Primary action — every `ACTION_BUTTON` user, per this issue's "route it
+   through ACTION_BUTTON rather than around it". */
+[data-skin='pitwall'] .action-button {
+  font-family: var(--skin-font-ui);
+  background-color: var(--skin-accent);
+  border: none;
+  border-radius: 0;
+  color: var(--skin-surface);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+[data-skin='pitwall'] .action-button:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+
+/* Roster: indexed rows, a cyan HOST/YOU tag, hairline row separators. */
+[data-skin='pitwall'] .skin-roster {
+  font-family: var(--skin-font-ui);
+}
+[data-skin='pitwall'] .skin-roster-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+[data-skin='pitwall'] .skin-roster li {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-skin='pitwall'] .skin-roster-index {
+  opacity: 0.35;
+}
+[data-skin='pitwall'] .skin-roster-tag {
+  color: var(--skin-marked);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Progress readout: a 12-segment bar plus a numeral, driven from existing
+   `marks`/`total` state — see `progress-readout.tsx`. */
+[data-skin='pitwall'] .skin-progress-track {
+  gap: 1px;
+}
+[data-skin='pitwall'] .skin-progress-segment {
+  background-color: rgba(255, 255, 255, 0.12);
+  height: 3px;
+}
+[data-skin='pitwall'] .skin-progress-segment[data-filled='true'] {
+  background-color: var(--skin-marked);
+}
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-progress-segment {
+    height: 4px;
+  }
+}
+[data-skin='pitwall'] .skin-progress-number {
+  font-family: var(--skin-font-ui);
+  font-weight: 700;
+}
+
+/*
+ * Call banner: the docked bottom slot in `room-screen.tsx` (the spotter-credit
+ * toast and the undo row), restyled in place rather than pinned — this issue's
+ * "the banner stays docked" — so `expectClearOfTheCard` keeps holding by
+ * construction rather than by re-measuring a `fixed` layer.
+ */
+/*
+ * Both the spotter-credit toast and the undo row carry their sentence as one
+ * text node (`Bea spotted Square 7`, `Called Square 5`) that `apps/web/test/`
+ * and `apps/web/gate/` match verbatim — so this restyles the row rather than
+ * splitting its text into a label span plus a name span, which the handoff's
+ * own "CALLED · 2s AGO" plus a separate square name would otherwise call for.
+ */
+[data-skin='pitwall'] .skin-banner {
+  background-color: var(--skin-elevated) !important;
+  border-color: var(--skin-accent) !important;
+  color: var(--skin-ink) !important;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * Card cell. The base state is already token-driven (`border-rule bg-raised`
+ * in `card-grid.tsx`) and needs no rule here — `--skin-rule`/`--skin-raised`
+ * above are this skin's real numbers now. Earned and inherited are the two
+ * `markedStyle()` still renders as literal Tailwind colours (see that
+ * function's own comment for why), so they are overridden here by the
+ * `data-mark` attribute the button also carries, at higher specificity than
+ * the single utility classes they replace.
+ */
+[data-skin='pitwall'] .skin-cell {
+  border-radius: 0;
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+[data-skin='pitwall'] .skin-cell[data-mark='earned'] {
+  background-color: rgba(0, 224, 200, 0.16);
+  border-color: var(--skin-marked);
+  color: var(--skin-ink);
+}
+/*
+ * Inherited — invented for #104, since the mocks show only base/marked/free.
+ * A dulled *base* cell rather than a claim: barely lighter than the raised
+ * surface (`rgba(255,255,255,.06)`, the same wash as a row separator) with the
+ * field-border tone (`.14`) and the label dropped to `--skin-muted-soft`. It
+ * reads as neither the crisp, higher-contrast base cell nor the cyan earned
+ * one — "a line already complete at the boundary must not look claimable"
+ * (`CONTEXT.md`), read here as "must not look like an open cell either".
+ */
+[data-skin='pitwall'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--skin-muted-soft);
+}
+/* Hover (pointer only, README's *Hover (desktop)*): border brightens. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='pitwall'] .skin-cell:not(:disabled):hover {
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+}
+
+/*
+ * Focus: every interactive element gets a 2px accent ring, offset 2px
+ * (README's *Focus*). One selector rather than a class per component is what
+ * makes "every interactive element" true by construction instead of by
+ * remembering to add a class to each one built for this issue and every one
+ * built before it.
+ */
+[data-skin='pitwall'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}

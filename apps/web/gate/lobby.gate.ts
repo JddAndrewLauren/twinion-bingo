@@ -49,7 +49,7 @@ test.describe('joining', () => {
 
     // Disabled until there is a name, enabled after — the state has to be legible,
     // and it has to be a thumb-sized target either way.
-    const submit = page.getByRole('button', { name: 'Join' });
+    const submit = page.getByRole('button', { name: 'Enter room' });
     await expect(submit).toBeDisabled();
     await page.getByLabel('Your name').fill('Ash');
     await expect(submit).toBeEnabled();
