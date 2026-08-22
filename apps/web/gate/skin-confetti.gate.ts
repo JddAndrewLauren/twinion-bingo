@@ -63,10 +63,23 @@ async function useConfettiCookie(page: Page): Promise<void> {
  * mark-motion rule safe to read, since an unmarked cell's overlay is present in
  * the DOM at `opacity: 0` and correctly contributes nothing.
  *
+ * **…and only when the pseudo-element actually covers the node.** A `::before`
+ * is not necessarily a surface: `.skin-banner::before` is a 38x38 badge sitting
+ * *inside* a full-width banner, and attributing its dark fill to the banner
+ * would report the badge's colour as the ground every piece of banner text
+ * stands on. So the overlay counts as a layer only if its own used `width` and
+ * `height` reach the node's `clientWidth`/`clientHeight` — true for the marked
+ * cell's `inset: -2px` overlay (which is 4px larger than the cell on both axes)
+ * and false for the badge. Unmeasurable box (a `width` that does not resolve to
+ * a number) is treated as *not* covering, so the failure mode is a missed
+ * overlay caught by the mark tests rather than a silently wrong ground.
+ *
  * Deliberately *not* lifted into `gate/measure.ts`: `paintedFill` is currently
  * duplicated across `skin-pitwall.gate.ts`, `skin-slipstream.gate.ts` (#105)
  * and this file, and #105 is in review concurrently — a shared module is a
- * FINAL-GATE consolidation, not a change to make from inside one slice.
+ * FINAL-GATE consolidation, not a change to make from inside one slice. This
+ * copy is the only one that reads pseudo-elements at all; the coverage check
+ * above is the part a consolidation must carry with it.
  */
 const paintedFill = (locator: ReturnType<Page['locator']>) =>
   locator.evaluate((start) => {
@@ -85,9 +98,15 @@ const paintedFill = (locator: ReturnType<Page['locator']>) =>
 
     const overlay = getComputedStyle(start, '::before');
     if (overlay.content !== 'none' && overlay.content !== 'normal') {
+      // See the doc block: a `::before` is a surface only where it covers the
+      // node. `parseFloat` of a non-px `width` is `NaN`, and `NaN >=` is false,
+      // so an unmeasurable overlay is skipped rather than trusted.
+      const covers =
+        parseFloat(overlay.width) >= start.clientWidth &&
+        parseFloat(overlay.height) >= start.clientHeight;
       const layer = parse(overlay.backgroundColor);
       const shown = Number(overlay.opacity);
-      if (layer !== null && layer[3] * shown > 0) {
+      if (covers && layer !== null && layer[3] * shown > 0) {
         stack.push([layer[0], layer[1], layer[2], layer[3] * shown]);
       }
     }
@@ -532,9 +551,18 @@ test.describe('the blue card header', () => {
 
     // The Theme button is the handoff's yellow pill, so it carries its own
     // ground: its ink is held against its own painted fill, not the header's.
+    //
+    // Measured on `.skin-theme-fill` rather than the `<button>`: #105 moved
+    // this control's fill, border and type onto that inner span (so a sheared
+    // skin cannot deform the hit-target expander), so the span — not the
+    // button — is the element that paints the pill. Same assertion, same
+    // threshold, pointed at the box that actually carries the colours; reading
+    // the button instead would report the *header's* blue as the pill's ground
+    // and the inherited white as its ink.
     const themeButton = header.getByRole('button', { name: 'Theme' });
-    const pill = await paintedFill(themeButton);
-    const pillColour = await themeButton.evaluate(
+    const themeFill = themeButton.locator('.skin-theme-fill');
+    const pill = await paintedFill(themeFill);
+    const pillColour = await themeFill.evaluate(
       (node) => getComputedStyle(node).color,
     );
     expect(
@@ -554,6 +582,94 @@ test.describe('the blue card header', () => {
       contrastRatio(composite(ring.colour, ground), ground),
       `the focus ring (${ring.colour}) on the header's rgb(${ground.join(', ')})`,
     ).toBeGreaterThanOrEqual(MIN_RING_CONTRAST);
+  });
+
+  /**
+   * The other end of the same mechanism, and the defect it caused. Re-pointing
+   * `--skin-ink`/`--skin-rule*`/`--skin-accent` inside the header is what makes
+   * the blue legible — and a token re-point inherits into *everything* in
+   * scope. `<ShareRoom>` returns a fragment, so its always-mounted `<dialog>`
+   * is a direct child of this header, and the dialog is
+   * `bg-raised … text-ink-strong border-rule` — which `@theme inline` compiles
+   * to the very `var(--skin-*)` roles being re-pointed. The header's white ink
+   * therefore landed on the dialog's white raised panel: room code, share link
+   * and both buttons at 1.00:1, invisible, with white focus rings, and nothing
+   * could see it because `share.gate.ts` runs the default skin.
+   *
+   * Gated as a *comparison* rather than a bare floor, because a bare floor
+   * cannot speak for the border: the light skin's own `--skin-rule` is
+   * `rgba(32,24,15,.11)`, about 1.17:1 on white, so any contrast threshold the
+   * correct value passes the leaked white one passes too. The lobby renders the
+   * same dialog with no `.skin-card-header` anywhere on the page, so it is the
+   * reference: inside the header must read *identically* to outside it. The
+   * absolute 4.5 floors are kept alongside, so "equally broken in both places"
+   * cannot pass either.
+   */
+  test('keeps the share dialog on the light skin’s own ink inside the blue header', async ({
+    page,
+  }) => {
+    await useConfettiCookie(page);
+
+    const readDialog = async () => {
+      await page.getByRole('button', { name: 'Share room' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Share room ABCD' });
+      await expect(dialog).toBeVisible();
+
+      const ground = await paintedFill(dialog);
+      const roles: Record<string, ReturnType<Page['locator']>> = {
+        'the room code': dialog.getByText('ABCD', { exact: true }),
+        'the share link': dialog.getByRole('link'),
+        'the Copy link button': dialog.getByRole('button', {
+          name: 'Copy link',
+        }),
+        'the Close button': dialog.getByRole('button', { name: 'Close' }),
+      };
+
+      const ink: Record<string, string> = {};
+      for (const [role, locator] of Object.entries(roles)) {
+        ink[role] = await locator.evaluate(
+          (node) => getComputedStyle(node).color,
+        );
+      }
+      const border = await dialog.evaluate(
+        (node) => getComputedStyle(node).borderTopColor,
+      );
+
+      return { ground, ink, border };
+    };
+
+    // Outside the header: the same dialog on the join screen, which has no
+    // `.skin-card-header` on the page at all.
+    await openLobby(page, 'roster');
+    const outside = await readDialog();
+
+    await openRoom(page, 'mid');
+    /*
+      The premise of the fix, asserted rather than assumed: the token re-point
+      is scoped `.skin-card-header > :not(dialog)`, which is only the right
+      shape while the dialog really is a direct child of the header. If
+      `room-screen.tsx` ever moves `<ShareRoom>` out, this fails and the
+      exclusion should be revisited rather than left as dead defence.
+    */
+    await expect(page.locator('header.skin-card-header > dialog')).toHaveCount(
+      1,
+    );
+    const inside = await readDialog();
+
+    for (const [role, colour] of Object.entries(inside.ink)) {
+      expect(
+        contrastRatio(composite(colour, inside.ground), inside.ground),
+        `${role} (${colour}) on the dialog's own rgb(${inside.ground.join(', ')}) inside the header`,
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        colour,
+        `${role} inside the header vs outside it (${outside.ink[role]})`,
+      ).toBe(outside.ink[role]);
+    }
+    expect(
+      inside.border,
+      `the dialog's border inside the header vs outside it (${outside.border})`,
+    ).toBe(outside.border);
   });
 });
 

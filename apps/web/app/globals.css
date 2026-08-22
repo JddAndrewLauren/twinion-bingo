@@ -759,8 +759,7 @@ body {
  * surface `svg[data-die-surface='card']` above now matches. Padding/line
  * layout are left exactly as the header's own utilities set them
  * (`px-2 py-2`, `items-center`, `justify-between`) — this issue restyles the
- * existing docked header rather than rebuilding its layout, the same
- * "restyle in place" rule #104 used for the call banner.
+ * existing docked header rather than rebuilding its layout.
  *
  * **The header re-points the skin's own text/rule/accent tokens, it does not
  * just set `color`.** Painting this ground blue is what makes the slice own the
@@ -777,12 +776,32 @@ body {
  * where the light skin's near-black one would vanish, and white for the ring —
  * `#fff` on `#2f6bff` is 4.50:1, where the skin's `#ff5c39` accent would be
  * 1.47:1 and effectively no focus indicator at all.
+ *
+ * **The re-point is on the header's children, not on the header — and `dialog`
+ * is excluded.** The paint (`background-color`/`color`/`border-bottom`) stays
+ * on the `<header>`; only the token block moved down one level. The reason is
+ * that a token re-point inherits into *everything* inside the scope, and the
+ * share dialog is inside it: `<ShareRoom>` returns a fragment, so its
+ * `<button>` **and** its always-mounted `<dialog>` are both direct children of
+ * this header (`room-screen.tsx`). The dialog is `bg-raised … text-ink-strong
+ * border-rule`, and `@theme inline` compiles those to `var(--skin-*)` — the
+ * very mechanism this re-point relies on — so the header's white ink landed on
+ * the dialog's white `--skin-raised` panel: room code, share link and both
+ * buttons at 1.00:1, with white focus rings, measured in Chromium. Scoping to
+ * `> :not(dialog)` is the smallest fix that keeps the mechanism: every control
+ * that stands on the blue still inherits the white roles (the token block sits
+ * on each direct child, and custom properties inherit down its subtree), while
+ * the dialog — which stands on its own raised panel and not on the blue at all
+ * — keeps the skin's root values. Gated by `keeps the share dialog on the
+ * light skin's own ink inside the blue header`, which fails at 1.0000:1
+ * without the `> :not(dialog)`.
  */
 [data-skin='confetti'] .skin-card-header {
   background-color: #2f6bff;
   color: #fff;
   border-bottom: none;
-
+}
+[data-skin='confetti'] .skin-card-header > :not(dialog) {
   --skin-ink: #fff;
   --skin-ink-strong: #fff;
   --skin-muted-soft: rgba(255, 255, 255, 0.75);
@@ -794,7 +813,7 @@ body {
   --skin-accent: #fff;
 }
 @media (min-width: 834px) {
-  [data-skin='confetti'] .skin-card-header {
+  [data-skin='confetti'] .skin-card-header > :not(dialog) {
     --skin-muted: rgba(255, 255, 255, 0.9);
   }
 }
@@ -808,23 +827,44 @@ body {
  * Skin-scoped and surface-agnostic on purpose. The pill is the handoff's value
  * for this control in *every* Confetti surface, not a patch for the blue
  * header, and it happens to be the fix for the header too: `text-ink` on blue
- * was ~3.5:1 with an invisible `rgba(32,24,15,.11)` border, while dark ink on
- * `#ffd23f` is 12.5:1 on both the cream join bar and this header. Attribute
- * selector rather than a new class, the same hook `svg[data-die-surface]`
- * already uses, so no component changes shape for a colour.
+ * was 3.89:1 with an invisible `rgba(32,24,15,.11)` border, while dark ink on
+ * `#ffd23f` is 12.13:1 on both the cream join bar and this header.
  *
- * **The handoff's `padding: 7px 15px` is *not* applied — a disclosed
- * deviation.** The incumbent `px-2 py-1` (8px/4px) is kept, so this rule
- * changes colour and corner radius and not one pixel of layout. The card
- * header is the tightest row in the app — #103's own arithmetic, quoted in
- * `room-screen.tsx`, is what forced the stats line down from ~200px to under
- * ~110px to fit this button at `phone-small` — and #108 sizes the die off this
- * button's *rendered height*, so +14px of width and +6px of height here would
- * relitigate two earlier slices' geometry from inside a skin slice. The
- * legibility defect this finding is about is carried entirely by the fill and
- * the ink, both of which are the handoff's own values.
+ * **On `.skin-theme-fill`, not on the `<button>` — #105's hook.** This rule
+ * originally used `button[aria-label='Theme']`, since at the time the border,
+ * padding and type all sat on the button itself. #105 moved them onto the one
+ * inner `.skin-theme-fill` span (so a sheared skin cannot deform
+ * `[data-hit-expand]`), which made the attribute selector the wrong element
+ * twice over: the span's own `border border-rule` and `rounded-skin` would
+ * keep painting over a yellow button, and any padding would land on a box
+ * that no longer owns the pill's geometry. Routed through the hook the base
+ * now provides — the same element Slipstream paints — so the pill is one box
+ * again.
+ *
+ * **The handoff's `padding: 7px 15px` is still *not* applied — the disclosed
+ * deviation stands, and now it is measured rather than argued.** Routing onto
+ * `.skin-theme-fill` made the padding *reachable* (the base ships a per-skin
+ * size on this very hook — Slipstream's `7px 13px`), so it was applied and the
+ * gate was run: `room.gate.ts`'s `expectHeaderOnOneLine` fails at
+ * `phone-small` in the Confetti leg of the skin cycle, `the slim bar's > p
+ * holds one line` receiving **1.998** — the run-status paragraph wraps to two
+ * lines, because `7px 15px` over the incumbent `px-2 py-1` is +14px of width
+ * in the tightest row in the app (#103's own arithmetic, quoted in
+ * `room-screen.tsx`, is what forced that line down from ~200px to under ~110px
+ * to fit this button at `phone-small` in the first place). Reverted rather
+ * than forced: buying those 14px means relitigating #103's header budget, and
+ * #108 sizes the die off this button's rendered height on top of that — both
+ * out of scope for a skin slice. The incumbent `px-2 py-1` (8px/4px) is kept,
+ * so this rule changes colour, corner radius and weight — no padding, no
+ * border width, no font size. `font-weight: 600` (the handoff's own value) does
+ * re-flow the label's advance width slightly, so "no layout change" is a claim
+ * about the box model rather than an absolute one; the header's own
+ * `expectHeaderOnOneLine`/`expectDieMatchesTheme`/`expectNoHorizontalScroll`
+ * checks cover it at all four viewports.
+ * The legibility defect it exists for is carried entirely by the fill and the
+ * ink, both of which are the handoff's own values.
  */
-[data-skin='confetti'] button[aria-label='Theme'] {
+[data-skin='confetti'] .skin-theme-fill {
   background-color: #ffd23f;
   color: #20180f;
   border-color: transparent;
@@ -1290,7 +1330,7 @@ body {
   /*
    * The handoff's own grid gap — `docs/design/README.md`:85 ("gap ... 5px
    * (`confetti`)" phone, "gaps 3/4/7/5px per the theme order" desktop) and the
-   * HTML at line 669 (`gap:5px`, phone artboard) and line 337 (`gap:7px`,
+   * HTML at line 670 (`gap:5px`, phone artboard) and line 337 (`gap:7px`,
    * desktop artboard). Both sources agree, so there is no precedence question.
    *
    * **Skin-scoped, deliberately.** `card-grid.tsx`'s shared `gap-1` (4px) is
