@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { expectNoHorizontalScroll, expectThumbSized } from './measure';
+import { expectNoHorizontalScroll, expectThumbSized, expectWholeOnScreen } from './measure';
 
 /**
  * The one screen in `docs/SURFACES.md`'s table with no gate, carried as "signed off
@@ -21,7 +21,7 @@ const json = (route: Route, body: unknown) =>
 
 async function openHome(
   page: Page,
-  options: { holdHealth?: boolean } = {},
+  options: { holdHealth?: boolean; healthOutcome?: 'ok' | 'failure' } = {},
 ): Promise<{ resolveHealth: () => void }> {
   let resolveHealth = () => {};
   const gate = options.holdHealth
@@ -32,6 +32,13 @@ async function openHome(
 
   await page.route('**/health', async (route) => {
     await gate;
+    // `route.abort()` is a transport failure — the same shape `api-health.tsx`'s own
+    // catch block treats as "unreachable" rather than a 4xx/5xx reply, which the
+    // component would instead read as `failing`.
+    if (options.healthOutcome === 'failure') {
+      await route.abort('connectionrefused');
+      return;
+    }
     await json(route, { status: 'all clear' });
   });
 
@@ -58,8 +65,12 @@ test.describe('the home screen', () => {
     await expect(page.getByRole('heading', { name: 'Start a room' })).toBeInViewport();
     await expect(page.getByRole('button', { name: 'Create a room' })).toBeInViewport();
     await expect(page.getByRole('heading', { name: 'Join with a code' })).toBeInViewport();
-    await expect(page.getByRole('button', { name: 'Join' })).toBeInViewport();
-    await expect(page.getByText(/^API:/)).toBeInViewport();
+    // The bottom-most two: `toBeInViewport()` alone would pass on a single
+    // intersecting pixel, which is weaker than "on screen without scrolling" — so
+    // these two, the ones actually at risk of falling off the bottom, are asserted
+    // whole rather than merely intersecting.
+    await expectWholeOnScreen(page, page.getByRole('button', { name: 'Join' }), 'the Join button');
+    await expectWholeOnScreen(page, page.getByText(/^API:/), 'the API health line');
   });
 
   test('holds both submit buttons to a thumb-sized minimum', async ({ page }) => {
@@ -75,8 +86,8 @@ test.describe('the home screen', () => {
     await expectNoHorizontalScroll(page);
   });
 
-  test('does not shift the layout when the health line resolves', async ({ page }) => {
-    const { resolveHealth } = await openHome(page, { holdHealth: true });
+  test('does not shift the layout when the health line settles on success', async ({ page }) => {
+    const { resolveHealth } = await openHome(page, { holdHealth: true, healthOutcome: 'ok' });
 
     const health = page.getByText(/^API:/);
     await expect(health).toHaveText('API: checking…');
@@ -90,5 +101,28 @@ test.describe('the home screen', () => {
     expect(after, 'the health line has a box after it resolves').not.toBeNull();
     expect(after!.x, 'the health line moved horizontally when it resolved').toBeCloseTo(before!.x, 0);
     expect(after!.y, 'the health line moved vertically when it resolved').toBeCloseTo(before!.y, 0);
+  });
+
+  /**
+   * The acceptance criterion names the *failure* state explicitly, and a success
+   * case cannot stand in for it: `checking…` (12 characters) to `all clear` (9) is a
+   * narrower text-length change than `checking…` to `unreachable` (11), and the
+   * failure states are the ones a flaky venue Wi-Fi actually produces mid-race.
+   */
+  test('does not shift the layout when the health line settles on a failure', async ({ page }) => {
+    const { resolveHealth } = await openHome(page, { holdHealth: true, healthOutcome: 'failure' });
+
+    const health = page.getByText(/^API:/);
+    await expect(health).toHaveText('API: checking…');
+    const before = await health.boundingBox();
+
+    resolveHealth();
+    await expect(health).toHaveText('API: unreachable');
+    const after = await health.boundingBox();
+
+    expect(before, 'the health line has a box before it resolves').not.toBeNull();
+    expect(after, 'the health line has a box after it settles on a failure').not.toBeNull();
+    expect(after!.x, 'the health line moved horizontally when it failed').toBeCloseTo(before!.x, 0);
+    expect(after!.y, 'the health line moved vertically when it failed').toBeCloseTo(before!.y, 0);
   });
 });

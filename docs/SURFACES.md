@@ -287,10 +287,14 @@ page's centred column moved off `page.tsx` and into each pre-game state.
 **Settled by #68's gate run** (`gate/home.gate.ts`, all four viewports), closing the last row in the
 table and the last of #4's criteria above:
 
-- Both forms and the API health line are on screen at `phone-small` with no scrolling at all, let
-  alone past the first form.
+- Both forms and the API health line are on screen at `phone-small` without scrolling: the two
+  headings and the first submit button by `toBeInViewport()`, and the `Join` button and the `API:`
+  line — the two bottom-most, and the two actually at risk of falling off the bottom — whole on
+  screen by `expectWholeOnScreen`, which a single intersecting pixel cannot satisfy.
 - No page scrolls horizontally at any of the four viewports.
-- The health line's own box does not move between its `checking…` state and its settled state.
+- The health line's own box does not move between its `checking…` state and either of the two ways
+  it can settle: a 200 (`all clear`) and a transport failure (`unreachable`) both leave the box where
+  it was.
 - **A defect this found, the same class #13 fixed next door.** `Create a room` and `Join` were bare
   `<button>` elements and therefore 24px tall at every viewport — never measured, because Home was
   the one screen with no gate to measure it. The room screen's `min-h-11` class string moved out of
