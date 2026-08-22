@@ -46,8 +46,18 @@ export function ProgressReadout({ marks, total }: { marks: number; total: number
           />
         ))}
       </div>
+      {/*
+        #105 (Slipstream): split into a count span and a total span so a skin
+        can size the numeral apart from the "/ N" it sits beside — the handoff's
+        own "numeral only ... with `/ 24 MARKED` beneath". Both are aria-hidden
+        (the accessible text is the `role="progressbar"` aria-label above), so
+        restructuring the visible text costs no test any accessible-name
+        assertion; nothing in this file or `gate/skin-pitwall.gate.ts` reads
+        this paragraph's own `textContent`.
+      */}
       <p className="skin-progress-number text-lg" aria-hidden>
-        {marks}/{total}
+        <span className="skin-progress-count">{marks}</span>
+        <span className="skin-progress-of">/{total}</span>
       </p>
     </div>
   );
