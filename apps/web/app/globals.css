@@ -761,11 +761,75 @@ body {
  * (`px-2 py-2`, `items-center`, `justify-between`) — this issue restyles the
  * existing docked header rather than rebuilding its layout, the same
  * "restyle in place" rule #104 used for the call banner.
+ *
+ * **The header re-points the skin's own text/rule/accent tokens, it does not
+ * just set `color`.** Painting this ground blue is what makes the slice own the
+ * legibility of everything standing on it: the header's children each re-set
+ * their own colour from the light-skin tokens (`text-muted` on the stats line,
+ * `text-ink`/`border-rule` on the Theme button, `--skin-accent` in the focus
+ * rule), so `color: #fff` on the parent alone is overridden three times over
+ * and leaves dark ink and an orange ring on blue. Redefining the *tokens*
+ * inside this scope is one declaration per role instead of one selector per
+ * child, and it reaches every later control mounted here without a fourth.
+ *
+ * The values are the HTML's own: white for ink, white at `.85` (phone, line
+ * 664) / `.9` (iPad, line 317) for the muted run status, a white-alpha rule
+ * where the light skin's near-black one would vanish, and white for the ring —
+ * `#fff` on `#2f6bff` is 4.50:1, where the skin's `#ff5c39` accent would be
+ * 1.47:1 and effectively no focus indicator at all.
  */
 [data-skin='confetti'] .skin-card-header {
   background-color: #2f6bff;
   color: #fff;
   border-bottom: none;
+
+  --skin-ink: #fff;
+  --skin-ink-strong: #fff;
+  --skin-muted-soft: rgba(255, 255, 255, 0.75);
+  --skin-muted: rgba(255, 255, 255, 0.85);
+  --skin-muted-strong: rgba(255, 255, 255, 0.95);
+  --skin-rule-soft: rgba(255, 255, 255, 0.22);
+  --skin-rule: rgba(255, 255, 255, 0.35);
+  --skin-rule-strong: rgba(255, 255, 255, 0.45);
+  --skin-accent: #fff;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-header {
+    --skin-muted: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/*
+ * The Theme button as the handoff's own pill: `#ffd23f` fill, `#20180f` text,
+ * `border-radius: 999px`, padding 7px 15px, 12px/600 mixed case
+ * (`docs/design/README.md` § *Theme button per theme* → `confetti`, and the
+ * HTML draws exactly that pill in both card headers — lines 664 and 317).
+ *
+ * Skin-scoped and surface-agnostic on purpose. The pill is the handoff's value
+ * for this control in *every* Confetti surface, not a patch for the blue
+ * header, and it happens to be the fix for the header too: `text-ink` on blue
+ * was ~3.5:1 with an invisible `rgba(32,24,15,.11)` border, while dark ink on
+ * `#ffd23f` is 12.5:1 on both the cream join bar and this header. Attribute
+ * selector rather than a new class, the same hook `svg[data-die-surface]`
+ * already uses, so no component changes shape for a colour.
+ *
+ * **The handoff's `padding: 7px 15px` is *not* applied — a disclosed
+ * deviation.** The incumbent `px-2 py-1` (8px/4px) is kept, so this rule
+ * changes colour and corner radius and not one pixel of layout. The card
+ * header is the tightest row in the app — #103's own arithmetic, quoted in
+ * `room-screen.tsx`, is what forced the stats line down from ~200px to under
+ * ~110px to fit this button at `phone-small` — and #108 sizes the die off this
+ * button's *rendered height*, so +14px of width and +6px of height here would
+ * relitigate two earlier slices' geometry from inside a skin slice. The
+ * legibility defect this finding is about is carried entirely by the fill and
+ * the ink, both of which are the handoff's own values.
+ */
+[data-skin='confetti'] button[aria-label='Theme'] {
+  background-color: #ffd23f;
+  color: #20180f;
+  border-color: transparent;
+  border-radius: 999px;
+  font-weight: 600;
 }
 
 /*
@@ -1223,6 +1287,27 @@ body {
   font-family: var(--font-fredoka), sans-serif;
   font-weight: 600;
   font-size: 2.6cqw;
+  /*
+   * The handoff's own grid gap — `docs/design/README.md`:85 ("gap ... 5px
+   * (`confetti`)" phone, "gaps 3/4/7/5px per the theme order" desktop) and the
+   * HTML at line 669 (`gap:5px`, phone artboard) and line 337 (`gap:7px`,
+   * desktop artboard). Both sources agree, so there is no precedence question.
+   *
+   * **Skin-scoped, deliberately.** `card-grid.tsx`'s shared `gap-1` (4px) is
+   * left exactly as it was for the other three skins: this selector is
+   * `[data-skin] .class` (0,2,0) and beats the utility's single class (0,1,0),
+   * so Pit Wall, Slipstream and Scorecard keep the 4px their own slices are
+   * measured against. Changing the utility itself would have moved the
+   * available cell width under every skin at once — including #105's label
+   * token, tuned against today's 4px in a review round running concurrently
+   * with this one.
+   */
+  gap: 5px;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-grid {
+    gap: 7px;
+  }
 }
 
 /*
@@ -1245,34 +1330,72 @@ body {
   }
 }
 /*
+ * The label rides above the earned overlay below, matching the HTML's own
+ * z-index stack (`<span style="position:relative;z-index:2">` over the marked
+ * overlay at line 674 / line 341). Without this the overlay would simply cover
+ * the text it is supposed to sit behind.
+ */
+[data-skin='confetti'] .skin-cell > [data-label] {
+  position: relative;
+  z-index: 1;
+}
+/*
  * Earned: a solid green fill that bleeds past the cell's own border (README's
  * "Card cell" table, "marked solid `#16a34a` bleeding 2px past the border").
- * The fill is `background-color` on the cell itself, not a pseudo-element —
- * `gate/skin-pitwall.gate.ts`'s `paintedFill` (reused by this issue's own
- * `skin-confetti.gate.ts`) reads `getComputedStyle(node).backgroundColor` on
- * the node it is given, which does not see a `::before`'s declaration at all,
- * so a fill hidden behind a pseudo-element would gate on the *ancestor*
- * chain's colour instead of this skin's own green. The "bleed" is a
- * `box-shadow` with no blur, which paints just outside the border box
- * without needing a second element: `overflow: hidden` on `.CELL`
- * (`card-grid.tsx`) is what the shrink-to-fit backstop needs for a long
- * label, so `overflow: visible` is scoped to the earned state alone, same as
- * before.
  *
- * **1px, not the handoff's literal 2px — a disclosed deviation.** The grid's
- * own gap (`card-grid.tsx`'s `gap-1`, 4px, shared by every skin and untouched
- * by this issue) is narrower than the 5px the mocks draw this skin's grid at;
- * a full 2px bleed on each of two neighbouring cells leaves exactly 0px
- * between their fills, which is indistinguishable from a merged block at a
- * glance — precisely what this issue's own "Traps" section warns against.
- * 1px each side leaves 2px clear at the actual 4px gap, so the bleed still
- * reads as spilling past the border without the two ever touching.
+ * **An overlay layer, `inset: -2px`, exactly as the handoff renders it** — the
+ * HTML draws the marked state as `position:absolute; inset:-2px;
+ * background:#16a34a; border-radius:14px/20px` behind a re-drawn white label
+ * (line 674 phone, line 341 iPad), and a `::before` is that span without
+ * asking `card-grid.tsx` for a second element per cell. The full 2px is the
+ * handoff's number: at this skin's own 5px gap (above), 2px of bleed on each of
+ * two neighbours still leaves 1px clear, so the geometry the mocks draw is
+ * self-consistent and needs no deviation. `skin-confetti.gate.ts` measures that
+ * clearance rather than asserting it by eye.
+ *
+ * **The overlay is what makes the handoff's mark motion expressible**, which is
+ * the other reason it is a layer and not a `background-color`: "scales the fill
+ * from 0.85 to 1 with a slight overshoot (`cubic-bezier(.34,1.56,.64,1)`,
+ * 220ms)" (README:142) is a `transform` on the fill, and a `background-color`
+ * cannot be scaled. The pseudo-element exists on every marked-or-not cell so
+ * there is something to transition *from*; the base rule's plain `ease-out` is
+ * what "unmarking reverses without the overshoot" means, since a transition
+ * takes its timing function from the state it is going *to*.
+ *
+ * `overflow: hidden` on `.CELL` (`card-grid.tsx`) is what the shrink-to-fit
+ * backstop needs for a long label, so `overflow: visible` stays scoped to the
+ * earned state alone.
  */
+[data-skin='confetti'] .skin-cell[data-mark]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  border-radius: inherit;
+  background-color: var(--skin-marked);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+[data-skin='confetti'] .skin-cell[data-mark='earned']::before {
+  opacity: 1;
+  transform: scale(1);
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 [data-skin='confetti'] .skin-cell[data-mark='earned'] {
   overflow: visible;
-  background-color: #16a34a;
+  /*
+   * The cell keeps its own white fill under the overlay, exactly as the HTML
+   * does (`background:#fff` on the cell, the green as a layer above it). It
+   * also neutralises `card-grid.tsx`'s `bg-emerald-800` fallback class, which
+   * would otherwise be the colour showing around the overlay's edge for the
+   * 220ms it scales up from 0.85.
+   */
+  background-color: var(--skin-raised);
   border-color: transparent;
-  box-shadow: 0 0 0 1px #16a34a;
   color: #fff;
 }
 /*
