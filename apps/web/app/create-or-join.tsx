@@ -46,7 +46,7 @@ export function CreateOrJoin({ apiUrl }: { apiUrl: string }) {
             onChange={(event) => setName(event.target.value)}
             maxLength={24}
             required
-            className="rounded border border-rule bg-raised p-2"
+            className="rounded-skin border border-rule bg-raised p-2"
           />
         </label>
         <button
@@ -70,7 +70,7 @@ export function CreateOrJoin({ apiUrl }: { apiUrl: string }) {
             maxLength={4}
             autoCapitalize="characters"
             autoCorrect="off"
-            className="rounded border border-rule bg-raised p-2 tracking-widest uppercase"
+            className="rounded-skin border border-rule bg-raised p-2 tracking-widest uppercase"
           />
         </label>
         <button

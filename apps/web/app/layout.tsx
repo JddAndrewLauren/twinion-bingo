@@ -8,9 +8,9 @@ import './globals.css';
 /**
  * `themeColor` per skin (README's *Design tokens*: Pit Wall and Slipstream are
  * both dark, Confetti and Scorecard both light — so a phone's own chrome, not
- * only the page, has to tell them apart). Pit Wall's value is today's app
- * colour rather than the handoff's real one, matching `globals.css`'s own
- * "today's exact colours" carve-out for this skin in this slice.
+ * only the page, has to tell them apart). Pit Wall's value is now the
+ * handoff's real surface colour (`#0a0a0b`), retuned by #104 along with
+ * `globals.css`'s own token block.
  *
  * This used to carry a note that the value matched `app/manifest.ts`'s, so an
  * installed launch and a browser tab tinted the same. That invariant does not
@@ -20,7 +20,7 @@ import './globals.css';
  * Wall, which is every fresh install.
  */
 const THEME_COLOR: Record<Skin, string> = {
-  pitwall: '#0a0a0a',
+  pitwall: '#0a0a0b',
   slipstream: '#0e0e12',
   confetti: '#fffbf2',
   scorecard: '#f7f1e4',

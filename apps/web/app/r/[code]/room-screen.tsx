@@ -26,7 +26,10 @@ import {
 import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
 import { LookingFor, LookingForPanel, openSquares } from './looking-for';
+import { ProgressReadout } from './progress-readout';
 import { Results, nextPrizeName } from './results';
+import { RoomCode } from './room-code';
+import { RosterPreview } from './roster-preview';
 import { ShareRoom } from './share-dialog';
 import { useWakeLock } from './use-wake-lock';
 
@@ -648,7 +651,15 @@ export function RoomScreen({
 
   if (roster.you === null) {
     return (
-      <form onSubmit={submitName} className={COLUMN}>
+      /*
+        #104: the room code, the ruled name field and the roster are structural
+        pieces the app did not have before this issue — see `room-code.tsx` and
+        `roster-preview.tsx`. `lg:max-w-3xl` and the two-column row below only
+        take effect at `lg` (1024px), which is `ipad-11-landscape` in
+        `docs/SURFACES.md`'s matrix and nothing narrower — `ipad-11-portrait`
+        (834) and both phone widths keep the single `max-w-md` column.
+      */
+      <form onSubmit={submitName} className={`${COLUMN} lg:max-w-3xl`}>
         {/*
           #103's brand bar: this state had no top bar at all before, just the
           bare `<h1>` — the Theme button needed somewhere to hang, so this row
@@ -672,30 +683,72 @@ export function RoomScreen({
             <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
           </div>
         </div>
-        <label className="flex flex-col gap-1">
-          Your name
-          <input
-            name="name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            maxLength={24}
-            required
-            className="rounded border border-rule bg-raised p-2"
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={joining || name.trim() === ''}
-          className={ACTION_BUTTON}
-        >
-          {joining ? 'Joining…' : 'Join'}
-        </button>
-        {joinFailed !== null && <p role="alert">{joinFailed}</p>}
-        {/*
-          Below Join, so the form's own primary action keeps its place: somebody who
-          followed a link here is joining, not re-sharing.
-        */}
-        <ShareRoom code={code} shareLink={shareLink} />
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-10">
+          {/*
+            The left column at `lg` (README's "Left column (≈55–60%) holds room
+            code, name field, and primary action"); the divider is a hairline in
+            Pit Wall and nothing in this issue's other three skins, which is why
+            it is a plain `border-rule` rather than a per-skin class.
+          */}
+          <div className="flex flex-1 flex-col gap-4 lg:border-r lg:border-rule lg:pr-10">
+            <RoomCode code={code} />
+            <div className="flex flex-col gap-1">
+              <label htmlFor="join-name">Your name</label>
+              {/*
+                The bordered box is `.skin-field` rather than the `<label>`
+                itself, so "Your name" sits above the box (README's per-theme
+                description) rather than inside it.
+              */}
+              <div className="skin-field rounded-skin border border-rule bg-raised p-2">
+                <input
+                  id="join-name"
+                  name="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={24}
+                  required
+                  className="w-full bg-transparent outline-none"
+                />
+              </div>
+            </div>
+            {/*
+              `skin-action-primary` is the accent-fill hook, and it is *here*
+              rather than on `ACTION_BUTTON` deliberately. The handoff gives the
+              filled treatment to this screen's single primary action; no mock
+              puts an accent-filled button on the card screen (where red is the
+              free centre and the call banner's rule) or on the home screen,
+              whose two forms are co-equal and would end up with two competing
+              full-red primaries. `ACTION_BUTTON` still supplies the 44px
+              minimum, the border and the padding every submit button shares.
+            */}
+            <button
+              type="submit"
+              disabled={joining || name.trim() === ''}
+              className={`${ACTION_BUTTON} skin-action-primary`}
+            >
+              {/*
+                "Enter room" rather than the handoff's literal "ENTER ROOM":
+                `lobby.gate.ts` and `test/room-screen.test.tsx` name this button
+                by its accessible text, and #104 keeps that text in sentence
+                case and lets `[data-skin='pitwall'] .skin-action-primary`'s
+                `text-transform: uppercase` carry the visual, the same pattern
+                the roster's `HOST` tag uses — rather than baking upper case
+                into the DOM text every skin and every screen reader gets.
+              */}
+              {joining ? 'Entering…' : 'Enter room'}
+            </button>
+            {joinFailed !== null && <p role="alert">{joinFailed}</p>}
+            {/*
+              Below the primary action, so the form's own primary action keeps
+              its place: somebody who followed a link here is joining, not
+              re-sharing.
+            */}
+            <ShareRoom code={code} shareLink={shareLink} />
+          </div>
+          <div className="flex-1">
+            <RosterPreview roster={roster} />
+          </div>
+        </div>
       </form>
     );
   }
@@ -895,7 +948,7 @@ export function RoomScreen({
               // `min-h-11` is 44px, Apple's documented minimum. #12 shipped a
               // prototype whose own switcher was 24px tall and unreachable by
               // thumb, which is the kind of thing only a device finds.
-              className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+              className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
                 tab === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
               }`}
             >
@@ -955,6 +1008,13 @@ export function RoomScreen({
                 />
               ) : (
                 <>
+                  {/*
+                    #104's progress readout: a structural region the app did not
+                    have, above the grid rather than replacing the header's own
+                    `n/24` line. Pure props, no state of its own — see
+                    `progress-readout.tsx`.
+                  */}
+                  <ProgressReadout marks={game.marks.length} total={game.card.length} />
                   <CardGrid
                     card={game.card}
                     freeCentre={game.freeCentre}
@@ -986,7 +1046,10 @@ export function RoomScreen({
                       promise is "a different 24", not 24 different squares. And it is
                       only the calls that land on the *new* card that arrive grey.
                     */
-                    <p id="reroll-consequence" className="text-sm text-muted">
+                    <p
+                      id="reroll-consequence"
+                      className="skin-note text-sm text-muted"
+                    >
                       A different 24 from the same deck. Any square already called
                       that lands on the new card arrives grey: it still counts in the
                       standings, but it can never win you a prize.
@@ -1009,7 +1072,7 @@ export function RoomScreen({
                 <button
                   type="button"
                   onClick={() => setSheetOpen(!sheetOpen)}
-                  className="min-h-11 rounded border border-amber-700 px-3 text-sm font-semibold text-amber-200"
+                  className="min-h-11 rounded-skin border border-amber-700 px-3 text-sm font-semibold text-amber-200"
                 >
                   {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
                 </button>
@@ -1071,7 +1134,7 @@ export function RoomScreen({
                   aria-selected={pane === which}
                   aria-controls={`pane-${which}`}
                   onClick={() => setPane(which)}
-                  className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
+                  className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
                     pane === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
                   }`}
                 >
@@ -1163,7 +1226,7 @@ export function RoomScreen({
              */
             <p
               role="status"
-              className="bg-emerald-800 p-3 text-center text-sm text-emerald-50"
+              className="skin-banner bg-emerald-800 p-3 text-center text-sm text-emerald-50"
             >
               {toast.text}
             </p>
@@ -1171,7 +1234,7 @@ export function RoomScreen({
           {undo !== null && !finished && (
             <div
               role="status"
-              className="flex items-center justify-between gap-3 border-t border-emerald-700 bg-emerald-800 p-3 text-sm text-emerald-50"
+              className="skin-banner flex items-center justify-between gap-3 border-t border-emerald-700 bg-emerald-800 p-3 text-sm text-emerald-50"
             >
               <span className="min-w-0">
                 Called {labelFor(game, undo.squareId)}
@@ -1179,7 +1242,7 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(undo)}
-                className="min-h-11 shrink-0 rounded border border-emerald-200 px-3 font-semibold"
+                className="min-h-11 shrink-0 rounded-skin border border-emerald-200 px-3 font-semibold"
               >
                 Undo
               </button>
@@ -1198,7 +1261,7 @@ export function RoomScreen({
             aria-label="Take back this call"
             className="fixed inset-0 flex items-center justify-center bg-black/70 p-4"
           >
-            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-rule bg-raised p-4">
+            <div className="flex w-full max-w-xs flex-col gap-3 rounded-skin border border-rule bg-raised p-4">
               <p>
                 Take back {labelFor(game, confirming.squareId)}? It unmarks for
                 everyone holding it.
@@ -1213,14 +1276,14 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(confirming)}
-                className="min-h-11 rounded border border-rule-strong font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Take it back
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-11 rounded border border-rule-strong font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Keep it
               </button>
