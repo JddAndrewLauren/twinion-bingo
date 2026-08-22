@@ -49,7 +49,7 @@ cookie's default) rather than sweeping all four.
 
 | Screen                | Route / state                                    | What the capture has to show                                                                                             |
 | --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Header — skin controls | `/`, `/r/:code` needing a name, `/r/:code` in the lobby, and the game header | The **Theme button**, present and tappable in the top bar of all four surfaces: pressing it advances the fixed skin cycle without a remount — a live game's SSE stream survives four consecutive presses at `phone`. Its *hit* element (not its visible box) is ≥44×44 at `phone-small`/`phone`, and it sits beside the **die** (#108; a disabled placeholder until then, per #103) without the two 44px hit targets overlapping — both boxes are compared now that the die has its own expander. On the game header the die is enabled and tappable while the card is clean and the game is live, and gone once the card has a mark or the game is done; on the join and lobby headers it is always present but disabled, since there is no card yet to re-roll. On the game header specifically, the slim bar's stats line shortens to `n/24 · m here` to buy back the width both controls cost, with `· <rung> next` dropping to a `hidden lg:inline` span — absent at `phone-small`/`phone`, present at `ipad-11-landscape` |
+| Header — skin controls | `/`, `/r/:code` needing a name, `/r/:code` in the lobby, and the game header | The **Theme button**, present and tappable in the top bar of all four surfaces: pressing it advances the fixed skin cycle without a remount — a live game's SSE stream survives four consecutive presses at `phone`. Its *hit* element (not its visible box) is ≥44×44 at `phone-small`/`phone`. On the three `/r/:code` surfaces it sits beside the **die** (#108, which replaced #103's disabled placeholder) without the two 44×44 hit targets overlapping — both expanders are compared, now that the die has one — and the die's own visible box is square and equal to this button's rendered height, measured on first render and again after each press of a full turn of the skin cycle, since a skin's type scale is what moves that height. On `/` there is **no die**: it has no card, no game and no room, so the Theme button stands alone there and `home.gate.ts` asserts that (#108 names "the join and lobby headers", and the handoff's "join screen" is `/r/:code` needing a name). On the game header the die is enabled and tappable while the card is clean and the game is live, gone once the card has a mark or the game is done, and gone while the host deck sheet is up (#112's rule, unchanged: no card on screen, nothing to re-roll); on the join and lobby headers it is always present but disabled, since there is no card yet to re-roll. On the game header specifically, the slim bar's stats line shortens to `n/24 · m here` to buy back the width both controls cost, with `· <rung> next` dropping to a `hidden lg:inline` span — absent at `phone-small`/`phone`, present at `ipad-11-landscape` |
 | Home                  | `/`                                              | The two stacked forms ("Start a room", "Join with a code") both reachable without scrolling past one; the API health line |
 | Room — needs a name   | `/r/:code`, roster `you === null`                | The name form and heading fit; the disabled/enabled button state is legible                                               |
 | Room — roster         | `/r/:code`, joined                               | The room code heading, **Share room** where the share link used to be printed (#88 — the link itself is in the dialog now), and the roster with `(host)` and `— you` |
@@ -71,7 +71,7 @@ cookie's default) rather than sweeping all four.
 | Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling, and both **thumb-sized (44px)** — they were 24px until #46 measured them |
 | Game — retract dialog over the sheet | `/r/:code`, the host tapping a **called** row of the deck sheet | The same confirmation over the 40-row sheet rather than the card — so nothing here can be said as "clear of the card", and the panel has to be **whole inside the viewport** while the scroller behind it is three screens tall. The prose **names the square**, which only works because the host holds the deck's prose; and the row it was opened from goes back to uncalled once **Take it back** is tapped. This is the only surface that reaches a call on one of the ~16 deck squares that are on no card of the host's |
-| Game — card re-roll   | `/r/:code`, a live game whose card has no mark of either kind | The **die**, in the game header beside the Theme button (#108 — moved from beneath the grid, where #87/#112 first shipped it), icon-only with an accessible name of **Re-roll card**; its *hit* element is thumb-sized (44px) at `phone-small`/`phone`, sized visually from the Theme button's own rendered height rather than a constant. Present only while the card is **clean and the game is live**, gone (unmounted, not disabled) for an **inherited** mark exactly as for an earned one, and — unlike #112's placement — still offered while the host deck sheet is up, since the header is chrome shared by both views of that column. The tap is **immediate** — no confirmation between it and the deal (#87) — with its accessible name changing to **Re-rolling…** while the request is out (there is no visible label left to update) and a visually-hidden `role="status"` announcing **New card dealt.** when it lands. The grid never moves at all — "does not shift the grid when a call lands" stays green untouched — and neither does anything beneath it, since the button's old permanently-reserved slot there is gone along with the button |
+| Game — card re-roll   | `/r/:code`, a live game whose card has no mark of either kind | The **die**, in the game header beside the Theme button (#108 — moved from beneath the grid, where #87/#112 first shipped it), icon-only with an accessible name of **Re-roll card**; its *hit* element is thumb-sized (44px) at `phone-small`/`phone`, and its visible box is square at the Theme button's own rendered height rather than a constant — asserted as that relationship, on both axes, at first render and after each press of a full turn of the skin cycle. Present only while the card is **clean and the game is live**, gone (unmounted, not disabled) for an **inherited** mark exactly as for an earned one, and **absent while the host deck sheet is up** (#112's rule, kept: no card on screen behind the sheet, nothing to re-roll — and it is also what keeps the `aria-describedby` target in the document whenever the die is offered). The tap is **immediate** — no confirmation between it and the deal (#87) — with its accessible name changing to **Re-rolling…** while the request is out (there is no visible label left to update) and a visually-hidden `role="status"` announcing **New card dealt.** when it lands. The grid never moves at all — "does not shift the grid when a call lands" stays green untouched. What sits **below** the grid does move when the first call withdraws the offer, and by the same amount as before #108: measured at `phone-small`, the accordion and the host deck-sheet button rise **72px** (the consequence prose's 60px plus the column's 12px `gap-3`) when the consequence paragraph unmounts with the offer. #87's slot beneath the grid was reserved whether or not the offer stood, so it contributed nothing to that movement and its removal costs nothing here — see the note in the #108 run below |
 | Game — re-roll consequence | `/r/:code`, the same clean live card | ADR-0006's one-way door, still stated in the card column rather than the header — there is no room for a sentence up there — and still wired to the die by `aria-describedby` even though the two are no longer adjacent in the DOM (an id reference, not a proximity one): an already-called square landing on the new card arrives **grey**, counting in the **standings** and never winning a prize. Prose in flow, so the claim is that **no line of it is clipped** and it is whole on screen at every viewport. **No cell clipped on the replacement card** once it is dealt |
 | Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code **and beside the Share room control (#88, whose trigger reads "Share" for exactly this reason)**, and the rung dropping out rather than reading "full house next" once the ladder is spent |
 | Game — the two surfaces | `/r/:code`, tapping `Card` and `Race` — the **phone layout**, so `phone-small`, `phone` and `ipad-11-portrait` | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
@@ -674,7 +674,21 @@ rather than adding or removing a case):
   measures **25.98×25.98**, identical at all four viewports and both Confetti surfaces, since
   neither Pit Wall's nor Confetti's own real per-skin type/border has landed yet (a later slice's
   work); the *mechanism* is what this issue is answerable for, not a number that moves once those
-  skins do.
+  skins do. **The relationship is what is asserted**, not the number: `holds the die and the Theme
+  button beside the room code and Share` measures both visible boxes and requires the die's height
+  *and* width to be within 1px of the Theme button's height, with a `> 20px` floor on the reference
+  box so it cannot degenerate into `0 === 0`, re-checked after each of four Theme presses. Nothing
+  else here can catch a collapsed or stale die: `toBeVisible()` passes any non-empty box — it passed
+  #103's ~2px reserved-slot sliver for a whole slice — and both `expectThumbSized` calls point at
+  fixed `h-11 w-11` expanders, which are the same size whatever the die does. Seeded by forcing a
+  stale 2px size in `die-button.tsx`, the new assertion fails at all four viewports; unseeded it
+  passes.
+
+- **The `deviceScaleFactor: 2` capture** is `docs/design/captures/header-die-108-phone-small@2x.png`
+  (the whole slim bar, Pit Wall, `phone-small`) with the glyph alone in
+  `header-die-108-glyph@2x.png`. The gate's own projects already run at `deviceScaleFactor: 2`, so
+  these are that build's own pixels rather than a separate capture path. Pips read 1-2-4 — one on the
+  top face, two on the right, four on the left — and none of the seven touches the silhouette.
 
 - **The shared hit-expander technique has a bug this issue is the first to exercise.** `SkinButton`'s
   `inset-0 m-auto` centring (#103) only ever collapses to its own already-≥44px box, so it has never
@@ -700,17 +714,33 @@ rather than adding or removing a case):
   never accounted for separately. Still a no-op on the matrix (width binds at all four viewports);
   it only ever did work on a rotated phone, same as before.
 
-- **Colour is measured per surface, not asserted by a screenshot against the not-yet-built blue
-  header.** `getComputedStyle` on the die's `<svg>` confirms all four literal values verbatim: Pit
-  Wall `rgba(232, 232, 234, 0.6)`, Slipstream `rgba(255, 255, 255, 0.55)`, Scorecard
-  `rgb(43, 33, 24)` (`#2b2118`), Confetti's join bar `rgba(32, 24, 15, 0.55)` and its card-header
-  value `rgba(255, 255, 255, 0.85)`. The join-bar value reads correctly dark against Confetti's real
-  cream background today. The card-header value does **not** yet read as intended: no component
-  paints the game header's own background per skin (that lands in Confetti's own later slice), so a
-  white die on the still-cream game header is genuinely low-contrast in this build — captured and
-  disclosed rather than hidden, and only findable by eye or by literally reading the header's
-  current background, since the visual gate asserts geometry, not colour. The value itself is
-  correct for the surface the handoff draws; nothing here can make that surface exist early.
+- **Colour is chosen for the surface that exists, not for the one the handoff draws.** Three of the
+  four values are the handoff's verbatim: Pit Wall `rgba(232, 232, 234, 0.6)`, Slipstream
+  `rgba(255, 255, 255, 0.55)`, Scorecard `#2b2118`. Confetti has **two** values in the handoff —
+  `rgba(32, 24, 15, 0.55)` on its cream join bar and `rgba(255, 255, 255, 0.85)` on its blue
+  `#2f6bff` card header — and this build has only the first surface: no component paints a blue game
+  header yet (#106, the Confetti slice, is what lands it). The rule is "match the muted label beside
+  it *in that bar*", so the game header's die keeps the cream bar's dark value here, and #106 adds
+  the one-line `svg[data-die-surface='card']` override in the same commit as the background it
+  belongs to. Shipping the white value early would have made the die invisible on cream, which is
+  the exact bug the per-surface rule exists to prevent.
+
+- **What moves below the card when the first call lands, measured rather than argued.** The
+  consequence prose is still `canReroll`-gated in the card column, so it unmounts with the offer:
+  at `phone-small`, `Your card` holds its box exactly (`y: 125`, `367×367.02`, before and after),
+  while the `What am I looking for` accordion goes `577.02 → 505.02` and the host deck-sheet button
+  `634.02 → 562.02` — **72px up** for both, the prose's 60px plus the column's 12px `gap-3`. That
+  number is unchanged by #108: #87's `min-h-11` slot was reserved *whether or not the offer stood*,
+  so it was the same height on both sides of the call and contributed nothing to the movement;
+  removing it shifts this column up once, permanently, and leaves the call-time jump where it was.
+  So "nothing below the card jumps" is **not** true and was not true before either — what is true is
+  that the grid never moves and the jump did not get worse. Closing it properly means either
+  reserving ~72px of blank column for the whole game after the first call, or moving the prose below
+  everything else in the column (where `expectWholeOnScreen` fails at `phone-small`, since it lands
+  past 667px) — both worse than the movement, so it is left as a known reflow rather than papered
+  over.
+
+## Adding a surface or a screen
 
 Add the row when the screen lands, in the same PR. A screen that exists and is not in this table is
 a screen nobody will check, which is the situation this file was written to end.

@@ -47,13 +47,15 @@ import { useLayoutEffect, useState, type RefObject } from 'react';
  * because it lets the pip geometry below assume a square box without also
  * juggling `justify-content`/`align-items` on the button.
  *
- * **Colour is per surface, not per skin** (README, same section): every skin's bar
- * uses one literal value except Confetti, which needs a second for its blue card
- * header. `data-die-surface` on the `<svg>` plus the two-rule override in
- * `globals.css` carries that without adding a token the rest of the app would read
- * — these are the handoff's real numbers, not yet mirrored in the skin-token layer
- * since Pit Wall's own real palette is a later slice's work (see the note atop that
- * block in `globals.css`).
+ * **Colour is per surface, not per skin** (README, same section) — the value has to
+ * match the muted label text beside the die *in the bar it is actually sitting on*.
+ * `surface` is what carries that distinction, as `data-die-surface` on the `<svg>`,
+ * with the literal values in `globals.css` rather than in the skin-token layer the
+ * rest of the app reads. Today all four skins resolve both surfaces to the same
+ * value: Confetti's second value belongs to the blue card header the handoff draws,
+ * which no component paints yet, and a white die on the cream header that *does*
+ * exist is the invisible die that rule exists to prevent. See the note under the
+ * Confetti rule in `globals.css` for which slice flips it.
  */
 export function DieButton({
   onClick,

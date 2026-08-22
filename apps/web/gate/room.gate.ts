@@ -348,6 +348,12 @@ test.describe('the slim bar and the two surfaces', () => {
    * what it actually does ("Re-roll card", not "Dice"), and asserts it enabled
    * rather than disabled. `offers no re-roll on a card a call has marked` below
    * covers the header at `mid`/`done`, where the die is correctly absent.
+   *
+   * It also owns criterion 1's real claim — that the die's side is *derived from*
+   * the Theme button's rendered height, not copied from a constant — by measuring
+   * both boxes and comparing them, at first render and after each press of one
+   * full turn of the skin cycle. See the comment on that block for why nothing
+   * else here can catch a collapsed or stale die.
    */
   test('holds the die and the Theme button beside the room code and Share', async ({
     page,
@@ -363,6 +369,66 @@ test.describe('the slim bar and the two surfaces', () => {
     await expectThumbSized(dice.locator('[data-hit-expand]'), "the die's hit element");
     await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
     await expectHeaderOnOneLine(bar);
+
+    /*
+      Criterion 1 — "sized from the adjacent Theme button rather than a hardcoded
+      pixel value" — asserted as the relationship itself, because nothing else in
+      this suite can see it. `toBeVisible()` is satisfied by any non-empty box (it
+      passed #103's ~2px reserved-slot sliver for a whole slice), and the two
+      `expectThumbSized` calls above point at fixed `h-11 w-11` expanders, so a
+      `ResizeObserver` that never fired — or fired against the wrong node, or held
+      a stale size across a skin change — leaves a collapsed die and every other
+      assertion here green.
+
+      So: the die's own *visible* box against the Theme button's own *visible* box,
+      on both axes, since the die is square. The tolerance is 1px, and 1px is the
+      whole budget: `die-button.tsx` sets its box from
+      `getBoundingClientRect().height` on this very button, so the only legitimate
+      difference is WebKit rounding a fractional CSS px onto the device grid — any
+      real failure of the mechanism is a collapse to ~0px or a stale value from a
+      differently-sized skin, both of which are orders of magnitude outside it.
+
+      The `toBeGreaterThan(20)` on the reference box is not decoration: it stops
+      this from degenerating into `0 === 0` if the Theme button itself ever
+      collapses, which is exactly the trap the assertion it replaces fell into.
+    */
+    const expectDieMatchesTheme = async (where: string): Promise<void> => {
+      const die = (await dice.boundingBox())!;
+      const button = (await theme.boundingBox())!;
+
+      expect(button.height, `the Theme button's own height ${where}`).toBeGreaterThan(20);
+      expect(
+        Math.abs(die.height - button.height),
+        `the die is ${die.height}px tall against a ${button.height}px Theme button ${where}`,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(die.width - button.height),
+        `the die is ${die.width}px wide against a ${button.height}px Theme button ${where}`,
+      ).toBeLessThanOrEqual(1);
+    };
+
+    await expectDieMatchesTheme('as the header first renders');
+
+    /*
+      And it holds across the skin cycle, which is the case the criterion is really
+      about: a skin's own type scale is what moves the Theme button's height (the
+      handoff tabulates 27px, 27px, 29px, 34px), so a die sized once and never
+      re-measured is a bug that only appears after a press. Four taps is one full
+      turn of the fixed cycle, so this leaves the skin as it found it. Today all
+      four skins render the same box — no per-skin type scale has landed yet — so
+      this is the regression guard for the slice that lands Scorecard's 34px
+      button, and it is also where "the header renders on one line at
+      `phone-small` in every skin" stops being an argument and becomes an
+      assertion.
+    */
+    for (const skin of ['slipstream', 'confetti', 'scorecard', 'pitwall']) {
+      await theme.tap();
+      await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
+
+      await expectDieMatchesTheme(`in ${skin}`);
+      await expectHeaderOnOneLine(bar);
+      await expectNoHorizontalScroll(page);
+    }
 
     /*
       Two 44px hit targets cannot overlap — the whole reason the stats line had to
@@ -1044,19 +1110,12 @@ test.describe('re-rolling a clean card', () => {
     await expect(rerollButton(page)).toHaveCount(0);
   });
 
-  /**
-   * #108 changes this from #112's answer. The control used to live in the card
-   * column, which the deck sheet replaces — "no card on screen, nothing to
-   * re-roll" was true only because of *where* the button sat. It now lives in
-   * the header, chrome shared by both views of that column, so it stays
-   * offered: the API acts on `game.card` regardless of which panel is showing,
-   * and there is no reason specific to the sheet to withdraw it.
-   */
-  test('still offers a re-roll while the deck sheet is up', async ({ page }) => {
+  /** No card on screen behind the sheet, so there is nothing there to re-roll. */
+  test('offers no re-roll while the deck sheet is up', async ({ page }) => {
     await openRoom(page, 'start');
 
     await page.getByRole('button', { name: 'Host deck sheet' }).tap();
-    await expect(rerollButton(page)).toBeVisible();
+    await expect(rerollButton(page)).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Back to your card' }).tap();
     await expect(rerollButton(page)).toBeVisible();

@@ -819,32 +819,40 @@ export function RoomScreen({
             It is also the tightest row in the app, and this group is what made it
             tight: `px-2` and `gap-2` here rather than `px-3`/`gap-3` are what buy it
             back, same as before #103. What changed is what has to fit beside the
-            stats line — the room code (~82px), a reserved dice slot and the Theme
-            button (~44px each) and Share (~55px) — which is why the stats line
-            itself had to come down from ~200px to under ~110px rather than the
-            other way around. `room.gate.ts` still counts the lines.
+            stats line — the room code (~82px), the die and the Theme button, and
+            Share (~55px) — which is why the stats line itself had to come down
+            from ~200px to under ~110px rather than the other way around. The two
+            controls lay out at their *visible* widths (#108 measures the die at
+            ~26px square, the Theme button at ~60px), each with a 44px hit element
+            that adds no layout width; the `gap-[10px]` rather than `gap-2` is what
+            keeps those two hit boxes from overlapping. `room.gate.ts` still counts
+            the lines, and now measures both.
 
             The row also went `items-baseline` -> `items-center`: the control group
-            below is `items-stretch` so the dice slot's `aspect-square` can track the
-            Theme button's height, and a baseline-aligned parent gives a stretched
-            child nothing to align to. `legibility/page.tsx`, which stands in for this
-            header, was moved with it so the two do not drift.
+            below is `items-stretch` for the Theme button's own box, and a
+            baseline-aligned parent gives a stretched child nothing to align to.
+            `legibility/page.tsx`, which stands in for this header, was moved with
+            it so the two do not drift.
           */}
           <div className="flex shrink-0 items-stretch gap-[10px]">
             {/*
-              #108: the real die, in the slot #103 reserved. `aspect-square`
-              against this row's `items-stretch` is what sizes it — the design
-              handoff's own "a stretch-based flex row also works" — so it has
-              no hardcoded side for a future skin's type scale to invalidate.
+              #108: the real die, in the slot #103 reserved. It carries no
+              hardcoded side, but not by the CSS route #103's placeholder used:
+              `aspect-square` against `items-stretch` measures a 0px width in
+              the WebKit build this project gates against, so `die-button.tsx`
+              sets its box in pixels from a `ResizeObserver` on the Theme button
+              beside it instead. See that file's doc block for the measurement.
 
-              Mounted only while `canReroll` holds, exactly like #112's button
-              it replaces: kept, not reopened, per this issue's brief. A card
-              with a mark does not get the offer back later, so a disabled-forever
-              die would be furniture; hiding it costs only a few pixels of
-              horizontal reflow in this row when it goes, not a jump anywhere
-              below the card.
+              Mounted only while `canReroll` holds *and* the deck sheet is down,
+              exactly like #112's button it replaces: both of those are #112's
+              decisions, kept rather than reopened, per this issue's brief. A
+              card with a mark does not get the offer back later, so a
+              disabled-forever die would be furniture; and behind the sheet there
+              is no card on screen to re-roll — which is also what keeps the
+              `aria-describedby` target below in the document whenever the die
+              is offered.
             */}
-            {canReroll && (
+            {canReroll && !sheetOpen && (
               <DieButton
                 onClick={() => void reroll()}
                 disabled={rerolling}

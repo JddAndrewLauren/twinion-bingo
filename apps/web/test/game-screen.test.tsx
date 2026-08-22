@@ -1825,15 +1825,8 @@ describe('re-rolling a clean card', () => {
     expect(rerollButton()).toBeNull();
   });
 
-  /**
-   * #108 changes this from #112's answer. The button used to live in the card
-   * column, which the deck sheet replaces — "no card on screen, nothing to
-   * re-roll" was true only because of *where* the button sat. It now lives in
-   * the header, which is chrome shared by both views of this column, so it
-   * stays offered: the API acts on `game.card` regardless of which panel is
-   * showing, and there is no reason specific to the sheet to withdraw it.
-   */
-  it('still offers a re-roll while the host deck sheet is up', async () => {
+  /** There is no card on screen behind the sheet, so there is nothing to re-roll. */
+  it('offers no re-roll while the host deck sheet is up', async () => {
     stubRoom({ you: host, liveFromTheStart: true, deck: true });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -1842,7 +1835,7 @@ describe('re-rolling a clean card', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Host deck sheet' }));
     await screen.findByLabelText('Host deck sheet');
-    expect(rerollButton()).not.toBeNull();
+    expect(rerollButton()).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Back to your card' }));
     await screen.findByLabelText('Your card');
