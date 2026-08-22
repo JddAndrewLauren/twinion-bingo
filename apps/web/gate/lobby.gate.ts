@@ -36,21 +36,14 @@ test.describe('joining', () => {
   });
 });
 
+/**
+ * The share link was the risk here and always had been: it was a full
+ * `https://host/r/CODE` rendered as body text, so a long deploy hostname was what made
+ * it overflow rather than wrap. #88 put it behind **Share room**, so the wrap risk
+ * moved into the dialog with it — `share.gate.ts` carries that assertion now, against
+ * the dialog's own ~320px column.
+ */
 test.describe('the lobby', () => {
-  /**
-   * The share link is the risk here and always has been: it is a full
-   * `https://host/r/CODE` rendered as body text, so a long deploy hostname is what
-   * makes it overflow rather than wrap.
-   */
-  test('wraps the share link rather than overflowing it', async ({ page }) => {
-    await openLobby(page, 'roster');
-
-    const link = page.getByText(/^Share this link:/);
-    await expect(link).toBeVisible();
-    await expectNoRowClipped(link, 'the share link');
-    await expectNoHorizontalScroll(page);
-  });
-
   test('lists the roster with its host and you suffixes intact', async ({ page }) => {
     await openLobby(page, 'roster');
 
@@ -63,7 +56,7 @@ test.describe('the lobby', () => {
 
   /**
    * The host's own view. The criterion is reach: **Start game** below the roster and
-   * on screen without scrolling past the share link, at the tightest width.
+   * on screen without scrolling past the share control, at the tightest width.
    */
   test('puts the host`s Start game button on screen without scrolling', async ({ page }) => {
     await openLobby(page, 'host-lobby');
@@ -77,7 +70,7 @@ test.describe('the lobby', () => {
   test('offers no Start game to anyone but the host', async ({ page }) => {
     await openLobby(page, 'roster');
 
-    await expect(page.getByText(/^Share this link:/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Share room' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start game' })).toHaveCount(0);
   });
 });

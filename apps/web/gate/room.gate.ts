@@ -38,8 +38,13 @@ const twoPane = () => test.info().project.name === 'ipad-11-landscape';
  * spotted/)` cannot be used here: the timeline is a list of the same sentence, so it
  * matches thirteen rows on a mid-race card and the one that matters is the only one
  * that is not in a list.
+ *
+ * Scoped out of the share dialog since #88, which carries a live region of its own
+ * for its copy feedback. That one is never painted at the same time as this — a
+ * closed `<dialog>` is `display: none` — but it is in the document, and a bare
+ * `p[role="status"]` is two elements the moment it is.
  */
-const credit = (page: Page) => page.locator('p[role="status"]');
+const credit = (page: Page) => page.locator('p[role="status"]:not(dialog p)');
 
 /**
  * The tab that puts the standings and the timeline up, in whichever layout is on:
@@ -226,6 +231,23 @@ test.describe('the slim bar and the two surfaces', () => {
     await expect(bar).toContainText('here');
     await expectNoRowClipped(bar.locator('p'), 'the slim bar');
     await expectNoHorizontalScroll(page);
+
+    /*
+      "One line" said as a measurement, because nothing else here can see it: a wrapped
+      row is not clipped, does not scroll the page and does not overflow anything — it
+      just quietly takes a second line out of the card's own height. #88's Share room
+      trigger did exactly that at both phone widths, wrapping the heading *and* the
+      statistics and taking the bar from 44px to 69px, and every assertion above stayed
+      green. Compared against each row's own computed `line-height` rather than a pixel
+      constant, so a type-scale change does not have to come back here.
+    */
+    for (const row of ['h1', '> p']) {
+      const lines = await bar.locator(row).first().evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        return box.height / parseFloat(getComputedStyle(node).lineHeight);
+      });
+      expect(lines, `the slim bar's ${row} holds one line`).toBeLessThanOrEqual(1.01);
+    }
   });
 
   /**

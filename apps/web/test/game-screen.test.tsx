@@ -523,6 +523,31 @@ describe('the slim bar', () => {
     // nothing left to play for, so the bar stops claiming there is.
     expect(await screen.findByText('0 marks · 2 here')).toBeDefined();
   });
+
+  /**
+   * The bar is where sharing lives once the cards are dealt — it is the one node
+   * present in both layouts and in both game states, so a latecomer can be pulled
+   * into a race that has already started, or into one that has just ended.
+   */
+  it('carries the share control on a live game', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('button', { name: 'Share room' }),
+    ).toBeDefined();
+  });
+
+  it('still carries it once the game is done', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, gameState: 'done' });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('button', { name: 'Share room' }),
+    ).toBeDefined();
+  });
 });
 
 /**
