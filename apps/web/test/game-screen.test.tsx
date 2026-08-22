@@ -347,6 +347,82 @@ describe('starting a game', () => {
 
     expect(await screen.findByRole('alert')).toBeDefined();
   });
+
+  /**
+   * #76: a 409 on `/games` means the room already has a live game — a distinct
+   * fact from the deck-composition 503 above, and the sentence says so.
+   */
+  it('reads a 409 on start as the room already having a game', async () => {
+    stubRoom({ you: host });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.endsWith('/games')
+          ? Response.json(
+              { error: 'this room already has a live game' },
+              { status: 409 },
+            )
+          : Response.json({
+              code: 'ABCD',
+              themeId: 'f1.v1',
+              hostPlayerId: host.id,
+              players: [host],
+              you: host,
+            }),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Start game' }));
+
+    expect(
+      await screen.findByText('This room already has a game.'),
+    ).toBeDefined();
+  });
+
+  it("logs the server's error body to the console, verbatim, on a failed start", async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    stubRoom({ you: host });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.endsWith('/games')
+          ? Response.json(
+              {
+                error:
+                  'cannot compose a 40-square deck from theme "f1":\n  - needs 13 certain squares, and only 7 are selectable',
+              },
+              { status: 503 },
+            )
+          : Response.json({
+              code: 'ABCD',
+              themeId: 'f1.v1',
+              hostPlayerId: host.id,
+              players: [host],
+              you: host,
+            }),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Start game' }));
+    await screen.findByRole('alert');
+
+    expect(
+      spy.mock.calls.some(
+        (call) =>
+          call.some((arg) => String(arg).includes('503')) &&
+          call.some((arg) =>
+            String(arg).includes('cannot compose a 40-square deck'),
+          ),
+      ),
+    ).toBe(true);
+
+    spy.mockRestore();
+  });
 });
 
 /**
@@ -740,6 +816,93 @@ describe('calling a square', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
 
     expect(await screen.findByRole('alert')).toBeDefined();
+  });
+
+  /**
+   * #76: a 403 on `/call` means "that square is not yours" (not on your card, or
+   * not in this game's deck) — a different fact from #409, and the sentence says
+   * so rather than repeating "Could not call that square." for every status.
+   */
+  it('reads a 403 on a call as the square not being yours', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/call')
+          ? Response.json(
+              { error: 'that square is not on your card' },
+              { status: 403 },
+            )
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+
+    expect(
+      await screen.findByText('That square is not yours to call.'),
+    ).toBeDefined();
+  });
+
+  /**
+   * ADR-0003: a call racing the full-house transaction is refused with 409, and
+   * that reads as the game being over — distinctly from a square that could not
+   * be called — rather than as a broken card.
+   */
+  it('reads a 409 on a call as the game having finished, not the square failing', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/call')
+          ? Response.json({ error: 'this game has finished' }, { status: 409 })
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+
+    expect(await screen.findByText('This game has finished.')).toBeDefined();
+    expect(screen.queryByText('Could not call that square.')).toBeNull();
+  });
+
+  it("logs the server's error body to the console, verbatim, on a failed call", async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    stubRoom({ you: host, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/call')
+          ? Response.json(
+              { error: 'that square is not on your card' },
+              { status: 403 },
+            )
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    await screen.findByRole('alert');
+
+    expect(
+      spy.mock.calls.some(
+        (call) =>
+          call.some((arg) => String(arg).includes('403')) &&
+          call.some((arg) => String(arg).includes('that square is not on your card')),
+      ),
+    ).toBe(true);
+
+    spy.mockRestore();
   });
 
   /**
@@ -1291,6 +1454,67 @@ describe('taking a call back', () => {
         screen.getByRole('button', { name: 'Square 7' }).getAttribute('aria-pressed'),
       ).toBe('false'),
     );
+  });
+
+  /**
+   * #76: the four bare `catch` blocks named in the issue include retract, and
+   * a 409 there reads the same way a 409 on `/call` does — the game is over,
+   * not that the undo itself failed.
+   */
+  it('reads a 409 on a retract as the game having finished', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/retract')
+          ? Response.json({ error: 'this game has finished' }, { status: 409 })
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+
+    expect(await screen.findByText('This game has finished.')).toBeDefined();
+  });
+
+  it("logs the server's error body to the console, verbatim, on a failed retract", async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/retract')
+          ? Response.json(
+              { error: 'only the caller or the host can retract that call' },
+              { status: 403 },
+            )
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Square 5' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));
+    await screen.findByRole('alert');
+
+    expect(
+      spy.mock.calls.some(
+        (call) =>
+          call.some((arg) => String(arg).includes('403')) &&
+          call.some((arg) =>
+            String(arg).includes('only the caller or the host can retract that call'),
+          ),
+      ),
+    ).toBe(true);
+
+    spy.mockRestore();
   });
 });
 

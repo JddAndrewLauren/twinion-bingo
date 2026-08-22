@@ -110,6 +110,33 @@ export type Game = {
   streamedThroughSeq: number;
 };
 
+/**
+ * A failed request, carrying what `!res.ok` would otherwise discard: the status
+ * and the server's `error` body, verbatim. `room-screen.tsx` picks a player-facing
+ * sentence from `status` and logs `body` — the diagnosis the server built on
+ * purpose, never rendered to a player but never silently lost either (#76).
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly body: string,
+  ) {
+    super(`${status}: ${body}`);
+  }
+}
+
+/** Reads a failed response's body once, as the `error` string if it parses as JSON. */
+async function apiError(res: Response): Promise<ApiError> {
+  const text = await res.text();
+
+  try {
+    const parsed = JSON.parse(text) as { error?: string };
+    return new ApiError(res.status, parsed.error ?? text);
+  } catch {
+    return new ApiError(res.status, text);
+  }
+}
+
 /** The fields of a `room_events` row the web app reads; a frame carries more. */
 export type RoomEvent = {
   seq: number;
@@ -195,7 +222,7 @@ export async function startGame(
     headers: { authorization: `Bearer ${token}` },
   });
 
-  if (!res.ok) throw new Error(`starting a game in ${code} failed: ${res.status}`);
+  if (!res.ok) throw await apiError(res);
 
   return (await res.json()) as Game;
 }
@@ -229,7 +256,7 @@ export async function callSquare(
   );
 
   if (!res.ok) {
-    throw new Error(`calling ${squareId} failed: ${res.status}`);
+    throw await apiError(res);
   }
 
   return (await res.json()) as CallResult;
@@ -263,7 +290,7 @@ export async function retractCall(
   );
 
   if (!res.ok) {
-    throw new Error(`retracting call ${seq} failed: ${res.status}`);
+    throw await apiError(res);
   }
 }
 
@@ -303,7 +330,7 @@ async function postJoin(
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) throw new Error(`${url} failed: ${res.status}`);
+  if (!res.ok) throw await apiError(res);
 
   return (await res.json()) as Joined;
 }
