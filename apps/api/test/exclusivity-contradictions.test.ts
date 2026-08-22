@@ -182,6 +182,18 @@ describe('#121 — exclusivity groups become a set', () => {
     expect(byId.has(winsId), winsId).toBe(true);
     expect(byId.has(podiumId), podiumId).toBe(true);
 
+    // The seeded deals below are too coarse to catch this on their own: at
+    // MAX_PER_TEMPLATE the two squares land in the same deck only rarely, so the
+    // loop stays green even if the contradiction is authored away. Pin the
+    // mechanism at the data level too.
+    const winsGroups = byId.get(winsId)!.exclusivityGroups;
+    const podiumGroups = byId.get(podiumId)!.exclusivityGroups;
+
+    expect(
+      winsGroups.filter((group) => podiumGroups.includes(group)),
+      `"${winsId}" and "${podiumId}" must share a group that keeps them off one card`,
+    ).not.toHaveLength(0);
+
     for (let seed = 0; seed < SEEDS; seed += 1) {
       const deck = composeDeck(pool, `norris-seed-${seed}`);
 

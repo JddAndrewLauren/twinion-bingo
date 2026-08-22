@@ -84,6 +84,6 @@ this measurement itself (`RUN_MAX_CHARS` in `packages/theme`), so a label that b
 
 ## Status
 
-`themes/f1` is authored (#16): 300 squares at poolVersion `v2`, reviewed line by line in #59. It sits
+`themes/f1` is authored (#16): 300 squares at poolVersion `v3`, reviewed line by line in #59. It sits
 at both legibility ceilings with no margin — the longest labels are 30 characters and the longest
 unbreakable runs are 10 — so a new square is as likely to be refused by the cap as accepted.

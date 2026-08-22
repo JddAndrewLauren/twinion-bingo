@@ -345,7 +345,12 @@
       "tier": "rare",
       "exclusivityGroups": [
         "radio:grazie_ragazzi"
-      ]
+      ],
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      }
     },
     {
       "key": "max_complains",
@@ -508,7 +513,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "paddock:vasseur_laughs"
-      ]
+      ],
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      }
     },
     {
       "key": "strategist_head_in_hands",
@@ -526,7 +536,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "paddock:typical_ferrari"
-      ]
+      ],
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      }
     },
     {
       "key": "cadillac_not_last",
@@ -535,7 +550,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "team:cadillac_overperforms"
-      ]
+      ],
+      "entities": {
+        "team": [
+          "CAD"
+        ]
+      }
     },
     {
       "key": "cadillac_double_points",
@@ -544,7 +564,12 @@
       "tier": "rare",
       "exclusivityGroups": [
         "team:cadillac_overperforms"
-      ]
+      ],
+      "entities": {
+        "team": [
+          "CAD"
+        ]
+      }
     },
     {
       "key": "russell_bad_luck",

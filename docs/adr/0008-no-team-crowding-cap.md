@@ -60,6 +60,17 @@ Review round 1 found that six of the F1 pool's 70 hand-crafted squares name a dr
 `nostalgia_2021`, which names two) and were shipped with `entities: {}` regardless — a real gap in
 the driver cap this issue exists to close, not a team question, and fixed in the same PR rather than
 deferred (`HandcraftedSquare.entities`, authored on those six squares). None of the six pair to a
-team, so this fix adds no new `entities.team` data and does not change the measurement above; the
+team, so that fix added no new `entities.team` data and did not change the measurement above; the
 91.5%/91.0% team-crowding figures already came from driver squares' `team` pairing alone. Re-measured
 after the fix, over the same 3000-deal shape: `cardsWithDuplicateDriver: 0`.
+
+## Addendum: hand-crafted team squares
+
+Review round 2 found the same gap on the team side: five hand-crafted squares name a team outright
+in their own description — `grazie_ragazzi`, `vasseur_laughs_it_off` and `typical_ferrari` (Ferrari),
+`cadillac_not_last` and `cadillac_double_points` (Cadillac) — and shipped with no `entities` at all.
+They are authored now (`FER`, `FER`, `FER`, `CAD`, `CAD`), on the contract stated above: `entities`
+names every entity the square names, not every entity `dealCard` currently caps. Nothing reads it —
+this ADR's decision is still no team cap, and `CROWDING_ENTITY_TYPE` is still `driver` — so dealing
+is unchanged and the 91.5%/91.0% figures above are a measurement of the pool as it stood before this
+data landed. `papaya_rules` names McLaren only by nickname and was left alone.

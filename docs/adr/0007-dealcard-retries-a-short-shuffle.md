@@ -68,3 +68,22 @@ counts, the same shape of failure `composeDeck` already produces, rather than an
 supposed to be impossible. `dealCard` stays deterministic across replays: attempt 0 reuses the exact
 seed it used before #122, so a game whose deck deals cleanly on the first attempt (every game dealt
 before this change, and the overwhelming majority going forward) deals byte-identical cards.
+
+## Addendum: the residual risk moves to composition
+
+Review round 2 found that the residual risk named above reaches further than "a deck can exist":
+`composeDeck` would *hand you* such a deck. Its accept test was `cardBoundsShortfalls(deck).length
+=== 0`, which unions group names rather than deciding whether 24 mutually compatible squares exist,
+and which never reads `entities` at all — so the #123 driver cap was invisible to it too. A
+quota-exact 40-square pool whose squares each carry a unique group plus one shared group was accepted
+in full, and then `dealCard` threw after 200 reshuffles; so was a pool whose 40 squares all name the
+same driver, and that failure was reported as an exclusivity-group shortfall.
+
+`composeDeck` now also requires one successful `attemptDeal` probe before accepting a draw, which
+closes both holes at once: the failure surfaces as a `DeckCompositionError` at composition, which is
+what `composeDeck`'s own comment already claimed ("not the deal, mid-game, for one unlucky player").
+This does not make the check sufficient in the proof sense option 1 asked for — it is still
+empirical, one shuffle rather than a packing argument — and it can reject a draw that was merely
+order-unlucky, which is harmless given `DRAW_ATTEMPTS` further draws. `dealCard`'s retry loop and its
+named error stay exactly as decided above: they remain the honest failure path for a deck built by
+any route that does not go through `composeDeck`.

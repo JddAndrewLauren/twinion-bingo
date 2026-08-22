@@ -122,8 +122,20 @@ export function composeDeck(pool: Pool, seed: string): Deck {
     const deck = attemptDraw(pool.squares, random);
 
     // A deck no card can be dealt from is not a deck, so the composer is where
-    // that is caught — not the deal, mid-game, for one unlucky player.
-    if (deck !== undefined && cardBoundsShortfalls(deck).length === 0) return deck;
+    // that is caught — not the deal, mid-game, for one unlucky player. The
+    // shortfall counts are only necessary: they union group names, so a draw
+    // whose squares all share one group passes them and still deals nothing,
+    // and they do not read `entities` at all, so the driver cap is invisible to
+    // them. Dealing one card proves what counting cannot, at the price of one
+    // shuffle per candidate draw. A draw that is merely order-unlucky is
+    // rejected here too — harmless, since there are DRAW_ATTEMPTS of them.
+    if (
+      deck !== undefined &&
+      cardBoundsShortfalls(deck).length === 0 &&
+      attemptDeal(deck, `${seed}:probe:${attempt}`) !== undefined
+    ) {
+      return deck;
+    }
   }
 
   throw new DeckCompositionError(pool.themeId, [

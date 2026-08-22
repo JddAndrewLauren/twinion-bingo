@@ -846,7 +846,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:ALB"
       ],
       "entities": {
         "driver": [
@@ -865,7 +866,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:ALO"
       ],
       "entities": {
         "driver": [
@@ -884,7 +886,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:ANT"
       ],
       "entities": {
         "driver": [
@@ -903,7 +906,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:BEA"
       ],
       "entities": {
         "driver": [
@@ -922,7 +926,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:BOR"
       ],
       "entities": {
         "driver": [
@@ -941,7 +946,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:BOT"
       ],
       "entities": {
         "driver": [
@@ -960,7 +966,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:COL"
       ],
       "entities": {
         "driver": [
@@ -979,7 +986,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:GAS"
       ],
       "entities": {
         "driver": [
@@ -998,7 +1006,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:HAD"
       ],
       "entities": {
         "driver": [
@@ -1017,7 +1026,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:HAM"
       ],
       "entities": {
         "driver": [
@@ -1036,7 +1046,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:HUL"
       ],
       "entities": {
         "driver": [
@@ -1055,7 +1066,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:LAW"
       ],
       "entities": {
         "driver": [
@@ -1074,7 +1086,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:LEC"
       ],
       "entities": {
         "driver": [
@@ -1093,7 +1106,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:LIN"
       ],
       "entities": {
         "driver": [
@@ -1112,7 +1126,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:NOR"
       ],
       "entities": {
         "driver": [
@@ -1131,7 +1146,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:OCO"
       ],
       "entities": {
         "driver": [
@@ -1150,7 +1166,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:PER"
       ],
       "entities": {
         "driver": [
@@ -1169,7 +1186,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:PIA"
       ],
       "entities": {
         "driver": [
@@ -1188,7 +1206,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:RUS"
       ],
       "entities": {
         "driver": [
@@ -1207,7 +1226,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:SAI"
       ],
       "entities": {
         "driver": [
@@ -1226,7 +1246,8 @@
       "tier": "medium",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:STR"
       ],
       "entities": {
         "driver": [
@@ -1245,7 +1266,8 @@
       "tier": "rare",
       "source": "generated",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:VER"
       ],
       "entities": {
         "driver": [
@@ -4146,7 +4168,11 @@
       "exclusivityGroups": [
         "team:cadillac_overperforms"
       ],
-      "entities": {},
+      "entities": {
+        "team": [
+          "CAD"
+        ]
+      },
       "templateId": null
     },
     {
@@ -4158,7 +4184,11 @@
       "exclusivityGroups": [
         "team:cadillac_overperforms"
       ],
-      "entities": {},
+      "entities": {
+        "team": [
+          "CAD"
+        ]
+      },
       "templateId": null
     },
     {
@@ -4338,7 +4368,11 @@
       "exclusivityGroups": [
         "radio:grazie_ragazzi"
       ],
-      "entities": {},
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      },
       "templateId": null
     },
     {
@@ -4875,7 +4909,11 @@
       "exclusivityGroups": [
         "paddock:typical_ferrari"
       ],
-      "entities": {},
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      },
       "templateId": null
     },
     {
@@ -4923,7 +4961,11 @@
       "exclusivityGroups": [
         "paddock:vasseur_laughs"
       ],
-      "entities": {},
+      "entities": {
+        "team": [
+          "FER"
+        ]
+      },
       "templateId": null
     },
     {

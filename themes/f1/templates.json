@@ -93,7 +93,8 @@
       "label": "{driver} DNFs",
       "description": "{driver} fails to finish the race.",
       "exclusivityGroups": [
-        "retirement:any"
+        "retirement:any",
+        "finish:{driver}"
       ],
       "tierByEntityTier": {
         "podium": "rare",
