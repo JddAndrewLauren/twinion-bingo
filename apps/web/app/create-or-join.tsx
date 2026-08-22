@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { ACTION_BUTTON } from './action-button';
 import { storeToken } from './player-token';
 import { createRoom } from './room-api';
 
@@ -48,7 +49,11 @@ export function CreateOrJoin({ apiUrl }: { apiUrl: string }) {
             className="rounded border border-neutral-700 bg-neutral-900 p-2"
           />
         </label>
-        <button type="submit" disabled={creating || name.trim() === ''}>
+        <button
+          type="submit"
+          disabled={creating || name.trim() === ''}
+          className={ACTION_BUTTON}
+        >
           {creating ? 'Creating…' : 'Create a room'}
         </button>
         {createFailed && <p role="alert">Could not create a room.</p>}
@@ -68,7 +73,11 @@ export function CreateOrJoin({ apiUrl }: { apiUrl: string }) {
             className="rounded border border-neutral-700 bg-neutral-900 p-2 tracking-widest uppercase"
           />
         </label>
-        <button type="submit" disabled={code.trim().length !== 4}>
+        <button
+          type="submit"
+          disabled={code.trim().length !== 4}
+          className={ACTION_BUTTON}
+        >
           Join
         </button>
       </form>

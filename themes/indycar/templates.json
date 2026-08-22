@@ -1,0 +1,198 @@
+{
+  "templates": [
+    {
+      "id": "driver_wins",
+      "entityType": "driver",
+      "label": "{driver} wins",
+      "description": "{driver} takes the checkered flag in first place.",
+      "exclusivityGroup": "race_winner",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "rare",
+        "backmarker": "excluded"
+      }
+    },
+    {
+      "id": "driver_podium",
+      "entityType": "driver",
+      "label": "{driver} on the podium",
+      "description": "{driver} finishes in the top three.",
+      "exclusivityGroup": "podium:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "rare",
+        "backmarker": "excluded"
+      }
+    },
+    {
+      "id": "driver_leads_lap",
+      "entityType": "driver",
+      "label": "{driver} leads a lap",
+      "description": "{driver} is the race leader at the end of any lap.",
+      "exclusivityGroup": "leads_lap:{driver}",
+      "tierByEntityTier": {
+        "contender": "certain",
+        "midfield": "rare",
+        "backmarker": "excluded"
+      }
+    },
+    {
+      "id": "driver_top_ten",
+      "entityType": "driver",
+      "label": "{driver} in the top ten",
+      "description": "{driver} finishes tenth or better.",
+      "exclusivityGroup": "top_ten:{driver}",
+      "tierByEntityTier": {
+        "contender": "excluded",
+        "midfield": "certain",
+        "backmarker": "rare"
+      }
+    },
+    {
+      "id": "driver_dnf",
+      "entityType": "driver",
+      "label": "{driver} DNFs",
+      "description": "{driver} fails to finish the race.",
+      "exclusivityGroup": "retirement:any",
+      "tierByEntityTier": {
+        "contender": "rare",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_blend_line",
+      "entityType": "driver",
+      "label": "{driver} blend line penalty",
+      "description": "{driver} is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "exclusivityGroup": "blend_line:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_in_wall",
+      "entityType": "driver",
+      "label": "{driver} into the wall",
+      "description": "{driver} makes contact with the wall on an oval, race over or not.",
+      "exclusivityGroup": "wall:{driver}",
+      "tierByEntityTier": {
+        "contender": "rare",
+        "midfield": "rare",
+        "backmarker": "rare"
+      }
+    },
+    {
+      "id": "driver_swears",
+      "entityType": "driver",
+      "label": "{driver} swears on radio",
+      "description": "{driver} swears over team radio, bleeped or not.",
+      "exclusivityGroup": "swears:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_p2p_moan",
+      "entityType": "driver",
+      "label": "{driver} out of push-to-pass",
+      "description": "{driver} complains on the radio about running out of push-to-pass.",
+      "exclusivityGroup": "radio_moan:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_moans_at_wall",
+      "entityType": "driver",
+      "label": "{driver} moans at the wall",
+      "description": "{driver} complains about the car over {team} team radio.",
+      "exclusivityGroup": "radio_moan:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_beats_teammate",
+      "entityType": "driver",
+      "label": "{driver} beats teammate",
+      "description": "{driver} finishes ahead of the other {team} car.",
+      "exclusivityGroup": "teammate:{team}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_wave_around",
+      "entityType": "driver",
+      "label": "{driver} gets a wave-around",
+      "description": "{driver} unlaps themselves under a full-course caution using the wave-around.",
+      "exclusivityGroup": "wave_around:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "driver_shootout",
+      "entityType": "driver",
+      "label": "{driver} wins the shootout",
+      "description": "{driver} leads the field to the checkered flag on a two-lap shootout restart.",
+      "exclusivityGroup": "race_winner",
+      "tierByEntityTier": {
+        "contender": "rare",
+        "midfield": "rare",
+        "backmarker": "rare"
+      }
+    },
+    {
+      "id": "driver_avoidable_contact",
+      "entityType": "driver",
+      "label": "{driver} avoidable contact",
+      "description": "{driver} is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "exclusivityGroup": "avoidable_contact:{driver}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium"
+      }
+    },
+    {
+      "id": "team_podium",
+      "entityType": "team",
+      "label": "{team} podium",
+      "description": "A {team} car finishes on the podium.",
+      "exclusivityGroup": "team_podium:{team}",
+      "tierByEntityTier": {
+        "contender": "certain",
+        "midfield": "medium",
+        "backmarker": "excluded",
+        "indy500": "excluded"
+      }
+    },
+    {
+      "id": "team_fumble",
+      "entityType": "team",
+      "label": "{team} fumble",
+      "description": "A pit stop for {team} goes wrong — slow, unsafe or a wheel not on.",
+      "exclusivityGroup": "fumble:{team}",
+      "tierByEntityTier": {
+        "contender": "medium",
+        "midfield": "medium",
+        "backmarker": "medium",
+        "indy500": "excluded"
+      }
+    }
+  ]
+}
