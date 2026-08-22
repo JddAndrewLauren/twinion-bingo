@@ -702,13 +702,27 @@ export function RoomScreen({
           {/*
             The left column at `lg` (README's "Left column (≈55–60%) holds room
             code, name field, and primary action"); the divider is a hairline in
-            Pit Wall and nothing in this issue's other three skins, which is why
-            it is a plain `border-rule` rather than a per-skin class.
+            Pit Wall and nothing in this issue's other three skins — except
+            Scorecard (#107), which draws a dashed rule here (README's
+            "Desktop divider ... dashed rule in `scorecard`"). `skin-join-divider`
+            is the hook rather than a bare `border-rule` override, so only
+            Scorecard's own `[data-skin='scorecard'] .skin-join-divider` rule in
+            `globals.css` touches it and Pit Wall's hairline is untouched.
           */}
-          <div className="flex flex-1 flex-col gap-4 lg:border-r lg:border-rule lg:pr-10">
+          <div className="skin-join-divider flex flex-1 flex-col gap-4 lg:border-r lg:border-rule lg:pr-10">
             <RoomCode code={code} />
             <div className="flex flex-col gap-1">
-              <label htmlFor="join-name">Your name</label>
+              {/*
+                `skin-field-label` (#107): Scorecard's own "SIGN HERE" label is a
+                visual weight change only — the DOM text stays "Your name", the
+                same disclosed precedent this screen's own primary action already
+                uses for "Enter room" vs the handoff's literal "Take a card" — so
+                `apps/web/test/` and every gate keep querying one accessible name
+                across all four skins.
+              */}
+              <label htmlFor="join-name" className="skin-field-label">
+                Your name
+              </label>
               {/*
                 The bordered box is `.skin-field` rather than the `<label>`
                 itself, so "Your name" sits above the box (README's per-theme

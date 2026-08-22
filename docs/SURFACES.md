@@ -1299,6 +1299,142 @@ since #108. **356 passed, 44 skipped (400 listed)** — 49 passed / 3 skipped mo
   triggers, though the base commit was not independently re-run to confirm that. Worth an operator's
   attention if CI shows the same instability.
 
+---
+
+**#107's gate run** (WebKit with `hasTouch`, all four matrix viewports, one full `pnpm --filter
+@twinion-bingo/web run gate` at default `fullyParallel` concurrency, on top of #106's `d4f9466`):
+Scorecard to full fidelity — ruled cream stock, the rotated ticket-box room code, and the ink ring
+that marks a square without touching its label. **406 passed, 50 skipped (456 listed)** — the base
+commit's own `playwright test --list` reports exactly 400 (independently re-run to confirm, per this
+issue's own instruction); the delta is this issue's 14 new tests × 4 viewports = 56, all of it
+accounted for by `skin-scorecard.gate.ts`. `pnpm build`, `pnpm typecheck`, `pnpm lint` and `pnpm test`
+(31 theme + 166 web + 154 api passed, 117 api skipped on the known DB-less signature) are green in
+the same state.
+
+- **The card's own cell/font table, this skin's row.** Baloo 2 is the widest of the five faces
+  (`docs/design/README.md`'s own note under *Header controls*), so this issue's own
+  `.skin-card-grid` token is `1.7cqw` — smaller again than Confetti's `2.6cqw` and Slipstream's
+  `1.9cqw`, both named in this issue's brief as expected for the widest face still to land:
+
+  | Viewport | Cell | Font | Container | font ÷ container |
+  | --- | --- | --- | --- | --- |
+  | `phone-small` | 70px | 6.2px | 367px | 0.0170 |
+  | `phone` | 73px | 6.5px | 382px | 0.0170 |
+  | `ipad-11-portrait` | 161px | 14.0px | 826px | 0.0170 |
+  | `ipad-11-landscape` | 107px | 9.5px | 557px | 0.0170 |
+
+  `expectNoCellClipped` passes at all four with this size (`skin-scorecard.gate.ts`), and
+  `/legibility` at `scorecard` carries the pool's own worst 24 unclipped too. The claim the gate
+  holds is the container-query invariant (`font ÷ container` inside `(0.0165, 0.0175)`), not the
+  per-viewport pixels, the same shape #106's own row uses.
+
+- **A font-metrics defect this issue found and fixed, not a width one.** Baloo 2's rendered glyph
+  box (ascent + descent) runs taller than the base `leading-tight` (`line-height: 1.25`) at any size
+  this token reaches — measured directly via `getClientRects()`, every one of the pool's 24 labels
+  clipped by a uniform ~1.7px at `phone-small`/`phone`/`ipad-11-portrait` regardless of the label's
+  own length or word count, which is what said "font metrics", not "too wide": a width problem
+  varies with the text, a line-height problem does not. `[data-skin='scorecard'] .skin-cell` sets
+  `line-height: 1.65` (on the cell/button itself, where `card-grid.tsx`'s own `leading-tight` sits —
+  a grid-level rule was tried first and silently did nothing, since an explicit declaration on the
+  element always beats an inherited one) — chosen by measurement, re-run until `expectNoCellClipped`
+  held at all four viewports with the pool's own worst 24 and the fixture's own marked/inherited
+  cells alike.
+
+- **The label really does stay untouched when marked, including its weight — a defect this issue
+  found before it shipped.** `card-grid.tsx`'s `markedStyle()` is the fallback every skin without its
+  own `[data-mark]` override still renders: literal Tailwind colours (`bg-emerald-800`/
+  `bg-neutral-700`) *and* `font-semibold`. Without `[data-skin='scorecard']
+  .skin-cell[data-mark='earned'], [data-skin='scorecard'] .skin-cell[data-mark='inherited']`
+  resetting background/border/ink/weight back to the cell's own base values, a marked Scorecard cell
+  would have flipped to the wrong fill and gone bold the moment it was called — the opposite of this
+  issue's own "leaves the label untouched" design, and invisible to every test until one specifically
+  compared a marked label's computed weight against an unmarked one's (`does not change the label's
+  weight when a square is marked`, in `skin-scorecard.gate.ts`).
+
+- **The ink-ring mark instrument is not `paintedFill`.** `paintedFill`/`deltaE` (copied a fourth time
+  from `skin-confetti.gate.ts`, per this issue's own instruction to keep the FINAL-GATE
+  consolidation out of scope) proves two *fills* are different; Scorecard's mark is a **border-only**
+  `::after` — the cell keeps its own `#fffdf7` background in every state — so `paintedFill` would
+  read the exact same white for earned, inherited and unmarked alike and pass against a version of
+  the CSS with no ring at all. `skin-scorecard.gate.ts`'s own `ringColour()` reads the `::after`'s
+  `border-color`/`opacity` directly instead — the actual painted property carrying the mark — and
+  `null` stands for "no ring" (an unmarked cell has no matching `[data-mark]` selector at all). Two
+  known limitations of the `paintedFill` instrument this issue had to work around rather than trigger
+  are recorded in `skin-scorecard.gate.ts`'s own comments: it cannot see a border at all (only a
+  covering `background-color`), and it always treats a queried pseudo-element as topmost regardless
+  of real paint order — the ink ring is built to be genuinely topmost (a `position: absolute`
+  `::after` with `z-index: auto`, painted after the label's own non-positioned content by CSS's
+  ordinary painting order, with no `z-index` needed on the label itself) specifically so that second
+  limitation never has a wrong answer to give.
+
+- **Inherited is a second ink colour, not an unclosed ring** — the brief's own two options, and the
+  mocks show only base/marked/free (the same gap #104/#105/#106 each record for their own skin).
+  `#1f7a6b`, this skin's own teal, already carries the meaning "the room did this, not you" (the
+  primary action's fill, the call banner's fill) — reused here so the inherited ring reads as "this
+  happened, but you did not call it" by hue alone, since the fill is not available to this skin's
+  marked state at all. `skin-scorecard.gate.ts`'s own distinctness test is a `deltaE` on the two
+  rings' own colours (ΔE well past the 12 floor: orange vs teal), not a fill comparison.
+
+- **A budget defect this skin's own Theme button caused, and the fix this issue disclosed rather
+  than hid.** The handoff's own `.skin-theme-fill` entry for Scorecard is `padding: 5px 12px` — fuller
+  than the incumbent `px-2 py-1` (8px/4px) — plus, for the first time among the four skins, a 2px
+  border on this control. Baloo 2 on top of both pushed the card-screen header's run-status `<p>`
+  down to ~53px of available width at `phone-small`, which no font size that stays legible fits —
+  `room.gate.ts`'s own `expectHeaderOnOneLine`, which cycles every skin including this one, failed at
+  1.999 lines before the fix. The same trap #106's own comment on this exact hook records for
+  Confetti's `7px 15px`. Fixed the same way: the incumbent `px-2 py-1` is kept (no padding override),
+  and the run-status `<p>` itself drops from the unskinned `text-xs` (12px) to `11px` — a type-scale
+  correction, the same kind Pit Wall's own `.skin-note` comment describes for JetBrains Mono, not a
+  layout change. `room.gate.ts`'s full skin-cycle run (`re-skins across four presses`,
+  `holds the die and the Theme button beside the room code and Share`) is green with both in place.
+
+- **The header renders on one line at `phone-small` with this skin's own 34px-class Theme button —
+  measured, not assumed.** With the fixes above, the run-status paragraph holds `0.999` lines
+  (`getBoundingClientRect().height / lineHeight`) at `phone-small`, and the die — sized from the
+  Theme button's own rendered height via `die-button.tsx`'s `ResizeObserver`, not a constant — comes
+  out within the room's own 1px tolerance of it (measured ~28-30px depending on exact copy shown, in
+  line with the handoff's own "34px in Scorecard" note that the *button's* box height, border
+  included, is what the die tracks).
+
+- **A structural change this issue made to two shared components, both class hooks, no behavioural
+  change.** `room-screen.tsx`'s join-screen name-field `<label>` gained a `skin-field-label` class
+  (styling hook for this skin's own "SIGN HERE" visual weight; every other skin renders it exactly as
+  before), and the join screen's two-column wrapper gained a `skin-join-divider` class (this skin's
+  own dashed desktop divider; Pit Wall's hairline and Slipstream/Confetti's plain `border-rule` are
+  untouched, since none of their own rules target the new class).
+
+- **A disclosed copy deviation, matching this screen's own established precedent.** The handoff's
+  literal copy for this skin is "Take a card" (primary action), "SIGN HERE" (name-field label),
+  "Admit one to room" (room-code label — added net-new, no accessible-name conflict), and "Already
+  signed in" (roster heading). Per `room-screen.tsx`'s own prior precedent for "Enter room" vs the
+  handoff's literal "ENTER ROOM"/"Let's play", the DOM text for the primary action and the roster
+  heading stays exactly as it already was for every other skin (`apps/web/test/` and every gate query
+  one accessible name across all four skins); only the *visual weight* — size, spacing, case — is
+  this skin's own CSS. "Admit one to room" is genuinely new decorative text (`.skin-code-bar::before`,
+  the same technique #106 used for its own "Room code" label), since nothing existing carries that
+  string and so nothing conflicts with it.
+
+- **The rotated ticket box, checked at its own worst viewport.** `transform: rotate(-2.5deg)`
+  inflates the room code's bounding box, and a transform is invisible to `scrollWidth` — this issue's
+  own named trap. `skin-scorecard.gate.ts`'s own test measures the ticket's real `boundingBox()`
+  against the viewport at `phone-small`, on top of the existing `expectNoHorizontalScroll` (which is
+  `overflow()`-based, not `scrollWidth`-based, so it already covered the page as a whole).
+
+- **The ruled-paper gradient is on `body`, the deepest layer in the stack, not an overlay.** Same
+  technique Slipstream's own diagonal field uses. A card cell's own `background-color:
+  var(--skin-raised)` (`#fffdf7`) is opaque and paints in the normal flow above `body`'s background,
+  so there is no compositing question at `deviceScaleFactor: 2` (this issue's own named trap) — the
+  gate's own screenshots at that scale factor show no bleed-through, and nothing measures a colour
+  through an opaque cell regardless.
+
+- **This is the one skin where a marked label being bolder does not apply, confirmed rather than
+  silently skipped.** Every other skin's `markedStyle()` fallback (or its own `[data-mark]` override)
+  makes a marked label `font-semibold`, which is why "a label that fit unmarked has to be re-checked
+  marked" is a standing rule here. Scorecard's mark is entirely an overlay — the label's own weight is
+  reset to this skin's one value (Baloo 2 700) in both states — so the rule's premise does not hold
+  for this skin specifically, said out loud in `skin-scorecard.gate.ts`'s own test and in this issue's
+  PR rather than left as a silent omission.
+
 ## Adding a surface or a screen
 
 Add the row when the screen lands, in the same PR. A screen that exists and is not in this table is
