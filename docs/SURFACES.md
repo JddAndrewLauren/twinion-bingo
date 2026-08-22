@@ -945,6 +945,133 @@ earned/inherited/unmarked cell distinction — gated in `gate/skin-slipstream.ga
   after its four character spans rather than a fifth child inside them — `skin-pitwall.gate.ts`'s own
   `code.locator('span')` count of 4 stays true.
 
+**#106's gate run** (WebKit with `hasTouch`, all four matrix viewports, run singly against a
+production `next start` server after this machine's `next start` process was found to crash under
+heavy concurrent Playwright load mid-suite — see the note below): Confetti to full fidelity, the
+app's first light surface, plus the blue `#2f6bff` card-screen header the die-surface comment in
+`globals.css` had been carrying as "not yet painted" since #108.
+
+- **The card's own cell/font table is a new row, not the old one carried over.** Fredoka is a wider
+  face than Pit Wall's Roboto Condensed, and this issue's own `.skin-card-grid` token
+  (`globals.css`) is a reduced `2.6cqw` rather than the shared `3cqw` — both named in this issue's
+  own "Traps" section as expected. Cell width is unchanged (it is grid-driven, not font-driven), but
+  the font is smaller at every viewport:
+
+  | Viewport | Cell | Font |
+  | --- | --- | --- |
+  | `phone-small` | 70px | 9.5px |
+  | `phone` | 73px | 9.9px |
+  | `ipad-11-portrait` | 162px | 21.5px |
+  | `ipad-11-landscape` | 108px | 14.5px |
+
+  `expectNoCellClipped` passes at all four with this reduced size (`skin-confetti.gate.ts`), and
+  `/legibility` at `confetti` carries the pool's own worst 24 unclipped too — both mixed-case
+  Fredoka's own metrics rather than an assumption carried over from #104's table.
+
+- **Earned, inherited and unmarked render three distinguishable fills against a *white* cell**,
+  measured the same way #104's gate measures Pit Wall's — `paintedFill`/`deltaE`, copied rather than
+  imported since neither is exported from `skin-pitwall.gate.ts`. As rendered at `phone`:
+
+  | Pair | Colours | ΔE |
+  | --- | --- | --- |
+  | earned vs inherited | `rgb(22,163,74)` / `rgb(184,178,169)` | 64.57 |
+  | earned vs unmarked | `rgb(22,163,74)` / `rgb(255,255,255)` | 77.26 |
+  | inherited vs unmarked | `rgb(184,178,169)` / `rgb(255,255,255)` | 27.70 |
+
+  All three comfortably clear the ΔE 12 floor #104 set. **Inherited is invented**, since the mocks
+  show only base/marked/free, same gap #104 found in Pit Wall: a solid ink-tinted grey
+  (`rgba(32,24,15,.32)`), composited well clear of both white and the earned green, with the label
+  left at full ink (the fill carries the state, not the text).
+
+  **A seeded regression, run and reverted.** Inherited set back to `rgba(32,24,15,.06)` — a
+  plausible-looking "faint wash" — fails at `rgb(242,237,228)` against `rgb(255,255,255)`, **ΔE
+  7.85**, under the floor. Restored and re-green after.
+
+- **The earned fill is `background-color` on the cell itself, not a `::before` pseudo-element —
+  found by the gate's own instrument, not by review.** The first version of the "bleed past the
+  border" effect (README's "marked solid `#16a34a` bleeding 2px past the border") used a
+  `::before` layer so `overflow: hidden` could stay off everywhere except the earned state; that
+  rendered correctly on screen but `paintedFill` reads `getComputedStyle(node).backgroundColor` on
+  the node it is given, which cannot see a pseudo-element's declaration at all — the gate measured
+  the *ancestor* chain's colour instead of the green and failed the earned-vs-unmarked pair at
+  ΔE 5.06. The fill is a plain `background-color` now; the bleed is a zero-blur `box-shadow`
+  instead, which achieves the same visual spill without hiding the colour from `getComputedStyle`.
+
+- **The bleed is 1px, not the handoff's literal 2px — a disclosed deviation.** `card-grid.tsx`'s
+  grid gap is `gap-1` (4px), shared by every skin and untouched by this issue, narrower than the 5px
+  the mocks draw this skin's grid at. A full 2px bleed on each of two neighbouring earned cells would
+  leave exactly 0px between their fills — indistinguishable from a merged block, precisely this
+  issue's own "Traps" warning. 1px each side leaves 2px clear at the actual gap, checked
+  geometrically at `phone-small` (`does not merge two adjacent bled marked cells`) rather than by
+  eye.
+
+- **The die is visible on both of Confetti's surfaces**, the reason this issue exists per
+  `globals.css`'s own comment: `rgba(32,24,15,.55)` on the cream join/lobby bar (unchanged) and the
+  handoff's second value, `rgba(255,255,255,.85)`, now applied via
+  `svg[data-die-surface='card']` on the blue `#2f6bff` card-screen header this issue paints — landed
+  in the same commit, as that comment asked. `.skin-card-header`'s background measures
+  `rgb(47, 107, 255)`.
+
+- **`themeColor` and the iOS status bar were already correct before this issue** — `layout.tsx`'s
+  `THEME_COLOR` map and `statusBarStyle` conditional (built in an earlier slice, likely #102/#103)
+  already give a `confetti` request `#fffbf2` and `default` rather than `black-translucent`. This
+  issue's gate asserts both rather than assuming they still hold: `meta[name="theme-color"]` reads
+  `#fffbf2` and `meta[name="apple-mobile-web-app-status-bar-style"]` reads `default` for a request
+  carrying the `confetti` cookie. `manifest.ts` is unchanged and still pins to Pit Wall's
+  `#0a0a0a` — see that file's own comment for why a static manifest cannot follow a per-request
+  skin, restated rather than re-litigated here.
+
+- **The confetti burst gets an explicit palette, read from `<html data-skin>` at fire time.**
+  `celebrate()` in `room-screen.tsx` is a module-level function with no access to `RoomScreen`'s
+  `initialSkin` prop (itself only ever the *server-rendered* skin), so the live skin is read the
+  same place `SkinButton`'s own press already writes it. `['#ff5c39', '#2f6bff', '#ffd23f',
+  '#16a34a', '#20180f']` — the skin's own accent, blue, yellow, green and ink — replaces
+  `canvas-confetti`'s default mix, which leans pale and is what disappears against `#fffbf2`. Not
+  gated mechanically (the library owns the canvas and paints outside anything a DOM query can see,
+  same reason #15's own burst criteria are stated in `docs/SURFACES.md` rather than asserted), but
+  visually confirmed and the palette is not exercised by any other skin's burst.
+
+- **The host deck sheet reads as distinct from the host's own white card without any change to
+  `deck-sheet.tsx`.** Its amber chrome (`bg-amber-950`, `border-amber-500`) is literal Tailwind,
+  #102's carve-out for host-only colour, and was never routed through skin tokens — a very dark
+  amber against a white card was already a large ΔE before this issue and is asserted as one now
+  (`reads as distinct from the host's own white card`, ΔE well over the floor against `rgb(255,255,255)`).
+
+- **Focus rings are visible on the cream surface, and the accent's contrast ratio is disclosed
+  rather than claimed to pass.** `#ff5c39` (the accent, `rgb(255,92,57)`) against `#fffbf2`
+  (`rgb(255,251,242)`) measures **2.97:1** — under WCAG's 3:1 minimum for a non-text UI component
+  (a focus indicator). The ring is unmistakably visible by eye against the cream ground (it is a
+  saturated orange-red on a near-white field, not a low-contrast pastel), but the number is honestly
+  short of the guideline threshold; this is the handoff's own accent colour
+  (`docs/design/README.md` § *Design tokens* → **Confetti**), not a value this issue chose, so it is
+  raised here rather than silently repainted. `expectAccentRing`-equivalent asserts the ring is
+  `2px solid rgb(255, 92, 57)` under `:focus-visible` on both the primary action and a card cell.
+
+- **The roster's "+N" row and the standings' rank circle are both new, unconditional markup.**
+  Confetti's own "Roster per theme" truncates the join screen's pill row to four names plus a `+N`
+  chip at phone widths (all nine at iPad), and its "Standings" gives each rank a 20px filled circle
+  — both structural pieces no skin before this issue had a place to render into, same as #104's room
+  code / name field / roster table. `roster-preview.tsx`'s `data-roster-more`/`data-roster-overflow`
+  and `results.tsx`'s `skin-standing-rank` are rendered for every skin and painted only under
+  `[data-skin='confetti']`; `test/game-screen.test.tsx`'s two standings assertions were updated for
+  the rank prefix now in the DOM text (a disclosed, genuine addition, not a loosened assertion).
+
+- **A note on this run's own instability.** A `next start` production server on this machine
+  repeatedly crashed (`SIGKILL`) partway through a full `pnpm --filter @twinion-bingo/web run gate`
+  at `fullyParallel` concurrency — reproduced twice, unrelated to any one test file (it took down
+  already-passing `share.gate.ts`/`skin-pitwall.gate.ts` runs alongside this issue's own). Every
+  suite in this run was therefore executed with `--workers=1` against a server this session started
+  and confirmed alive (`curl` 200) immediately before each invocation, split across separate
+  `pnpm exec playwright test <files>` calls rather than one combined run. All files, all four
+  viewports: 303 passed, 41 skipped (344 listed) — 37 passed / 3 skipped more than the 266/38 (304)
+  baseline at `8dd7b53`, exactly this issue's 10 new tests × 4 viewports minus the 3 skips its own
+  `phone-small`-only trap test carries elsewhere. Nothing in this issue's diff touches
+  `playwright.config.ts` or the webServer command, and the crash took down unrelated,
+  already-passing files (`share.gate.ts`, `skin-pitwall.gate.ts`) in the same runs — evidence it is
+  this machine's resource ceiling under full concurrency rather than something this issue's code
+  triggers, though the base commit was not independently re-run to confirm that. Worth an operator's
+  attention if CI shows the same instability.
+
 ## Adding a surface or a screen
 
 Add the row when the screen lands, in the same PR. A screen that exists and is not in this table is

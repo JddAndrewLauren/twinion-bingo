@@ -376,7 +376,7 @@ export function CardGrid({
       <ul
         ref={grid}
         aria-label="Your card"
-        className={`grid grid-cols-5 gap-1 ${CARD_TEXT} ${cardFont.className}`}
+        className={`skin-card-grid grid grid-cols-5 gap-1 ${CARD_TEXT} ${cardFont.className}`}
       >
         {cells.map((square, index) => {
           const free = square === undefined || square === null;
