@@ -78,6 +78,13 @@ export interface PoolSquare {
   source: SquareSource;
   /** Every group this square belongs to; a card holds at most one square per group. */
   exclusivityGroups: string[];
+  /**
+   * Every entity this square names, entity type to key — the template's own
+   * entity plus any pairing it expands (a driver square also names its team).
+   * Cheap to derive at build time: it is `expansionsFor`'s key map. Empty for
+   * hand-crafted squares, which name no entity.
+   */
+  entities: Record<string, string>;
   /** The template that produced it; `null` for hand-crafted squares. */
   templateId: string | null;
 }

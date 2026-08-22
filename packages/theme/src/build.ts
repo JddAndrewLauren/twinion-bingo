@@ -143,6 +143,7 @@ function expandTemplate(
     exclusivityGroups: template.exclusivityGroups.map((group) =>
       expand(group, expansions.keys, where, errors),
     ),
+    entities: expansions.keys,
     templateId: template.id,
   };
 }
@@ -155,6 +156,7 @@ function handcraftedSquare(square: HandcraftedSquare, meta: ThemeMeta): PoolSqua
     tier: square.tier,
     source: 'handcrafted',
     exclusivityGroups: square.exclusivityGroups,
+    entities: {},
     templateId: null,
   };
 }

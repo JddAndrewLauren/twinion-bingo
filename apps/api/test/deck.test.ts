@@ -383,6 +383,7 @@ describe('refusing a deck the bounds cannot be met from', () => {
       tier,
       source: 'generated',
       exclusivityGroups: [`group-${index}`],
+      entities: {},
       templateId: 't',
     })) satisfies PoolSquare[];
   }
@@ -497,12 +498,102 @@ describe('dealing a card', () => {
       tier: 'medium',
       source: 'generated',
       exclusivityGroups: [index < 4 ? 'one' : 'two'],
+      entities: {},
       templateId: 't',
     })) satisfies PoolSquare[];
 
     expect(() => dealCard(cramped, 'seed-one', 'player-a')).toThrow(
       /only 2 distinct exclusivity groups/,
     );
+  });
+});
+
+/**
+ * D6's quotas and the exclusivity groups above stop *contradictions* — two
+ * squares that cannot both be true. Neither stops *crowding*: three squares
+ * that contradict nothing but all name the same driver, which would put a
+ * third of the grid on one competitor (#123). This deck is built so that
+ * without a driver cap, three of its squares — in three different groups —
+ * would otherwise all land on one card.
+ */
+describe('at most one square per driver per card (#123)', () => {
+  function driverSquare(id: string, tier: SquareTier, group: string, driver: string): PoolSquare {
+    return {
+      id,
+      label: id,
+      description: 'A square.',
+      tier,
+      source: 'generated',
+      exclusivityGroups: [group],
+      entities: { driver },
+      templateId: 't',
+    };
+  }
+
+  /**
+   * 6 certain filler squares (own driver, own group, meeting the certain
+   * floor on their own) plus 21 medium filler squares, plus three squares
+   * that all name driver "X" in three different groups. 30 squares in 30
+   * distinct groups, so `cardBoundsShortfalls` sees plenty — the driver cap
+   * is the only thing standing between this deck and a card that names "X"
+   * three times.
+   */
+  function crowdedDeck(): Deck {
+    const certainFiller = Array.from({ length: 6 }, (_, i) =>
+      driverSquare(`c${i}`, 'certain', `gc${i}`, `filler-c${i}`),
+    );
+    const mediumFiller = Array.from({ length: 21 }, (_, i) =>
+      driverSquare(`m${i}`, 'medium', `gm${i}`, `filler-m${i}`),
+    );
+    const crowd = [
+      driverSquare('x1', 'certain', 'x-wins', 'X'),
+      driverSquare('x2', 'certain', 'x-podium', 'X'),
+      driverSquare('x3', 'certain', 'x-fastest-lap', 'X'),
+    ];
+
+    return [...certainFiller, ...mediumFiller, ...crowd];
+  }
+
+  it('never deals two squares naming the same driver', () => {
+    const deck = crowdedDeck();
+
+    for (let n = 0; n < 50; n += 1) {
+      const card = dealCard(deck, `crowd-${n}`, 'player-a');
+      const byId = new Map(deck.map((square) => [square.id, square]));
+      const drivers = card
+        .map((id) => byId.get(id)!.entities.driver)
+        .filter((driver): driver is string => driver !== undefined);
+
+      expect(new Set(drivers).size, `seed crowd-${n}`).toBe(drivers.length);
+    }
+  });
+
+  /**
+   * The real F1 pool, over many seeded deals — not just the synthetic deck
+   * above. IndyCar's pool cannot compose a deck at all yet (it has no
+   * hand-crafted squares against D6's quota, a pre-existing gap unrelated to
+   * this cap — see the PR), so it is not exercised through `composeDeck`
+   * here. The mechanism itself reads only `entities.driver`, whatever the
+   * theme, and does not special-case F1: the synthetic-deck test above is
+   * what proves that.
+   */
+  it('holds for the real F1 pool, over many seeded deals', () => {
+    const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
+
+    for (let n = 0; n < 25; n += 1) {
+      const seed = `driver-cap-${n}`;
+      const deck = composeDeck(f1, seed);
+      const byId = new Map(deck.map((square) => [square.id, square]));
+
+      for (const player of ['a', 'b', 'c', 'd', 'e', 'f']) {
+        const card = dealCard(deck, seed, `player-${player}`);
+        const drivers = card
+          .map((id) => byId.get(id)!.entities.driver)
+          .filter((driver): driver is string => driver !== undefined);
+
+        expect(new Set(drivers).size, `seed ${seed}/${player}`).toBe(drivers.length);
+      }
+    }
   });
 });
 
@@ -524,6 +615,7 @@ describe('dealing a card under multi-group squares (#122)', () => {
       tier,
       source: 'generated',
       exclusivityGroups: groups,
+      entities: {},
       templateId: 't',
     };
   }

@@ -146,6 +146,14 @@ export function composeDeck(pool: Pool, seed: string): Deck {
  * MAX_RARE_PER_CARD rare and at least MIN_CERTAIN_PER_CARD certain, so no player
  * spends a race staring at a grid that cannot fill.
  *
+ * Exclusivity groups stop contradictions, not crowding: "Norris fastest lap",
+ * "Norris leads a lap" and "Norris on the podium" contradict nothing, so
+ * nothing above stops all three landing on one card and quietly handing a
+ * third of the grid to one driver. So the deal also takes a square only if
+ * its `entities.driver` (when it names one) has not already been taken —
+ * at most one square per driver per card (#123). Teams get no cap of their
+ * own: see docs/adr/0008-no-team-crowding-cap.md.
+ *
  * Three passes over one shuffle, in bound order: the certain floor first, then
  * the non-rare squares up to the rare cap's complement, then anything left. Each
  * pass takes whatever the shuffle offers in an unused group, so no pass can
@@ -193,6 +201,7 @@ function attemptDeal(deck: Deck, seed: string): string[] | undefined {
   const random = createRandom(seed);
   const order = shuffled(deck, random);
   const groups = new Set<string>();
+  const drivers = new Set<string>();
   const squareIds: string[] = [];
 
   /** Fills up to `upTo` squares, taking only squares this pass will accept. */
@@ -200,9 +209,12 @@ function attemptDeal(deck: Deck, seed: string): string[] | undefined {
     for (const square of order) {
       if (squareIds.length === upTo) return;
       if (square.exclusivityGroups.some((group) => groups.has(group))) continue;
+      const driver = square.entities.driver;
+      if (driver !== undefined && drivers.has(driver)) continue;
       if (!accepts(square)) continue;
 
       for (const group of square.exclusivityGroups) groups.add(group);
+      if (driver !== undefined) drivers.add(driver);
       squareIds.push(square.id);
     }
   };

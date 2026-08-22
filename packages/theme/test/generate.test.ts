@@ -68,6 +68,7 @@ describe('pool:build', () => {
           tier: 'certain',
           source: 'generated',
           exclusivityGroups: ['caution:IMS'],
+          entities: { oval: 'IMS' },
           templateId: 'oval_caution',
         },
       ],
