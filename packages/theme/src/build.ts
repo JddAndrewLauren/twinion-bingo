@@ -143,6 +143,13 @@ function expandTemplate(
     exclusivityGroups: template.exclusivityGroups.map((group) =>
       expand(group, expansions.keys, where, errors),
     ),
+    // A template's entity plus its pairings, wrapped in a one-element list
+    // apiece: expansionsFor resolves exactly one key per entity type, so a
+    // generated square never names two of the same type the way a
+    // hand-crafted square occasionally does.
+    entities: Object.fromEntries(
+      Object.entries(expansions.keys).map(([type, key]) => [type, [key]]),
+    ),
     templateId: template.id,
   };
 }
@@ -155,6 +162,7 @@ function handcraftedSquare(square: HandcraftedSquare, meta: ThemeMeta): PoolSqua
     tier: square.tier,
     source: 'handcrafted',
     exclusivityGroups: square.exclusivityGroups,
+    entities: square.entities ?? {},
     templateId: null,
   };
 }

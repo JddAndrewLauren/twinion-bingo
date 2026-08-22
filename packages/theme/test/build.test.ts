@@ -56,8 +56,16 @@ describe('buildPool', () => {
       tier: 'medium',
       source: 'generated',
       exclusivityGroups: ['out:R1'],
+      entities: { racer: ['R1'], team: ['AA'] },
       templateId: 'racer_wins',
     });
+  });
+
+  it('names every entity a square mentions, including pairings', () => {
+    const pool = buildPool(source());
+    const square = pool.squares.find((s) => s.id === 't.v1:racer_wins:R1');
+
+    expect(square?.entities).toEqual({ racer: ['R1'], team: ['AA'] });
   });
 
   it('drops entities whose tier rule is excluded', () => {
@@ -76,6 +84,7 @@ describe('buildPool', () => {
       tier: 'rare',
       source: 'handcrafted',
       exclusivityGroups: ['flag'],
+      entities: {},
       templateId: null,
     });
   });

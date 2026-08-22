@@ -12,6 +12,7 @@
       "exclusivityGroups": [
         "hand:h01"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -23,6 +24,7 @@
       "exclusivityGroups": [
         "hand:h02"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -34,6 +36,7 @@
       "exclusivityGroups": [
         "hand:h03"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -45,6 +48,7 @@
       "exclusivityGroups": [
         "hand:h04"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -56,6 +60,7 @@
       "exclusivityGroups": [
         "hand:h05"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -67,6 +72,7 @@
       "exclusivityGroups": [
         "hand:h06"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -78,6 +84,7 @@
       "exclusivityGroups": [
         "hand:h07"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -89,6 +96,7 @@
       "exclusivityGroups": [
         "hand:h08"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -100,6 +108,7 @@
       "exclusivityGroups": [
         "hand:h09"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -111,6 +120,7 @@
       "exclusivityGroups": [
         "hand:h10"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -122,6 +132,7 @@
       "exclusivityGroups": [
         "hand:h11"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -133,6 +144,7 @@
       "exclusivityGroups": [
         "hand:h12"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -144,6 +156,7 @@
       "exclusivityGroups": [
         "hand:h13"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -155,6 +168,7 @@
       "exclusivityGroups": [
         "hand:h14"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -166,6 +180,7 @@
       "exclusivityGroups": [
         "hand:h15"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -177,6 +192,7 @@
       "exclusivityGroups": [
         "hand:h16"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -188,6 +204,7 @@
       "exclusivityGroups": [
         "hand:h17"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -199,6 +216,7 @@
       "exclusivityGroups": [
         "hand:h18"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -210,6 +228,7 @@
       "exclusivityGroups": [
         "hand:h19"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -221,6 +240,7 @@
       "exclusivityGroups": [
         "hand:h20"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -232,6 +252,7 @@
       "exclusivityGroups": [
         "hand:h21"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -243,6 +264,7 @@
       "exclusivityGroups": [
         "hand:h22"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -254,6 +276,7 @@
       "exclusivityGroups": [
         "hand:h23"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -265,6 +288,7 @@
       "exclusivityGroups": [
         "hand:h24"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -276,6 +300,7 @@
       "exclusivityGroups": [
         "hand:h25"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -287,6 +312,7 @@
       "exclusivityGroups": [
         "hand:h26"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -298,6 +324,7 @@
       "exclusivityGroups": [
         "hand:h27"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -309,6 +336,7 @@
       "exclusivityGroups": [
         "hand:h28"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -320,6 +348,7 @@
       "exclusivityGroups": [
         "hand:h29"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -331,6 +360,7 @@
       "exclusivityGroups": [
         "hand:h30"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -342,6 +372,7 @@
       "exclusivityGroups": [
         "hand:h31"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -353,6 +384,7 @@
       "exclusivityGroups": [
         "hand:h32"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -364,6 +396,7 @@
       "exclusivityGroups": [
         "hand:h33"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -375,6 +408,7 @@
       "exclusivityGroups": [
         "hand:h34"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -386,6 +420,7 @@
       "exclusivityGroups": [
         "hand:h35"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -397,6 +432,7 @@
       "exclusivityGroups": [
         "hand:h36"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -408,6 +444,7 @@
       "exclusivityGroups": [
         "hand:h37"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -419,6 +456,7 @@
       "exclusivityGroups": [
         "hand:h38"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -430,6 +468,7 @@
       "exclusivityGroups": [
         "hand:h39"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -441,6 +480,7 @@
       "exclusivityGroups": [
         "hand:h40"
       ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -452,6 +492,7 @@
       "exclusivityGroups": [
         "fam1:e01"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -463,6 +504,7 @@
       "exclusivityGroups": [
         "fam1:e02"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -474,6 +516,7 @@
       "exclusivityGroups": [
         "fam1:e03"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -485,6 +528,7 @@
       "exclusivityGroups": [
         "fam1:e04"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -496,6 +540,7 @@
       "exclusivityGroups": [
         "fam1:e05"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -507,6 +552,7 @@
       "exclusivityGroups": [
         "fam1:e06"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -518,6 +564,7 @@
       "exclusivityGroups": [
         "fam1:e07"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -529,6 +576,7 @@
       "exclusivityGroups": [
         "fam1:e08"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -540,6 +588,7 @@
       "exclusivityGroups": [
         "fam1:e09"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -551,6 +600,7 @@
       "exclusivityGroups": [
         "fam1:e10"
       ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -562,6 +612,7 @@
       "exclusivityGroups": [
         "fam2:e01"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -573,6 +624,7 @@
       "exclusivityGroups": [
         "fam2:e02"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -584,6 +636,7 @@
       "exclusivityGroups": [
         "fam2:e03"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -595,6 +648,7 @@
       "exclusivityGroups": [
         "fam2:e04"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -606,6 +660,7 @@
       "exclusivityGroups": [
         "fam2:e05"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -617,6 +672,7 @@
       "exclusivityGroups": [
         "fam2:e06"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -628,6 +684,7 @@
       "exclusivityGroups": [
         "fam2:e07"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -639,6 +696,7 @@
       "exclusivityGroups": [
         "fam2:e08"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -650,6 +708,7 @@
       "exclusivityGroups": [
         "fam2:e09"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -661,6 +720,7 @@
       "exclusivityGroups": [
         "fam2:e10"
       ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -672,6 +732,7 @@
       "exclusivityGroups": [
         "fam3:e01"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -683,6 +744,7 @@
       "exclusivityGroups": [
         "fam3:e02"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -694,6 +756,7 @@
       "exclusivityGroups": [
         "fam3:e03"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -705,6 +768,7 @@
       "exclusivityGroups": [
         "fam3:e04"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -716,6 +780,7 @@
       "exclusivityGroups": [
         "fam3:e05"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -727,6 +792,7 @@
       "exclusivityGroups": [
         "fam3:e06"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -738,6 +804,7 @@
       "exclusivityGroups": [
         "fam3:e07"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -749,6 +816,7 @@
       "exclusivityGroups": [
         "fam3:e08"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -760,6 +828,7 @@
       "exclusivityGroups": [
         "fam3:e09"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -771,6 +840,7 @@
       "exclusivityGroups": [
         "fam3:e10"
       ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -782,6 +852,7 @@
       "exclusivityGroups": [
         "fam4:e01"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -793,6 +864,7 @@
       "exclusivityGroups": [
         "fam4:e02"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -804,6 +876,7 @@
       "exclusivityGroups": [
         "fam4:e03"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -815,6 +888,7 @@
       "exclusivityGroups": [
         "fam4:e04"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -826,6 +900,7 @@
       "exclusivityGroups": [
         "fam4:e05"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -837,6 +912,7 @@
       "exclusivityGroups": [
         "fam4:e06"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -848,6 +924,7 @@
       "exclusivityGroups": [
         "fam4:e07"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -859,6 +936,7 @@
       "exclusivityGroups": [
         "fam4:e08"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -870,6 +948,7 @@
       "exclusivityGroups": [
         "fam4:e09"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -881,6 +960,7 @@
       "exclusivityGroups": [
         "fam4:e10"
       ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -892,6 +972,7 @@
       "exclusivityGroups": [
         "fam5:e01"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -903,6 +984,7 @@
       "exclusivityGroups": [
         "fam5:e02"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -914,6 +996,7 @@
       "exclusivityGroups": [
         "fam5:e03"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -925,6 +1008,7 @@
       "exclusivityGroups": [
         "fam5:e04"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -936,6 +1020,7 @@
       "exclusivityGroups": [
         "fam5:e05"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -947,6 +1032,7 @@
       "exclusivityGroups": [
         "fam5:e06"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -958,6 +1044,7 @@
       "exclusivityGroups": [
         "fam5:e07"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -969,6 +1056,7 @@
       "exclusivityGroups": [
         "fam5:e08"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -980,6 +1068,7 @@
       "exclusivityGroups": [
         "fam5:e09"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -991,6 +1080,7 @@
       "exclusivityGroups": [
         "fam5:e10"
       ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -1002,6 +1092,7 @@
       "exclusivityGroups": [
         "fam6:e01"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1013,6 +1104,7 @@
       "exclusivityGroups": [
         "fam6:e02"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1024,6 +1116,7 @@
       "exclusivityGroups": [
         "fam6:e03"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1035,6 +1128,7 @@
       "exclusivityGroups": [
         "fam6:e04"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1046,6 +1140,7 @@
       "exclusivityGroups": [
         "fam6:e05"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1057,6 +1152,7 @@
       "exclusivityGroups": [
         "fam6:e06"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1068,6 +1164,7 @@
       "exclusivityGroups": [
         "fam6:e07"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1079,6 +1176,7 @@
       "exclusivityGroups": [
         "fam6:e08"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1090,6 +1188,7 @@
       "exclusivityGroups": [
         "fam6:e09"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1101,6 +1200,7 @@
       "exclusivityGroups": [
         "fam6:e10"
       ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -1112,6 +1212,7 @@
       "exclusivityGroups": [
         "fam0:e01"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1123,6 +1224,7 @@
       "exclusivityGroups": [
         "fam0:e02"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1134,6 +1236,7 @@
       "exclusivityGroups": [
         "fam0:e03"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1145,6 +1248,7 @@
       "exclusivityGroups": [
         "fam0:e04"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1156,6 +1260,7 @@
       "exclusivityGroups": [
         "fam0:e05"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1167,6 +1272,7 @@
       "exclusivityGroups": [
         "fam0:e06"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1178,6 +1284,7 @@
       "exclusivityGroups": [
         "fam0:e07"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1189,6 +1296,7 @@
       "exclusivityGroups": [
         "fam0:e08"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1200,6 +1308,7 @@
       "exclusivityGroups": [
         "fam0:e09"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1211,6 +1320,7 @@
       "exclusivityGroups": [
         "fam0:e10"
       ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -1222,6 +1332,7 @@
       "exclusivityGroups": [
         "fam1:e01"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1233,6 +1344,7 @@
       "exclusivityGroups": [
         "fam1:e02"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1244,6 +1356,7 @@
       "exclusivityGroups": [
         "fam1:e03"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1255,6 +1368,7 @@
       "exclusivityGroups": [
         "fam1:e04"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1266,6 +1380,7 @@
       "exclusivityGroups": [
         "fam1:e05"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1277,6 +1392,7 @@
       "exclusivityGroups": [
         "fam1:e06"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1288,6 +1404,7 @@
       "exclusivityGroups": [
         "fam1:e07"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1299,6 +1416,7 @@
       "exclusivityGroups": [
         "fam1:e08"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1310,6 +1428,7 @@
       "exclusivityGroups": [
         "fam1:e09"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1321,6 +1440,7 @@
       "exclusivityGroups": [
         "fam1:e10"
       ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1332,6 +1452,7 @@
       "exclusivityGroups": [
         "fam2:e01"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1343,6 +1464,7 @@
       "exclusivityGroups": [
         "fam2:e02"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1354,6 +1476,7 @@
       "exclusivityGroups": [
         "fam2:e03"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1365,6 +1488,7 @@
       "exclusivityGroups": [
         "fam2:e04"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1376,6 +1500,7 @@
       "exclusivityGroups": [
         "fam2:e05"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1387,6 +1512,7 @@
       "exclusivityGroups": [
         "fam2:e06"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1398,6 +1524,7 @@
       "exclusivityGroups": [
         "fam2:e07"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1409,6 +1536,7 @@
       "exclusivityGroups": [
         "fam2:e08"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1420,6 +1548,7 @@
       "exclusivityGroups": [
         "fam2:e09"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1431,6 +1560,7 @@
       "exclusivityGroups": [
         "fam2:e10"
       ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1442,6 +1572,7 @@
       "exclusivityGroups": [
         "fam3:e01"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1453,6 +1584,7 @@
       "exclusivityGroups": [
         "fam3:e02"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1464,6 +1596,7 @@
       "exclusivityGroups": [
         "fam3:e03"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1475,6 +1608,7 @@
       "exclusivityGroups": [
         "fam3:e04"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1486,6 +1620,7 @@
       "exclusivityGroups": [
         "fam3:e05"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1497,6 +1632,7 @@
       "exclusivityGroups": [
         "fam3:e06"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1508,6 +1644,7 @@
       "exclusivityGroups": [
         "fam3:e07"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1519,6 +1656,7 @@
       "exclusivityGroups": [
         "fam3:e08"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1530,6 +1668,7 @@
       "exclusivityGroups": [
         "fam3:e09"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1541,6 +1680,7 @@
       "exclusivityGroups": [
         "fam3:e10"
       ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1552,6 +1692,7 @@
       "exclusivityGroups": [
         "fam4:e01"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1563,6 +1704,7 @@
       "exclusivityGroups": [
         "fam4:e02"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1574,6 +1716,7 @@
       "exclusivityGroups": [
         "fam4:e03"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1585,6 +1728,7 @@
       "exclusivityGroups": [
         "fam4:e04"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1596,6 +1740,7 @@
       "exclusivityGroups": [
         "fam4:e05"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1607,6 +1752,7 @@
       "exclusivityGroups": [
         "fam4:e06"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1618,6 +1764,7 @@
       "exclusivityGroups": [
         "fam4:e07"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1629,6 +1776,7 @@
       "exclusivityGroups": [
         "fam4:e08"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1640,6 +1788,7 @@
       "exclusivityGroups": [
         "fam4:e09"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1651,6 +1800,7 @@
       "exclusivityGroups": [
         "fam4:e10"
       ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1662,6 +1812,7 @@
       "exclusivityGroups": [
         "fam5:e01"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1673,6 +1824,7 @@
       "exclusivityGroups": [
         "fam5:e02"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1684,6 +1836,7 @@
       "exclusivityGroups": [
         "fam5:e03"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1695,6 +1848,7 @@
       "exclusivityGroups": [
         "fam5:e04"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1706,6 +1860,7 @@
       "exclusivityGroups": [
         "fam5:e05"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1717,6 +1872,7 @@
       "exclusivityGroups": [
         "fam5:e06"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1728,6 +1884,7 @@
       "exclusivityGroups": [
         "fam5:e07"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1739,6 +1896,7 @@
       "exclusivityGroups": [
         "fam5:e08"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1750,6 +1908,7 @@
       "exclusivityGroups": [
         "fam5:e09"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1761,6 +1920,7 @@
       "exclusivityGroups": [
         "fam5:e10"
       ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1772,6 +1932,7 @@
       "exclusivityGroups": [
         "fam6:e01"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1783,6 +1944,7 @@
       "exclusivityGroups": [
         "fam6:e02"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1794,6 +1956,7 @@
       "exclusivityGroups": [
         "fam6:e03"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1805,6 +1968,7 @@
       "exclusivityGroups": [
         "fam6:e04"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1816,6 +1980,7 @@
       "exclusivityGroups": [
         "fam6:e05"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1827,6 +1992,7 @@
       "exclusivityGroups": [
         "fam6:e06"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1838,6 +2004,7 @@
       "exclusivityGroups": [
         "fam6:e07"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1849,6 +2016,7 @@
       "exclusivityGroups": [
         "fam6:e08"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1860,6 +2028,7 @@
       "exclusivityGroups": [
         "fam6:e09"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1871,6 +2040,7 @@
       "exclusivityGroups": [
         "fam6:e10"
       ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1882,6 +2052,7 @@
       "exclusivityGroups": [
         "fam0:e01"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1893,6 +2064,7 @@
       "exclusivityGroups": [
         "fam0:e02"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1904,6 +2076,7 @@
       "exclusivityGroups": [
         "fam0:e03"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1915,6 +2088,7 @@
       "exclusivityGroups": [
         "fam0:e04"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1926,6 +2100,7 @@
       "exclusivityGroups": [
         "fam0:e05"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1937,6 +2112,7 @@
       "exclusivityGroups": [
         "fam0:e06"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1948,6 +2124,7 @@
       "exclusivityGroups": [
         "fam0:e07"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1959,6 +2136,7 @@
       "exclusivityGroups": [
         "fam0:e08"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1970,6 +2148,7 @@
       "exclusivityGroups": [
         "fam0:e09"
       ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1981,6 +2160,7 @@
       "exclusivityGroups": [
         "fam0:e10"
       ],
+      "entities": {},
       "templateId": "t14"
     }
   ]
