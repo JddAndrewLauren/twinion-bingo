@@ -115,21 +115,23 @@ test.describe('the join screen', () => {
     const submit = page.getByRole('button', { name: 'Enter room' });
     await expect(submit).toBeVisible();
 
-    // The button itself is sheared (`transform: skewX(-8deg)` on
-    // `.skin-action-primary-fill`), so its own bounding box is not what is
-    // asserted — see `room-screen.tsx`'s note on why the shear lives on an
-    // inner element. The button carries no `[data-hit-expand]` span of its
-    // own (unlike the Theme button and the die): its whole rendered box is
-    // already the hit target, per `ACTION_BUTTON`'s `min-h-11`, so this reads
-    // the button's own box directly and asserts it stayed unsheared.
+    // The button carries no `[data-hit-expand]` span of its own (unlike the
+    // Theme button and the die): its whole rendered box is already the hit
+    // target, per `ACTION_BUTTON`'s `min-h-11`, so the 44px floor is measured
+    // on the button itself.
     await expectThumbSized(submit, 'the primary action');
 
-    const box = (await submit.boundingBox())!;
-    // A skew inflates a bounding box; an unsheared rectangle's box is exactly
-    // its own width, height — nothing here proves that on its own, but the
-    // 44px floor above already fails first if a skew ever lands on this
-    // element instead of its inner fill.
-    expect(box.height).toBeGreaterThanOrEqual(44);
+    // The criterion is *where the shear lives*, and a bounding-box measurement
+    // cannot see that: `skewX` leaves a box's height unchanged and only widens
+    // it, so a skew migrating onto the button would make a `>= 44` assertion
+    // *more* likely to pass, not less. Assert the computed transform directly,
+    // as a pair — the button flat, the inner fill actually sheared — so moving
+    // `skewX(-8deg)` from `.skin-action-primary-fill` up to
+    // `.skin-action-primary` fails on the first half and deleting the shear
+    // altogether fails on the second.
+    await expect(submit).toHaveCSS('transform', 'none');
+    const fill = submit.locator('.skin-action-primary-fill');
+    await expect(fill).not.toHaveCSS('transform', 'none');
   });
 
   test('gives the Theme button a 44x44 hit element on its unsheared expander', async ({
@@ -141,14 +143,18 @@ test.describe('the join screen', () => {
     const theme = page.getByRole('button', { name: 'Theme' });
     await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
 
-    // The hit expander is a sibling of `.skin-theme-fill`, not a descendant of
-    // it, so a skew on the fill cannot deform it — asserted as a real
-    // rectangle rather than trusting the DOM position alone: its box is at
-    // least 44 on both axes, which a skewed ancestor could not produce evenly
-    // sized down to the pixel by coincidence at every one of the four matrix
-    // viewports.
-    const hit = (await theme.locator('[data-hit-expand]').boundingBox())!;
-    expect(Math.min(hit.width, hit.height)).toBeGreaterThanOrEqual(44);
+    // The criterion is that the hit area is measured on an *unsheared*
+    // expander, and no bounding-box measurement can establish that: `skewX`
+    // leaves height untouched and only widens the box, so a migrated skew
+    // makes a `>= 44` floor easier to clear, not harder. Assert the computed
+    // transform as a pair instead — the button and its expander flat, the fill
+    // genuinely sheared. `[data-hit-expand]` is a sibling of `.skin-theme-fill`
+    // rather than a descendant, so this pair is exactly what fails if the skew
+    // is moved from the fill onto `.skin-theme` (which would skew the expander
+    // with it, since the expander is a positioned descendant of the button).
+    await expect(theme).toHaveCSS('transform', 'none');
+    await expect(theme.locator('[data-hit-expand]')).toHaveCSS('transform', 'none');
+    await expect(theme.locator('.skin-theme-fill')).not.toHaveCSS('transform', 'none');
   });
 });
 

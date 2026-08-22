@@ -664,8 +664,8 @@ body {
   font-style: italic;
   font-weight: 900;
   line-height: 0.86;
-  letter-spacing: -0.06em;
-  color: #f2ff00;
+  letter-spacing: -0.05em;
+  color: var(--skin-accent);
 }
 @supports (background-clip: text) or (-webkit-background-clip: text) {
   [data-skin='slipstream'] .skin-code span {
@@ -692,6 +692,7 @@ body {
   [data-skin='slipstream'] .skin-code span {
     font-size: 188px;
     line-height: 0.82;
+    letter-spacing: -0.06em;
   }
 }
 /* The sheared bar under the code — a sibling of `.skin-code`'s own `<p>`. */
@@ -892,7 +893,7 @@ body {
 [data-skin='slipstream'] .skin-progress-of {
   font-size: 12px;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   color: var(--skin-muted);
 }
 [data-skin='slipstream'] .skin-progress-of::after {
@@ -901,6 +902,10 @@ body {
 @media (min-width: 834px) {
   [data-skin='slipstream'] .skin-progress-count {
     font-size: 82px;
+    letter-spacing: -0.06em;
+  }
+  [data-skin='slipstream'] .skin-progress-of {
+    letter-spacing: 0.16em;
   }
 }
 
@@ -924,10 +929,32 @@ body {
  * is calibrated for Roboto Condensed's width, and Archivo 900 is
  * *substantially* wider at the same size — measured, the shared base clipped
  * multiple worst-case labels even after the existing shrink-to-fit algorithm
- * ran to its floor. `2.35cqw` here is the fix: a smaller *starting* size for
- * this skin only, so the same algorithm — untouched, `SHRINK_FLOOR` untouched —
- * has enough headroom to fit Archivo's extra width without reaching the floor
- * on the pool's real worst labels. Applied to the grid `<ul>` itself (which
+ * ran to its floor. `1.9cqw` is the fix: a smaller *starting*
+ * size for this skin only, so the same algorithm — untouched, `SHRINK_FLOOR`
+ * untouched — has enough headroom to fit Archivo's extra width without
+ * reaching the floor on the pool's real worst labels.
+ *
+ * **This undershoots the artboards' own label size, and does so knowingly.**
+ * The Slipstream artboards give `9.5px` (mobile, `padding:4px;line-height:1.08`)
+ * and `13px` (desktop, `padding:8px`); this renders ~7.0/7.3/15.7/10.6px across
+ * the matrix — about 26% under at `phone`, 18% under at `ipad-11-landscape`.
+ * The artboard size is *not reachable* with the real pool: seeding the token to
+ * `2.4cqw` (roughly the artboard size) fails all four card tests at all four
+ * viewports on `expectNoCellClipped`'s 7px budget. So this is a spec-vs-reality
+ * finding, not a styling choice — the mock was drawn with short placeholder
+ * labels and the shipped pool's worst cases are longer. The brief's escalation
+ * path (reword in `themes/f1/overrides.json` + `pnpm pool:build`) is a separate
+ * issue, per the brief's own instruction.
+ *
+ * **Second-order effect, recorded deliberately:** `SHRINK_FLOOR` is a
+ * *relative* 0.8 factor, not an absolute px floor, so dropping the base from
+ * `3cqw` to `1.9cqw` moves the effective absolute minimum at `phone-small`
+ * from about 8.8px to about 5.6px. The constant itself is untouched, exactly as
+ * the criterion requires, but the floor is ~37% weaker in absolute terms. Flagged
+ * for a batch follow-up rather than fixed here, since an absolute floor would
+ * change every skin's shrink behaviour at once.
+ *
+ * Applied to the grid `<ul>` itself (which
  * `card-grid.tsx` already gives an `aria-label` to measure against) rather than
  * to `[data-label]` directly, so it cascades to the free centre's label too.
  */

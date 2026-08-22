@@ -863,6 +863,21 @@ earned/inherited/unmarked cell distinction — gated in `gate/skin-slipstream.ga
   Archivo's extra width on both the synthetic 30-character/13-character-word cap (`room.gate.ts`'s own
   fixture, reused by `skin-slipstream.gate.ts`) and the committed pool's real worst 24
   (`/legibility`), at all four viewports, with margin left before the floor.
+- **The shipped label size undershoots the artboards' own, and cannot not.** The Slipstream artboards
+  give card labels `9.5px` (mobile, `padding:4px;line-height:1.08`) and `13px` (desktop,
+  `padding:8px`); the table above ships 7.0/7.3/15.7/10.6px — about **26% under at `phone`, 18% under
+  at `ipad-11-landscape`**. This is a **spec-vs-reality finding, not a styling choice**: seeding the
+  token to `2.4cqw` (roughly the artboard size) fails **all four card tests at all four viewports**
+  on `expectNoCellClipped`'s 7px budget, independently reproduced in review. The mocks were drawn
+  with short placeholder labels; the committed pool's worst cases are longer, so the artboard size is
+  not reachable without the brief's own escalation path (a reword in `themes/f1/overrides.json` plus
+  `pnpm pool:build`), which the brief states is a separate issue.
+- **Second-order effect of that smaller base, recorded for a batch follow-up:** `SHRINK_FLOOR` is a
+  **relative 0.8 factor, not an absolute px floor**, so dropping the starting size from `3cqw` to
+  `1.9cqw` moves the *effective absolute* minimum at `phone-small` from about **8.8px to about
+  5.6px**. The constant itself is untouched, exactly as the acceptance criterion requires, but the
+  floor is **~37% weaker in absolute terms**. Not fixed here — an absolute floor would change every
+  skin's shrink behaviour at once — and flagged for the batch rather than left silent.
 - **Earned, inherited and unmarked render three distinguishable fills**, gated the same way #104's
   own card is: `paintedFill()` composites each cell's ancestor chain to opaque 8-bit sRGB and
   `deltaE()` scores the three pairs against the same **ΔE 12** floor. **The inherited treatment is
@@ -879,6 +894,26 @@ earned/inherited/unmarked cell distinction — gated in `gate/skin-slipstream.ga
   `[data-hit-expand]` sibling from #103 — as a plain, unsheared rectangle. A no-op restructuring for
   the three skins with no shear: the classes that used to sit on the button now sit on the fill
   instead, rendering byte-identical.
+
+  **Gated on the computed `transform`, not on a box measurement.** A bounding box cannot see where a
+  shear lives: `skewX` leaves height unchanged and only widens the box, so a skew migrating up onto
+  the button would make a `>= 44` floor *easier* to clear, not harder. Both tests therefore assert a
+  **pair** — `transform: none` on the outer `<button>` (and on the Theme button's `[data-hit-expand]`
+  sibling) together with a **non-`none`** transform on the inner fill span. Seeded and reverted:
+  moving `skewX(-8deg)` onto `.skin-action-primary` and `skewX(-10deg)` onto `.skin-theme` fails
+  **8 tests — both, at all four viewports**; restored and green.
+- **The paint overhangs the hit rectangle on the primary action, by design and by ~3px.** With the
+  shear on the fill and the `<button>` left square, the painted yellow extends past the tappable
+  rectangle at two corners and leaves the other two tappable-but-unpainted (about 3px at a 44px
+  height). This is the structurally correct side of the brief's named trap — the hit area must be the
+  unsheared box — but the visual affordance no longer traces the tap target exactly, and no test can
+  see it. Recorded for the visual pass.
+- **Per-viewport type values come from both Slipstream artboards, not one.** The mobile artboard is
+  `font-size:96px;line-height:.86;letter-spacing:-.05em` and the desktop one
+  `188px;.82;-.06em`, so the room code takes `-.05em` below `834px` and `-.06em` at and above it —
+  and likewise `.skin-progress-count` (`-.05em` → `-.06em`) and `.skin-progress-of`
+  (`.14em` → `.16em`). All three are genuine per-viewport artboard values rather than rounding, and
+  `-.05em` sits inside the brief's own stated `-.02 to -.06em` range, so the HTML wins at phone.
 - **The room code is real, selectable text**, not an image, at `phone-small` and every other
   viewport: `textContent` reads `ABCD` regardless of the `background-clip: text` gradient painted
   over it, and a `@supports` guard falls back to solid `#f2ff00` text where the clip is unsupported.
