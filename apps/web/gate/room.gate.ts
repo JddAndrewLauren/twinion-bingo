@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { CARD, openRoom } from './room-fixture';
+import { CARD, openRoom, settleSkinFonts } from './room-fixture';
 import {
   expectBesideTheCard,
   expectClearOfTheCard,
@@ -424,6 +424,18 @@ test.describe('the slim bar and the two surfaces', () => {
     for (const skin of ['slipstream', 'confetti', 'scorecard', 'pitwall']) {
       await theme.tap();
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
+      /*
+        Every measurement below this line is font-metrics driven, and the face
+        this skin paints with has only just been asked for. `openRoom` awaited
+        `document.fonts.ready` at load — in the *default* skin — so without this
+        the header is measured on whatever face happens to be resolved at this
+        instant, which with `display: 'swap'` is the fallback on a cold runner
+        and the real face on a warm one. That is precisely how #107 shipped a
+        `phone-small` header wrap that passed locally and failed in CI. See
+        `settleSkinFonts` in `room-fixture.ts`: it changes no assertion, only
+        which state the assertions are allowed to see.
+      */
+      await settleSkinFonts(page);
 
       await expectDieMatchesTheme(`in ${skin}`);
       await expectHeaderOnOneLine(bar);

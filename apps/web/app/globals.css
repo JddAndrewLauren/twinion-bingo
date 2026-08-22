@@ -1599,3 +1599,684 @@ body {
   outline: 2px solid var(--skin-accent);
   outline-offset: 2px;
 }
+
+/*
+ * #107 — Scorecard's *structure*: ruled cream stock, 2px ink borders, dashed
+ * folds, and the ink ring that marks a square without touching its label. Same
+ * pattern #104/#105/#106 set — every rule below is scoped to
+ * `[data-skin='scorecard']`, so the other three skins are untouched, and every
+ * hook (`.skin-code`, `.skin-code-bar`, `.skin-field`, `.skin-cell`,
+ * `.skin-roster*`, `.skin-progress-*`, `.skin-banner`, `.skin-looking*`,
+ * `.skin-theme-fill`, `.skin-action-primary`) is a class the shared component
+ * tree already renders for every skin. Two new hooks this issue adds
+ * (`.skin-field-label` on the name field's own `<label>`, `.skin-join-divider`
+ * on the join screen's two-column wrapper) — see `room-screen.tsx`'s own
+ * comments at each call site for why a class was needed there and nowhere else.
+ *
+ * Breakpoints follow the file's own convention: unprefixed for phone,
+ * `@media (min-width: 834px)` for iPad.
+ */
+[data-skin='scorecard'] {
+  --skin-font-ui: var(--font-baloo-2), sans-serif;
+  --skin-font-label: var(--font-baloo-2), sans-serif;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * Ruled paper (README's *Design tokens* → Scorecard, and both artboards): a
+ * hairline rule every 22px (phone) / 26px (iPad). On `body`, the same technique
+ * Slipstream's diagonal field uses — every Scorecard surface is the same ruled
+ * ground, and a `background-image` composites over `body`'s own `bg-surface`
+ * with no extra wrapper. `background-attachment: fixed` for the same reason
+ * Slipstream sets it: so the rule lines do not visibly scroll past the one
+ * column that scrolls (the phone card).
+ *
+ * This does not "sit under the card cells in a way that shows through
+ * `#fffdf7`" (this issue's own trap): a card cell's own `background-color:
+ * var(--skin-raised)` (`#fffdf7`) is opaque and painted in the normal flow
+ * above `body`'s background, which is the deepest layer in the stack — the
+ * ruled paper is a plain page background, not an overlay riding above the
+ * grid.
+ */
+[data-skin='scorecard'] body {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(43, 33, 24, 0.045) 0 1px,
+    transparent 1px 22px
+  );
+  background-attachment: fixed;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] body {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(43, 33, 24, 0.045) 0 1px,
+      transparent 1px 26px
+    );
+  }
+}
+
+/*
+ * Room code: a rotated ticket box around the four characters, with a plain
+ * (unrotated) "Admit one to room" label above it — the opposite of Confetti's
+ * single card, which is why Confetti's own `::before`-inside-the-flex-row trick
+ * cannot be reused here: rotating `.skin-code` would rotate a `::before` label
+ * riding inside it too.
+ *
+ * **`.skin-code-bar` repurposed as the label, not a new element.** That span
+ * already exists, unconditional, as `<RoomCode>`'s own sibling to `.skin-code`
+ * (Slipstream's sheared bar, #105) — a Fragment, so both are direct children of
+ * the same flex column `room-screen.tsx` already renders (`RoomCode`, the name
+ * field, the primary action). `order: -1` moves it before `.skin-code` in that
+ * one flex container without moving it in the DOM, which is what lets it stay
+ * a plain, unrotated, ungenerated-content-conflicting label: it is already
+ * `aria-hidden` (Slipstream's own precedent), so a decorative `::before`
+ * string on it duplicates no accessible name, unlike the real `<label>` the
+ * name field owns (see that field's own comment below).
+ */
+[data-skin='scorecard'] .skin-code-bar {
+  display: block;
+  order: -1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--skin-muted);
+}
+[data-skin='scorecard'] .skin-code-bar::before {
+  content: 'Admit one to room';
+}
+[data-skin='scorecard'] .skin-code {
+  order: 0;
+  justify-content: center;
+  gap: 0;
+  width: fit-content;
+  margin: 0 auto;
+  border: 3px solid #e5502a;
+  border-radius: 14px;
+  padding: 8px 22px;
+  transform: rotate(-2.5deg);
+}
+[data-skin='scorecard'] .skin-code span {
+  aspect-ratio: unset;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+  color: #e5502a;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-code-bar {
+    font-size: 13px;
+    letter-spacing: 0.24em;
+  }
+  [data-skin='scorecard'] .skin-code {
+    border-width: 4px;
+    border-radius: 18px;
+    padding: 10px 34px;
+  }
+  [data-skin='scorecard'] .skin-code span {
+    font-size: 96px;
+  }
+}
+
+/*
+ * Name field: no box, a 2px ink bottom rule. `.skin-field-label` is this
+ * issue's own hook, added to the `<label>` in `room-screen.tsx` — the handoff's
+ * copy is "SIGN HERE", but the DOM text stays "Your name", so only the visual
+ * weight (small, bold, spaced, uppercase, muted) is this skin's to set.
+ *
+ * **Not a settled precedent.** `docs/SURFACES.md`:1234-1250 explicitly rejected
+ * the framing that #104's `Join` → `Enter room` rename was precedent for this,
+ * and recorded the real justification — a cross-skin accessible-name contract —
+ * as an **open FINAL-GATE question**, not an established practice. Keeping
+ * "Your name" here is the same unresolved call applied to a second control, and
+ * it is recorded as such in this skin's own SURFACES entry rather than claimed
+ * as settled. The reason it is not decided inside this slice: `apps/web/test/`
+ * and every gate query one accessible name per control across all four skins,
+ * so a per-skin rename is a cross-slice retarget, not a CSS change.
+ */
+[data-skin='scorecard'] .skin-field-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--skin-muted);
+}
+[data-skin='scorecard'] .skin-field {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid #2b2118;
+  padding: 6px 2px;
+  font-size: 26px;
+  font-weight: 700;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-field-label {
+    letter-spacing: 0.16em;
+  }
+  [data-skin='scorecard'] .skin-field {
+    padding: 8px 2px;
+    font-size: 30px;
+  }
+}
+
+/* The join screen's primary action: a plain teal fill, no shear, no shadow. */
+[data-skin='scorecard'] .skin-action-primary {
+  background-color: #1f7a6b;
+  border: none;
+  color: #f7f1e4;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+[data-skin='scorecard'] .skin-action-primary:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-action-primary {
+    border-radius: 14px;
+    font-size: 19px;
+  }
+}
+
+/*
+ * The desktop divider (README's "Desktop layout ... a divider separates them —
+ * hairline in `pitwall`, dashed rule in `scorecard`"). `.skin-join-divider` is
+ * this issue's own hook on the join screen's two-column wrapper — see that
+ * element's own comment in `room-screen.tsx`. `1024px` matches the wrapper's
+ * own `lg:` breakpoint (Tailwind's stock `lg`, the same number the two-column
+ * layout itself switches on), so this only ever repaints a border that is
+ * already there rather than adding one at a width where the columns have not
+ * split yet.
+ */
+@media (min-width: 1024px) {
+  [data-skin='scorecard'] .skin-join-divider {
+    border-right-style: dashed;
+    border-right-color: rgba(43, 33, 24, 0.3);
+  }
+}
+
+/*
+ * Roster: `2px solid #2b2118` outline pills, the same wrapping-row structure
+ * Slipstream/Confetti already use on this component (`roster-preview.tsx`).
+ * The overflow chip borrows the accent orange rather than the base ink border,
+ * so it reads as "there is more" rather than as one more name.
+ */
+[data-skin='scorecard'] .skin-roster-heading {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+[data-skin='scorecard'] .skin-roster-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-skin='scorecard'] .skin-roster-row {
+  border: 2px solid #2b2118;
+  border-radius: 999px;
+  padding: 4px 12px;
+  gap: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-roster-index,
+[data-skin='scorecard'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='scorecard'] .skin-roster-row[data-roster-overflow='true'] {
+  display: none;
+}
+[data-skin='scorecard'] [data-roster-more] {
+  display: flex;
+  border-color: #e5502a;
+  color: #e5502a;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-roster-list {
+    gap: 9px;
+  }
+  [data-skin='scorecard'] .skin-roster-row {
+    padding: 5px 14px;
+    font-size: 14px;
+  }
+  [data-skin='scorecard'] .skin-roster-row[data-roster-overflow='true'] {
+    display: flex;
+  }
+  [data-skin='scorecard'] [data-roster-more] {
+    display: none;
+  }
+}
+
+/*
+ * Card grid face: Baloo 2 700 mixed case, overriding `card-grid.tsx`'s shared
+ * `cardFont.className` (Roboto Condensed) — same `.skin-card-grid` hook and
+ * same "size is a class, not an inline style" rule Confetti's own comment
+ * explains (jsdom cannot resolve `cqw`). Baloo 2 is, per the handoff's own
+ * README note (§ *Header controls*), the widest of the five faces, so this
+ * issue's own fraction is reduced further than Confetti's `2.6cqw` rather than
+ * left at the shared `3cqw` or Confetti's own value — measured against the
+ * pool's real worst 24 at every viewport (`/legibility`, this issue's own
+ * acceptance criterion), the same way #105/#106 tuned theirs.
+ */
+[data-skin='scorecard'] .skin-card-grid {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 1.7cqw;
+  gap: 4px;
+}
+/*
+ * Baloo 2's glyph metrics need a taller line box than `leading-tight` gives —
+ * see the `line-height` note on `.skin-cell` below for the measured sweep, the
+ * mechanism, and the disclosed deviation from the artboard's own value.
+ *
+ * `gap: 4px` at phone is HTML:747's own value; `5px` at iPad is the desktop
+ * artboard's own grid gap (HTML:433 — `grid-template-columns:repeat(5,1fr);
+ * gap:5px`). `docs/design/README.md`:85 tabulates only the mobile 4px, which is
+ * why this pair reads as unsourced against the README alone.
+ */
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-card-grid {
+    gap: 5px;
+  }
+}
+
+/*
+ * Card cell: `#fffdf7`, 2px ink, square (no radius — the one place this skin's
+ * own `--skin-radius: 0.75rem` token, tuned for boxes/fields/pills, is
+ * deliberately overridden, per the handoff's own "Radius ... 999px on pills
+ * and the ink ring" naming cells apart from that ladder).
+ *
+ * **`line-height: 1.62` is a disclosed spec-vs-reality deviation, and the spec
+ * range is not reachable at all.** The handoff gives the cell
+ * `line-height: 1.12` (mobile, HTML:749) and `1.15` (desktop, HTML:436);
+ * `docs/design/README.md`:104 gives `1.08–1.15`. Those values clip real labels,
+ * measured against the pool's own worst 24 at `/legibility` at all four matrix
+ * viewports (the binding one is `ipad-11-portrait`):
+ *
+ *     line-height   1.12    1.15    1.25    1.40    1.50    1.54    1.60    1.62
+ *     worst over   +3.40   +3.19   +2.48   +1.43   +0.72   +0.45   +0.03   +0.00
+ *
+ * `gate/measure.ts`'s budget is 0.5px, so everything at or below 1.52 fails the
+ * gate outright and 1.54 clears it only by 0.05px — inside the rounding
+ * tolerance, not clear of the metrics. **1.62 is the measured minimum at which
+ * the overflow is actually zero**, and it is what ships: the mechanism is that
+ * `[data-label]` is a block span, so its height is line-box driven, while
+ * `overflow()` compares that box against `Range.getClientRects()`, which
+ * returns *font-content-area* rects. Baloo 2's ascent+descent is ~1.6em, so any
+ * line box shorter than that overflows by a constant no narrower `cqw` can
+ * touch. (The shipped 1.65 was 0.03 above this minimum, not 43% above a
+ * reachable one.)
+ *
+ * Why the artboard can afford 1.12 and this cannot: the artboard's cells are
+ * static divs holding hand-picked short labels under `overflow: hidden`, while
+ * these hold the pool's real worst 24 under shrink-to-fit. Raising the line
+ * height does reduce text per cell and so pushes `fitLabel`'s shrink lower —
+ * the same second-order cost #105 disclosed for its own token.
+ *
+ * Set on `.skin-cell` rather than `.skin-card-grid` for the reason the block
+ * above this one gives: `leading-tight` is `card-grid.tsx`'s own class on the
+ * button itself, and an inherited value cannot beat it.
+ */
+[data-skin='scorecard'] .skin-cell {
+  position: relative;
+  border-width: 2px;
+  border-radius: 0;
+  line-height: 1.62;
+  transition: background-color 140ms ease-out;
+}
+/*
+ * **The label really is untouched, including its weight.** `card-grid.tsx`'s
+ * `markedStyle()` is the fallback every skin without its own `[data-mark]`
+ * override still renders — literal Tailwind colours *and* `font-semibold` —
+ * so without this rule a marked Scorecard cell would flip to
+ * `bg-emerald-800`/`bg-neutral-700` and bold text the moment it was called,
+ * which is exactly the opposite of this issue's own "leaves the label
+ * untouched" design. Both mark states are reset to the cell's own base
+ * fill/border/ink and this skin's one label weight (Baloo 2 700, the same
+ * weight every unmarked label already carries), at higher specificity
+ * (`[data-skin] .skin-cell[data-mark=…]`, 0,3,0) than the single-class
+ * Tailwind utilities it replaces (0,1,0).
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='earned'],
+[data-skin='scorecard'] .skin-cell[data-mark='inherited'] {
+  background-color: var(--skin-raised);
+  border-color: #2b2118;
+  color: var(--skin-ink);
+  font-weight: 700;
+}
+/*
+ * Hover (pointer only, README's *Hover (desktop)*): the fill shifts to white.
+ *
+ * `[data-mark='none']` rather than a bare `:hover`: README:148 scopes the hover
+ * lift to *unmarked* squares, and a retractable marked cell is not disabled, so
+ * a bare `:not(:disabled):hover` also repainted marked cells — at equal
+ * specificity to the `[data-mark]` rule above and later in the file, so hover
+ * won and a stamped square lost its own fill under the pointer.
+ */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='scorecard'] .skin-cell[data-mark='none']:not(:disabled):hover {
+    background-color: #fff;
+  }
+}
+
+/*
+ * The ink ring — this issue's own centrepiece. **An overlay, not a fill**: the
+ * label stays exactly as `card-grid.tsx` renders it, and the mark is a
+ * `border`-only `::after` positioned `inset: 6%` over the cell, `border-radius:
+ * 999px` — this issue's own "the ring is an overlay, so it must not enter the
+ * cell's text flow or the `Range`-based `overflow()` measurement in
+ * `card-grid.tsx`". A generated pseudo-element is never part of the `[data-label]`
+ * span's own text nodes, so `overflows()`'s `Range` over that span's content
+ * never sees it — the label is measured exactly as if the ring did not exist,
+ * which is the literal truth of how it is painted.
+ *
+ * **`::after`, not `::before`, and no `z-index` needed on the label.** The ring
+ * has to sit visually *above* the label (the handoff's own worst cases —
+ * `Track Limits Lap Deleted`, `Kid With Ear Defenders` — show it cutting
+ * through text) and — separately — has to be the thing
+ * `gate/skin-scorecard.gate.ts`'s copy of `paintedFill()` sees as topmost, since
+ * that instrument (inherited from `skin-confetti.gate.ts`) always treats a
+ * queried pseudo-element as the top of the paint stack regardless of real
+ * z-index or DOM order (its own documented blind spot). Putting the ring
+ * behind the label, or at `z-index: -1`, would make the instrument report a
+ * colour that is not really on top. A `position: absolute` pseudo-element with
+ * no explicit `z-index` is a "positioned descendant with `z-index: auto`",
+ * which CSS's painting order puts *after* the cell's in-flow, non-positioned
+ * content — the `[data-label]` span never receives a `position`, so it never
+ * competes for a stacking level at all and simply paints first. So the ring is
+ * both visually topmost and instrument-correct with no extra rule on the label.
+ *
+ * **Sized from the token, not literally 4/5px, for one reason only:
+ * `deviceScaleFactor: 2`, the factor this repo's gate runs at** (this issue's
+ * own trap about the ruled paper applies equally here) — a hairline `border`
+ * at a non-integer *device* pixel can round away or double under DPR scaling.
+ * `--skin-marked` already carries the handoff's exact ring colour
+ * (`rgba(229,80,42,.72)`, `globals.css`'s own token block), so the *earned*
+ * ring reads directly off it; nothing new is invented for that half.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark]::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 999px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: transparent;
+  pointer-events: none;
+  transform: scale(1.15);
+  opacity: 0;
+  transition:
+    transform 160ms ease-out,
+    opacity 160ms ease-out;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-cell[data-mark]::after {
+    border-width: 5px;
+  }
+}
+/*
+ * Earned: the handoff's own orange ring, from the token.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='earned']::after {
+  opacity: 1;
+  transform: scale(1);
+  border-color: var(--skin-marked);
+}
+/*
+ * Inherited — invented for this issue, since the mocks show only base/marked/
+ * free (the same gap #104/#105/#106 each record for their own skin). **A
+ * second ink colour, not an unclosed ring** (the brief's own two options): this
+ * skin's own teal (`#1f7a6b`, already named in the *Design tokens* palette and
+ * already carrying the meaning "this happened, but you are not the one holding
+ * it" — it is the primary action's own fill and the call banner's own fill,
+ * both "something the room is doing", not "something you earned"). Reusing a
+ * ring the same *shape* as earned but a different *hue* keeps the "a mark is a
+ * stamp" reading intact while the colour alone carries "you did not call this
+ * one" — the same "must not look claimable" requirement `CONTEXT.md` states,
+ * satisfied by hue rather than by weight since the fill is not available to
+ * this skin's marked state at all (the label-untouched design is the whole
+ * point of this issue). `skin-scorecard.gate.ts` measures the ring's own
+ * rendered border colour for all three states, pairwise — see that file's own
+ * comment for why `paintedFill()` cannot be the instrument for a border-only
+ * overlay.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='inherited']::after {
+  opacity: 1;
+  transform: scale(1);
+  border-color: #1f7a6b;
+}
+
+/*
+ * Progress readout: plain text rather than Pit Wall's segments or Confetti's
+ * track — the segmented `<div>` stays in the DOM (`progress-readout.tsx` is
+ * unconditional) but is hidden, the same technique Slipstream's own numeral-
+ * only treatment uses.
+ *
+ * **Two real sizes, not one, and both are the handoff's own — this issue's
+ * spec-precedence case.** The mobile artboard (HTML `#1d`) folds this region
+ * into a compact 13px/700 baseline row beside the "Your card" label; the
+ * desktop artboard (`#2d`) draws a distinct 44px/800 numeral in the left rail,
+ * exactly as `docs/design/README.md`'s own *Progress readout per theme* table
+ * states ("44px/800 numeral"). Both are read directly off their own artboard
+ * rather than one being assumed to be a rounding of the other — the same
+ * per-viewport-artboard reading this issue's own brief calls out, and the same
+ * shape Pit Wall's own `.skin-progress-number` split already uses ("the
+ * numeral is the iPad half of this region, and only that").
+ *
+ * The literal wording differs between the two artboards too (mobile "8 of 24
+ * stamped", desktop "8 / 24 stamped") — both are decorative (`aria-hidden`,
+ * per `progress-readout.tsx`'s own comment), and the DOM's own `/{total}`
+ * (shared by every skin, in `progress-readout.tsx`) is kept rather than edited
+ * per skin, so only the word "stamped" is added via `::after`.
+ */
+[data-skin='scorecard'] .skin-progress-track {
+  display: none;
+}
+[data-skin='scorecard'] .skin-progress {
+  flex-direction: row;
+}
+[data-skin='scorecard'] .skin-progress-number {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+[data-skin='scorecard'] .skin-progress-count {
+  font-size: 13px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-progress-of {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--skin-ink);
+}
+[data-skin='scorecard'] .skin-progress-of::after {
+  content: ' stamped';
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-progress {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  [data-skin='scorecard'] .skin-progress-number {
+    display: block;
+    width: auto;
+  }
+  [data-skin='scorecard'] .skin-progress-count {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  [data-skin='scorecard'] .skin-progress-of {
+    margin-left: 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--skin-muted);
+  }
+}
+
+/*
+ * "Looking for": 1px rules under a dashed section head — the accordion's own
+ * `rounded-skin border border-rule-soft` box is replaced by a plain dashed top
+ * rule, and the rows underneath keep the accordion's own `divide-rule-soft` /
+ * `border-rule-soft` utilities (`looking-for.tsx`), which already render this
+ * skin's exact `rgba(43,33,24,.15)` — no override needed for the rows
+ * themselves.
+ */
+[data-skin='scorecard'] .skin-looking {
+  border-radius: 0;
+  border-color: transparent;
+  border-top: 2px dashed rgba(43, 33, 24, 0.3);
+}
+[data-skin='scorecard'] .skin-looking-label {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-looking-desc {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-looking-label {
+    font-size: 14px;
+  }
+  [data-skin='scorecard'] .skin-looking-desc {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}
+
+/* Call banner: teal fill, cream text, a dark top rule — same "restyle the
+   docked slot in place" rule #104/#105/#106 all use. */
+[data-skin='scorecard'] .skin-banner {
+  background-color: #1f7a6b;
+  border-top: 2px solid #2b2118;
+  color: #f7f1e4;
+  /* The brief's and README:115's own tracking for the "CALLED · 2s" label. */
+  letter-spacing: 0.18em;
+}
+
+/*
+ * The card screen's header: plain text room code (no ticket box — that
+ * treatment is the join screen's own) at the handoff's own size, and the
+ * header's hairline promoted to this skin's 2px ink rule.
+ */
+[data-skin='scorecard'] .skin-card-header {
+  border-bottom-width: 2px;
+  border-bottom-color: #2b2118;
+  padding: 13px 16px;
+}
+/*
+ * **`letter-spacing: 0.08em` (HTML:740) is a disclosed deviation at phone
+ * widths, and the reason is that the artboard's header is not this header.**
+ * HTML:740 carries a bare 4-character code (`K4V2`), one stat (`Lap 34`), the
+ * die and the Theme button. The real header carries `Room ABCD` (9 characters),
+ * `0/24 · 6 here` *and* a Share button — so the artboard's tracking was never
+ * budgeted against this row's actual contents.
+ *
+ * Measured at `phone-small` (375px), with the header's own `13px 16px` padding
+ * and `gap-2`: the `<p>` is the row's only `flex-1` child, so it gets exactly
+ * the leftover width and nothing more. With `.08em` the h1 measured 96.26px,
+ * leaving the `<p>` a 62.70px box for 60.53px of text — **2.17px of slack**,
+ * which is what shipped and what CI run 32603690712 broke at `phone-small`
+ * (`1.9985` line boxes). Reclaiming the tracking takes the h1 to 84.75px and
+ * the `<p>`'s box to 74.22px against the same 60.53px of text — **13.69px of
+ * slack, 22.6%**. For scale: the *fallback* face renders that same string at
+ * 67.52px, so the row now holds one line even in the swap state that caused the
+ * CI failure (see `settleSkinFonts` in `gate/room-fixture.ts`, which removes
+ * that race outright). Both halves are deliberate: real slack, and a measuring
+ * instrument that can see the state it grades.
+ *
+ * The iPad block below restores the handoff's `.08em` — the deviation is
+ * confined to the one viewport class whose budget is real. `docs/SURFACES.md`
+ * records the measured numbers.
+ */
+[data-skin='scorecard'] .skin-card-header h1 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: normal;
+}
+/*
+ * The run-status line (`room-screen.tsx`'s own `p.text-xs.tabular-nums`, no
+ * class hook of its own — an element selector is enough since it is the
+ * header's only `<p>`). Pit Wall's own comment on `.skin-note` records the
+ * same defect for JetBrains Mono; Baloo 2 is wider still (this issue's own
+ * brief: "Re-check the header's single line at `phone-small` in this skin
+ * specifically — slice 2's arithmetic was done at the smaller height"), and
+ * the unmodified `text-xs` (12px) wraps this line to two at `phone-small`
+ * once the whole skin root switches to it — measured, `room.gate.ts`'s
+ * `expectHeaderOnOneLine` failing at 1.998 lines before this rule existed.
+ * `11px` is this skin's own fix, the same kind of type-scale correction Pit
+ * Wall's own comment describes rather than a copy or layout change.
+ */
+[data-skin='scorecard'] .skin-card-header > p {
+  font-size: 11px;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-card-header {
+    padding: 15px 28px;
+  }
+  [data-skin='scorecard'] .skin-card-header h1 {
+    font-size: 19px;
+    /* The handoff's own tracking (HTML:414), restored where the row can afford
+       it — see the phone rule above for why it is dropped at phone widths. */
+    letter-spacing: 0.08em;
+  }
+  /* The desktop artboard's own value (HTML:414 gives the stats row `12px`); the
+     `11px` above is the *mobile* artboard's (HTML:741). Both are real, and the
+     iPad row has the width for the larger one. */
+  [data-skin='scorecard'] .skin-card-header > p {
+    font-size: 12px;
+  }
+}
+
+/*
+ * The Theme button (`skin-button.tsx`): a plain ink-outlined pill, no fill —
+ * the handoff's own "no radius" boxes elsewhere in this skin do not apply
+ * here, since the Theme button's own entry names `border-radius: 10px`
+ * explicitly.
+ *
+ * **The handoff's own `padding: 5px 12px` is a disclosed deviation, not
+ * applied — the same "the button's own budget" trap #106's own comment on
+ * this exact hook records for Confetti's `7px 15px`.** Baloo 2 is the widest
+ * of the five faces, so this button (already carrying a 2px border for the
+ * first time — every other skin's own `.skin-theme-fill` is 1px or borderless)
+ * plus the handoff's fuller padding pushed the header's run-status `<p>` down
+ * to ~53px of available width at `phone-small`, which no font size that stays
+ * legible fits into — measured, `room.gate.ts`'s `expectHeaderOnOneLine`
+ * failing at 1.999 lines with the handoff's own padding applied. The
+ * incumbent `px-2 py-1` (8px/4px, from `skin-button.tsx`'s own base classes)
+ * is kept, so this rule changes colour, corner radius and weight — no padding,
+ * no border width beyond the ink outline itself, no font size relative to the
+ * incumbent `text-xs`. `docs/SURFACES.md` records the measured consequence.
+ */
+[data-skin='scorecard'] .skin-theme-fill {
+  background-color: transparent;
+  border-width: 2px;
+  border-color: #2b2118;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--skin-ink);
+}
+
+/*
+ * Focus: the accent ring on the cream/paper surfaces, same
+ * one-selector-for-every-interactive-element rule as the other three skins'.
+ */
+[data-skin='scorecard'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
