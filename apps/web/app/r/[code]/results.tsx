@@ -51,6 +51,7 @@ export function Results({ game }: { game: Game }) {
           <ol className="flex flex-col gap-1">
             {game.prizes.map((prize) => (
               <li key={`${prize.seq}:${prize.playerId}`}>
+                {/* Same "won" green as a marked cell — left literal, #102's carve-out. */}
                 <span className="font-semibold text-emerald-300">
                   {PRIZE_NAMES[prize.prizeKind] ?? prize.prizeKind}
                 </span>
@@ -70,7 +71,7 @@ export function Results({ game }: { game: Game }) {
           {game.standings.map((standing) => (
             <li key={standing.playerId} className="flex justify-between gap-3">
               <span className="truncate">{standing.name}</span>
-              <span className="tabular-nums text-neutral-400">
+              <span className="tabular-nums text-muted">
                 {standing.marks}
               </span>
             </li>
@@ -81,7 +82,7 @@ export function Results({ game }: { game: Game }) {
       <section className="flex flex-col gap-1">
         <h2 className="font-semibold">Timeline</h2>
         {game.timeline.length === 0 ? (
-          <p className="text-neutral-400">Nothing called yet.</p>
+          <p className="text-muted">Nothing called yet.</p>
         ) : (
           <ol className="flex flex-col gap-1">
             {game.timeline.map((entry) => (
@@ -91,7 +92,7 @@ export function Results({ game }: { game: Game }) {
                   and on a recording this is wall-clock since the host started,
                   pauses included. Fixed-width so the column reads as a column.
                 */}
-                <span className="w-14 shrink-0 tabular-nums text-neutral-400">
+                <span className="w-14 shrink-0 tabular-nums text-muted">
                   {entry.elapsed}
                 </span>
                 <span className="min-w-0">

@@ -1,4 +1,4 @@
-import { Roboto_Condensed } from 'next/font/google';
+import { robotoCondensed } from '../../skin-fonts';
 
 /**
  * The cell face, and the reason it is not the system one.
@@ -12,10 +12,19 @@ import { Roboto_Condensed } from 'next/font/google';
  * on the iPad.
  *
  * Settled on real hardware, not in a desktop browser — see #12's closing comment.
- * Loaded here rather than in `layout.tsx` because it is the card's face and not
- * the app's: everything else on screen is prose in the system font.
+ *
+ * Re-exported from `app/skin-fonts.ts` rather than loaded here a second time:
+ * #102's handoff asks for Roboto Condensed again, at different weights, for Pit
+ * Wall's own UI — and one `next/font` call per family is what keeps a skin
+ * switch from paying for the same face twice under two different names.
+ *
+ * **The shared instance declares no `weight`, and that is load-bearing here
+ * rather than incidental.** This module's own call never did either, so the
+ * family arrives as its variable `100 900` axis — and a cell asks for
+ * `font-semibold`. Pinning the shared instance to a static 400/700 pair (which
+ * is what naming the handoff's UI weights would do) would resolve that 600 to
+ * the 700 face and widen every marked, inherited and free-centre label, which
+ * is precisely the measurement `card-grid.tsx`'s overflow shrink is tuned
+ * against. Any future change to that instance's `weight` changes the card.
  */
-export const cardFont = Roboto_Condensed({
-  subsets: ['latin'],
-  display: 'swap',
-});
+export const cardFont = robotoCondensed;
