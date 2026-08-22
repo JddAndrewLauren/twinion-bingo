@@ -222,3 +222,29 @@ body {
 .skin-glyph-spin {
   animation: skin-glyph-rotate 180ms linear;
 }
+
+/*
+ * The dice's colour (`die-button.tsx`), per docs/design/README.md's "Header
+ * controls" section — chosen per **surface**, not per skin, so it stays scoped
+ * to `[data-die-surface]` rather than joining the token layer above. Every
+ * skin's bar uses one literal value except Confetti, whose blue card header
+ * needs a second: `[data-die-surface='card']` overrides the skin's default
+ * (its cream join bar) only there. These are the handoff's real numbers —
+ * unlike the token layer's Pit Wall block, there is no "today's colour" to
+ * hold inert, since no dice existed before this issue.
+ */
+[data-skin='pitwall'] svg[data-die-surface] {
+  color: rgba(232, 232, 234, 0.6);
+}
+[data-skin='slipstream'] svg[data-die-surface] {
+  color: rgba(255, 255, 255, 0.55);
+}
+[data-skin='scorecard'] svg[data-die-surface] {
+  color: #2b2118;
+}
+[data-skin='confetti'] svg[data-die-surface] {
+  color: rgba(32, 24, 15, 0.55);
+}
+[data-skin='confetti'] svg[data-die-surface='card'] {
+  color: rgba(255, 255, 255, 0.85);
+}

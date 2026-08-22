@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { nextSkin, SKIN_COOKIE, type Skin } from './skin';
 
 /** A year, which is long enough that the cookie outlives any one session. */
@@ -39,46 +39,54 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
  * there because it is a positioned descendant of the (also positioned) button,
  * and a tap on it still fires the button's own `onClick` by ordinary bubbling.
  * The gate asserts *this* element, not the glyph or the label.
+ *
+ * **`ref` (#108).** Forwarded so `die-button.tsx` can measure this button's own
+ * rendered height and match it — the design handoff's "size the die from the
+ * theme button beside it", read literally rather than approximated through a
+ * CSS technique. Nothing here reads or writes the ref itself.
  */
-export function SkinButton({ initialSkin }: { initialSkin: Skin }) {
-  const [skin, setSkin] = useState<Skin>(initialSkin);
-  const [spins, setSpins] = useState(0);
+export const SkinButton = forwardRef<HTMLButtonElement, { initialSkin: Skin }>(
+  function SkinButton({ initialSkin }, ref) {
+    const [skin, setSkin] = useState<Skin>(initialSkin);
+    const [spins, setSpins] = useState(0);
 
-  function press() {
-    const next = nextSkin(skin);
+    function press() {
+      const next = nextSkin(skin);
 
-    document.cookie = `${SKIN_COOKIE}=${next}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
-    document.documentElement.dataset.skin = next;
-    setSkin(next);
-    setSpins((count) => count + 1);
-  }
+      document.cookie = `${SKIN_COOKIE}=${next}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
+      document.documentElement.dataset.skin = next;
+      setSkin(next);
+      setSpins((count) => count + 1);
+    }
 
-  return (
-    <button
-      type="button"
-      onClick={press}
-      aria-label="Theme"
-      className="relative inline-flex items-center gap-1 rounded-skin border border-rule px-2 py-1 text-xs text-ink"
-    >
-      {/*
-        Remounted every press (`key={spins}`) so the 360° spin — declared once,
-        skin-agnostically, in `globals.css` — restarts rather than being a no-op
-        the second time the class is already present.
-      */}
-      <span
-        key={spins}
-        aria-hidden
-        className={`inline-block${spins > 0 ? ' skin-glyph-spin' : ''}`}
+    return (
+      <button
+        ref={ref}
+        type="button"
+        onClick={press}
+        aria-label="Theme"
+        className="relative inline-flex items-center gap-1 rounded-skin border border-rule px-2 py-1 text-xs text-ink"
       >
-        ↻
-      </span>
-      <span> Theme</span>
-      {/* The hit-target expander — see the note above the component. */}
-      <span
-        aria-hidden
-        data-hit-expand
-        className="absolute inset-0 m-auto h-[max(100%,44px)] w-[max(100%,44px)]"
-      />
-    </button>
-  );
-}
+        {/*
+          Remounted every press (`key={spins}`) so the 360° spin — declared once,
+          skin-agnostically, in `globals.css` — restarts rather than being a no-op
+          the second time the class is already present.
+        */}
+        <span
+          key={spins}
+          aria-hidden
+          className={`inline-block${spins > 0 ? ' skin-glyph-spin' : ''}`}
+        >
+          ↻
+        </span>
+        <span> Theme</span>
+        {/* The hit-target expander — see the note above the component. */}
+        <span
+          aria-hidden
+          data-hit-expand
+          className="absolute inset-0 m-auto h-[max(100%,44px)] w-[max(100%,44px)]"
+        />
+      </button>
+    );
+  },
+);

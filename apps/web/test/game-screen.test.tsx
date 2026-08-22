@@ -1739,8 +1739,12 @@ describe('re-rolling a clean card', () => {
     expect(screen.getByRole('button', { name: 'Square 0' })).toBeDefined();
   });
 
-  /** No game, no card, nothing to re-roll — the lobby half of `canReroll`. */
-  it('offers no re-roll in the lobby', async () => {
+  /**
+   * #108: the die is on every header, "join and card alike" per the handoff, so
+   * the lobby no longer omits it the way #112's below-the-grid button did — it
+   * is disabled instead, since there is no card yet to re-roll.
+   */
+  it('offers the die disabled in the lobby, where there is no card yet', async () => {
     stubRoom({ you: guest });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -1748,7 +1752,8 @@ describe('re-rolling a clean card', () => {
     await screen.findByText('Players');
     expect(screen.queryByLabelText('Your card')).toBeNull();
 
-    expect(rerollButton()).toBeNull();
+    expect(rerollButton()).not.toBeNull();
+    expect((rerollButton() as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('withdraws the offer once a call has marked the card', async () => {
@@ -1820,8 +1825,15 @@ describe('re-rolling a clean card', () => {
     expect(rerollButton()).toBeNull();
   });
 
-  /** There is no card on screen behind the sheet, so there is nothing to re-roll. */
-  it('offers no re-roll while the host deck sheet is up', async () => {
+  /**
+   * #108 changes this from #112's answer. The button used to live in the card
+   * column, which the deck sheet replaces — "no card on screen, nothing to
+   * re-roll" was true only because of *where* the button sat. It now lives in
+   * the header, which is chrome shared by both views of this column, so it
+   * stays offered: the API acts on `game.card` regardless of which panel is
+   * showing, and there is no reason specific to the sheet to withdraw it.
+   */
+  it('still offers a re-roll while the host deck sheet is up', async () => {
     stubRoom({ you: host, liveFromTheStart: true, deck: true });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -1830,7 +1842,7 @@ describe('re-rolling a clean card', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Host deck sheet' }));
     await screen.findByLabelText('Host deck sheet');
-    expect(rerollButton()).toBeNull();
+    expect(rerollButton()).not.toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Back to your card' }));
     await screen.findByLabelText('Your card');

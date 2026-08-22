@@ -323,8 +323,15 @@ test.describe('the slim bar and the two surfaces', () => {
 
     // Everything criterion 3 names, on the row that was just counted — a header
     // that fits because a control went missing is not the claim being made.
+    //
+    // #108: `Dice` is gone from this list on purpose. `done` is a finished
+    // game — `canReroll` is false because `game.state !== 'live'` — so the die
+    // is correctly absent here, same as the marked-card case
+    // `offers no re-roll on a card a call has marked` below covers. This test
+    // is now the *text*-length worst case only; `holds the die and the Theme
+    // button beside the room code and Share` above is the die-present worst
+    // case, at `start`, where the stats text is shortest instead.
     await expect(bar.getByRole('heading', { name: 'Room ABCD' })).toBeVisible();
-    await expect(bar.getByRole('button', { name: 'Dice' })).toBeVisible();
     await expect(bar.getByRole('button', { name: 'Theme' })).toBeVisible();
     await expect(bar.getByRole('button', { name: /Share/ })).toBeVisible();
     await expect(bar).toContainText('24/24');
@@ -334,51 +341,44 @@ test.describe('the slim bar and the two surfaces', () => {
   });
 
   /**
-   * #103's header controls: the dice's reserved slot, whole and clear of any
-   * overlap with its 44px neighbour, and the Theme button's *hit element* —
-   * not its small visible box — meeting the 44px minimum.
+   * #108 takes over #103's header-controls test. That version ran at `mid` and
+   * asserted the *reserved slot* — a permanently disabled placeholder that did
+   * not yet care whether a card had a mark. The real die does: it is offered
+   * only at `start` (`canReroll`), so this now runs there, names the button by
+   * what it actually does ("Re-roll card", not "Dice"), and asserts it enabled
+   * rather than disabled. `offers no re-roll on a card a call has marked` below
+   * covers the header at `mid`/`done`, where the die is correctly absent.
    */
-  test('holds the dice slot and the Theme button beside the room code and Share', async ({
+  test('holds the die and the Theme button beside the room code and Share', async ({
     page,
   }) => {
-    await openRoom(page, 'mid');
+    await openRoom(page, 'start');
 
     const bar = page.getByRole('banner').or(page.locator('header')).first();
-    const dice = bar.getByRole('button', { name: 'Dice' });
+    const dice = bar.getByRole('button', { name: 'Re-roll card' });
     const theme = bar.getByRole('button', { name: 'Theme' });
 
     await expect(dice).toBeVisible();
-    await expect(dice).toBeDisabled();
+    await expect(dice).toBeEnabled();
+    await expectThumbSized(dice.locator('[data-hit-expand]'), "the die's hit element");
     await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
+    await expectHeaderOnOneLine(bar);
 
     /*
       Two 44px hit targets cannot overlap — the whole reason the stats line had to
-      come down in the first place.
-
-      Read what this does and does not currently claim, slice 7. It compares the
-      dice slot's *visible* box against the Theme button's *hit* box, and the Theme
-      button's expander is `max(100%, 44px)` on each axis against a box that is
-      already wider than 44px — so its width collapses to the button's own, the two
-      rectangles are held apart by this row's `gap-2` by construction, and this
-      assertion cannot fail as the row stands. It is not the wrong assertion; it is
-      the right one with only one real expander in the row to point at.
-
-      It was left this way on purpose rather than strengthened here: the reserved
-      slot's visible box is ~26px (`aspect-square` against `items-stretch`), so a
-      44×44 expander centred on it bleeds ~9px per side into an 8px gap, and the
-      die's box and its expander are slice 7's to land (this issue's brief:
-      "reserve the dice's slot but do not build the dice"). When slice 7 gives the
-      die its own expander, assert *both* expanders against each other here — that
-      is the pair this check was written for, and it will have something to catch.
+      come down in the first place. #103 left this comparing the reserved slot's
+      *visible* box (there was no expander yet) against the Theme button's *hit*
+      box, and said explicitly to compare both expanders once slice 7 landed one —
+      this is that comparison.
     */
-    const diceBox = (await dice.boundingBox())!;
+    const diceBox = (await dice.locator('[data-hit-expand]').boundingBox())!;
     const themeBox = (await theme.locator('[data-hit-expand]').boundingBox())!;
     const overlaps =
       diceBox.x < themeBox.x + themeBox.width &&
       diceBox.x + diceBox.width > themeBox.x &&
       diceBox.y < themeBox.y + themeBox.height &&
       diceBox.y + diceBox.height > themeBox.y;
-    expect(overlaps, 'the dice slot and the Theme button`s hit target overlap').toBe(false);
+    expect(overlaps, 'the die and the Theme button`s hit targets overlap').toBe(false);
 
     await expectNoHorizontalScroll(page);
   });
@@ -964,11 +964,15 @@ test.describe('the host deck sheet', () => {
 
 
 /**
- * #87's re-roll, which is a layout claim before it is anything else: the offer sits
- * directly *beneath* the grid, so the grid itself never moves when the first call
- * withdraws the button — `does not shift the grid when a call lands` above is the
- * regression guard for that, and is expected to stay green untouched. The slot is
- * still reserved permanently so that what sits below it does not jump either.
+ * #87's re-roll, and #108's placement change: the control used to sit directly
+ * *beneath* the grid with a permanently-reserved slot so nothing below it jumped
+ * when the first call withdrew it; it now lives in the header instead, beside the
+ * Theme button, as the die (`docs/design/README.md` § "Header controls"). Nothing
+ * about the *behaviour* below changed — one tap, no confirmation, gone once the
+ * card has a mark — only where the control lives, so most of these assertions are
+ * moved rather than rewritten. `does not shift the grid when a call lands` above is
+ * unaffected either way: the header's height never depended on the die, so its
+ * presence or absence there cannot move the grid.
  */
 test.describe('re-rolling a clean card', () => {
   const rerollButton = (page: Page) =>
@@ -979,16 +983,19 @@ test.describe('re-rolling a clean card', () => {
 
     const button = rerollButton(page);
     await expect(button).toBeVisible();
-    // Beneath the card and still whole on screen — a real assertion at
-    // `phone-small`, where the grid runs most of the way to the bottom.
-    await expectThumbSized(button, 'the re-roll button');
-    await expectWholeOnScreen(page, button, 'the re-roll button');
+    // In the header now rather than beneath the grid, so its *hit* element is
+    // what has to clear 44px — its visible box is the die's glyph size, which
+    // the header-controls test above already checks against the Theme button.
+    await expectThumbSized(button.locator('[data-hit-expand]'), 'the die');
+    await expectWholeOnScreen(page, button, 'the die');
     await expectNoHorizontalScroll(page);
   });
 
   /**
-   * The consequence ADR-0006 attaches to a re-roll, now stated beside the button
-   * rather than gating it (#87 asks for the action to be immediate). It is prose in
+   * The consequence ADR-0006 attaches to a re-roll stays in the card column
+   * (#108: there is no room for a sentence in the header), still wired to the
+   * button by `aria-describedby` even though the two are no longer DOM-adjacent
+   * — that attribute is an id reference, not a proximity one. It is prose in
    * flow, so what a browser has to say about it is that no line of it is clipped.
    */
   test('states the consequence without clipping a line of it', async ({ page }) => {
@@ -998,6 +1005,10 @@ test.describe('re-rolling a clean card', () => {
     await expect(consequence).toBeVisible();
     await expectNoRowClipped(consequence, 'the re-roll consequence');
     await expectWholeOnScreen(page, consequence, 'the re-roll consequence');
+    await expect(rerollButton(page)).toHaveAttribute(
+      'aria-describedby',
+      'reroll-consequence',
+    );
     await expectNoHorizontalScroll(page);
   });
 
@@ -1033,12 +1044,19 @@ test.describe('re-rolling a clean card', () => {
     await expect(rerollButton(page)).toHaveCount(0);
   });
 
-  /** No card on screen behind the sheet, so there is nothing there to re-roll. */
-  test('offers no re-roll while the deck sheet is up', async ({ page }) => {
+  /**
+   * #108 changes this from #112's answer. The control used to live in the card
+   * column, which the deck sheet replaces — "no card on screen, nothing to
+   * re-roll" was true only because of *where* the button sat. It now lives in
+   * the header, chrome shared by both views of that column, so it stays
+   * offered: the API acts on `game.card` regardless of which panel is showing,
+   * and there is no reason specific to the sheet to withdraw it.
+   */
+  test('still offers a re-roll while the deck sheet is up', async ({ page }) => {
     await openRoom(page, 'start');
 
     await page.getByRole('button', { name: 'Host deck sheet' }).tap();
-    await expect(rerollButton(page)).toHaveCount(0);
+    await expect(rerollButton(page)).toBeVisible();
 
     await page.getByRole('button', { name: 'Back to your card' }).tap();
     await expect(rerollButton(page)).toBeVisible();
