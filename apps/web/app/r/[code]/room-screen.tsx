@@ -2,6 +2,7 @@
 
 import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
+import { ACTION_BUTTON } from '../../action-button';
 import { readToken, storeToken } from '../../player-token';
 import {
   ApiError,
@@ -32,15 +33,6 @@ type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
  * The game screen is not this shape — see the note on the shell below.
  */
 const COLUMN = 'mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-6';
-
-/**
- * **Join** and **Start game**, which were bare `<button>` elements and therefore 24px
- * tall — a target no thumb reliably hits, on the two taps that stand between six
- * friends and a game. Found by #13's gate rather than by review, which is the same way
- * #12 found its own 22x24px switcher; `min-h-11` is 44px, Apple's documented minimum.
- */
-const ACTION =
-  'min-h-11 rounded border border-neutral-700 px-3 font-semibold disabled:text-neutral-500';
 
 /**
  * The card's two surfaces in the phone layout, per #12's C1. Not a sheet and not a
@@ -585,7 +577,7 @@ export function RoomScreen({
         <button
           type="submit"
           disabled={joining || name.trim() === ''}
-          className={ACTION}
+          className={ACTION_BUTTON}
         >
           {joining ? 'Joining…' : 'Join'}
         </button>
@@ -1018,7 +1010,7 @@ export function RoomScreen({
           type="button"
           onClick={start}
           disabled={starting}
-          className={ACTION}
+          className={ACTION_BUTTON}
         >
           {starting ? 'Dealing…' : 'Start game'}
         </button>

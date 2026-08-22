@@ -270,7 +270,8 @@ before treating them as settled:
   with no styling to keep them distinct from the player's name.
 - The home screen's two stacked forms at `phone-small`, inside a `min-h-dvh` centred column.
 
-**Settled by #13's gate run**, except for Home. `gate/lobby.gate.ts` covers the join form, the
+**Settled by #13's gate run**, except for Home — closed separately by #68's run below.
+`gate/lobby.gate.ts` covers the join form, the
 roster with both suffixes, the share link, the host lobby and the two ways a room fails to resolve, at
 all four viewports — they were gated because #13 changed them: the game screen went full-bleed, so the
 page's centred column moved off `page.tsx` and into each pre-game state.
@@ -283,9 +284,22 @@ page's centred column moved off `page.tsx` and into each pre-game state.
   game, on a target no thumb reliably hits. The same class of failure #12 found in its own switcher,
   and again invisible to review. Both are 44px now.
 
-**Home (`/`) is still ungated** — the one screen in the table with no test, and its #4 criterion above
-still unverified. Tracked as #68, with the note that its buttons have never been measured for tap size
-either, which is the defect #13 found next door.
+**Settled by #68's gate run** (`gate/home.gate.ts`, all four viewports), closing the last row in the
+table and the last of #4's criteria above:
+
+- Both forms and the API health line are on screen at `phone-small` without scrolling: the two
+  headings and the first submit button by `toBeInViewport()`, and the `Join` button and the `API:`
+  line — the two bottom-most, and the two actually at risk of falling off the bottom — whole on
+  screen by `expectWholeOnScreen`, which a single intersecting pixel cannot satisfy.
+- No page scrolls horizontally at any of the four viewports.
+- The health line's own box does not move between its `checking…` state and either of the two ways
+  it can settle: a 200 (`all clear`) and a transport failure (`unreachable`) both leave the box where
+  it was.
+- **A defect this found, the same class #13 fixed next door.** `Create a room` and `Join` were bare
+  `<button>` elements and therefore 24px tall at every viewport — never measured, because Home was
+  the one screen with no gate to measure it. The room screen's `min-h-11` class string moved out of
+  `room-screen.tsx` into `app/action-button.ts` so both screens style a submit button one way; both
+  home-screen buttons are 44px now and pass `expectThumbSized`.
 
 ## Status of the toolchain
 
