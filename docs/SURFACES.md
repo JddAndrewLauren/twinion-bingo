@@ -1304,12 +1304,31 @@ since #108. **356 passed, 44 skipped (400 listed)** — 49 passed / 3 skipped mo
 **#107's gate run** (WebKit with `hasTouch`, all four matrix viewports, one full `pnpm --filter
 @twinion-bingo/web run gate` at default `fullyParallel` concurrency, on top of #106's `d4f9466`):
 Scorecard to full fidelity — ruled cream stock, the rotated ticket-box room code, and the ink ring
-that marks a square without touching its label. **406 passed, 50 skipped (456 listed)** — the base
-commit's own `playwright test --list` reports exactly 400 (independently re-run to confirm, per this
-issue's own instruction); the delta is this issue's 14 new tests × 4 viewports = 56, all of it
-accounted for by `skin-scorecard.gate.ts`. `pnpm build`, `pnpm typecheck`, `pnpm lint` and `pnpm test`
-(31 theme + 166 web + 154 api passed, 117 api skipped on the known DB-less signature) are green in
-the same state.
+that marks a square without touching its label. **410 passed, 50 skipped (460 listed** — confirmed by
+`playwright test --list`: "Total: 460 tests in 10 files", not inferred from the passed count). The base
+commit's own `--list` reports exactly 400; the delta is this issue's 15 new tests × 4 viewports = 60,
+all of it in `skin-scorecard.gate.ts`. The fifteenth test is
+`the card header › leaves the run-status line real slack, not just one line`, added in the fix round —
+see the header bullet below for why a line count was not enough. `pnpm build`, `pnpm typecheck`,
+`pnpm lint` and `pnpm test` (31 theme + 166 web + 154 api passed, 117 api skipped on the known
+DB-less signature) are green in the same state.
+
+Measured header slack, all four viewports (`available - Range width`, from the new test's own
+annotations): `phone-small` **14.36px** (60.53px needed in a 74.89px box, 0.9993 lines), `phone`
+29.36px, `ipad-11-portrait` 414.30px, `ipad-11-landscape` 617.84px. The run-status `<p>` is 11px at
+phone widths (HTML:741) and 12px at iPad (HTML:414).
+
+**CI history for this slice, recorded because a local run on this branch proved untrustworthy once.**
+CI run 32603690712 on head `3cd4e84`: `check`/`db`/`image` green, `gate` **failed** with 2 failures —
+the `phone-small` header wrap analysed in the header bullet below, and
+`room.gate.ts:1150 › a prize landing › bursts over the card` at `[ipad-11-portrait]` failing with
+`locator.tap: Target page, context or browser has been closed`. The second is not an assertion failure
+and not attributable to this slice's diff (a pre-existing test this PR does not touch); it did not
+cascade, and all 456 tests in that run still executed. It was the **first such occurrence across 20+
+consecutive green runs** of this suite, so #106's own local-SIGKILL note does not cover it — that note
+is about a production-server crash taking down unrelated already-passing files, a different signature.
+No retry was added and no `--workers` override exists anywhere on this branch (CI's 2 workers are
+Playwright's own CPU default). See the CI note at the end of this entry for whether it recurred.
 
 - **The card's own cell/font table, this skin's row.** Baloo 2 is the widest of the five faces
   (`docs/design/README.md`'s own note under *Header controls*), so this issue's own
@@ -1333,12 +1352,49 @@ the same state.
   this token reaches — measured directly via `getClientRects()`, every one of the pool's 24 labels
   clipped by a uniform ~1.7px at `phone-small`/`phone`/`ipad-11-portrait` regardless of the label's
   own length or word count, which is what said "font metrics", not "too wide": a width problem
-  varies with the text, a line-height problem does not. `[data-skin='scorecard'] .skin-cell` sets
-  `line-height: 1.65` (on the cell/button itself, where `card-grid.tsx`'s own `leading-tight` sits —
-  a grid-level rule was tried first and silently did nothing, since an explicit declaration on the
-  element always beats an inherited one) — chosen by measurement, re-run until `expectNoCellClipped`
-  held at all four viewports with the pool's own worst 24 and the fixture's own marked/inherited
-  cells alike.
+  varies with the text, a line-height problem does not. The mechanism: `[data-label]` is a block
+  span, so its box height is line-box driven, while `gate/measure.ts`'s `overflow()` compares that box
+  against `Range.getClientRects()`, which returns *font-content-area* rects. Baloo 2's ascent+descent
+  is ~1.6em, so any line box shorter than that overflows by a constant no narrower `cqw` can touch.
+  `[data-skin='scorecard'] .skin-cell` carries the fix (on the cell/button itself, where
+  `card-grid.tsx`'s own `leading-tight` sits — a grid-level rule was tried first and silently did
+  nothing, since an explicit declaration on the element always beats an inherited one).
+
+  **`line-height: 1.62` is a disclosed spec-vs-reality deviation, and the spec's range is not
+  reachable at all.** The handoff gives this cell `line-height: 1.12` (mobile, HTML:749) and `1.15`
+  (desktop, HTML:436); `docs/design/README.md`:104 gives `1.08–1.15`. Swept against the pool's own
+  worst 24 at `/legibility` at all four matrix viewports — worst overflow in px, `CLIPPED` is past
+  `measure.ts`'s own 0.5px budget:
+
+  | `line-height` | 1.12 | 1.15 | 1.25 | 1.40 | 1.50 | 1.52 | 1.54 | 1.60 | 1.62 |
+  |---|---|---|---|---|---|---|---|---|---|
+  | `phone-small` | +1.51 | +1.42 | +1.11 | +0.64 | +0.33 | +0.26 | +0.20 | +0.01 | +0.00 |
+  | `phone` | +1.58 | +1.48 | +1.15 | +0.66 | +0.34 | +0.28 | +0.21 | +0.01 | +0.00 |
+  | `ipad-11-portrait` | **+3.40** | **+3.19** | +2.48 | +1.43 | +0.72 | +0.59 | +0.45 | +0.03 | +0.00 |
+  | `ipad-11-landscape` | +2.34 | +2.19 | +1.71 | +0.98 | +0.50 | +0.41 | +0.31 | +0.02 | +0.00 |
+
+  So the whole documented range clips real labels, by up to **+3.19px** at the binding viewport
+  (`ipad-11-portrait`). Everything at or below 1.52 fails the gate outright; 1.54 clears it by 0.05px,
+  which is inside the rounding tolerance rather than clear of the metrics. **1.62 is the measured
+  minimum at which the overflow is actually zero**, and it is what ships — leaving the gate's full
+  0.5px budget as unused margin. (For the record against the review that asked for this: the
+  previously shipped 1.65 was 0.03 above this minimum, not 43% above a reachable one. The value was
+  very nearly right; the *disclosure* was what was missing.)
+
+  Why the artboard can afford 1.12 and this cannot: the artboard's cells are static divs holding
+  hand-picked short labels under `overflow: hidden`, while these hold the pool's real worst 24 under
+  shrink-to-fit. **Second-order cost, disclosed:** a taller line box fits less text per cell and so
+  pushes `fitLabel`'s shrink lower — the same effect #105 disclosed for its own token.
+
+- **`fitLabel` measures at a lighter weight than this skin paints.** `card-grid.tsx` fits labels at
+  inline `font-weight: 600` ("fitted for the marked weight"), because in every other skin
+  `markedStyle()` adds `font-semibold` to a marked cell. Scorecard is the one skin where that
+  assumption is inverted: it paints *every* label at 700 via `.skin-card-grid` and leaves the marked
+  label untouched, so the fitter now measures a **lighter** face than it renders. No observable defect
+  today — `expectNoCellClipped` passes at all four viewports against the pool's worst 24, which is
+  the real check — but it means this skin's fitter has slightly less headroom than it thinks, and it
+  is the first skin to invert that assumption. Noted rather than changed: `card-grid.tsx` is shared
+  and untouched by this slice.
 
 - **The label really does stay untouched when marked, including its weight — a defect this issue
   found before it shipped.** `card-grid.tsx`'s `markedStyle()` is the fallback every skin without its
@@ -1351,6 +1407,50 @@ the same state.
   compared a marked label's computed weight against an unmarked one's (`does not change the label's
   weight when a square is marked`, in `skin-scorecard.gate.ts`).
 
+- **A CHANGE TO THE SHARED GATE HARNESS — `room.gate.ts` now awaits fonts after a skin change.**
+  Flagged prominently because it is the one change in this slice that reaches beyond it, and #109
+  inherits it. `room-fixture.ts` gains an exported `settleSkinFonts(page)`, and `room.gate.ts`'s
+  four-skin cycle calls it after each `theme.tap()` before measuring.
+
+  The defect it fixes: `openRoom`/`openLobby` await `document.fonts.ready` after `page.goto` — which
+  is correct for the skin the *document loaded in* (the default, pitwall/JetBrains Mono) and says
+  nothing about a skin the test taps into afterwards. Every skin face is `display: 'swap'`, so a
+  measurement taken between the skin change and that face being active can grade the layout on the
+  fallback face. `settleSkinFonts` names the faces it wants — `document.fonts.load()` with each
+  element's own computed `font` shorthand, which forces the matching faces to be requested and
+  resolves when they are loaded — then awaits `document.fonts.ready` for anything still in flight.
+
+  **It changes no assertion, no threshold and no viewport.** It only makes the state being measured
+  the state the assertions are written about.
+
+  **Honest limits of the evidence, because this was diagnosed as the cause of #107's CI failure and
+  it probably is not.** The race could **not** be reproduced locally, including under a deliberate
+  1.5s delay injected on every `**/_next/static/media/**` response to simulate a cold runner: the
+  header measured `Baloo 2` with identical numbers (60.53px needed / 74.22px available / 0.9993
+  lines) with and without `settleSkinFonts`. The reason appears to be that `next/font` preloads all
+  seven face files on the initial request (`.next/server/app/r/[code]/page/next-font-manifest.json`
+  lists them, all `.p.` preload builds), so by the time a tap activates a face it is served from cache
+  and the swap window is negligible. The load-time `document.fonts.ready` also absorbs the injected
+  delay. So the most likely cause of the CI wrap is the plain one: **2.17px of slack against ordinary
+  cross-platform text-shaping variation** between macOS WebKit and Linux WebKit — 2.17px on 60.53px
+  is 3.6%, well inside it. `settleSkinFonts` is kept anyway as correct-by-construction hardening (a
+  measurement should not depend on load timing), not because it is proven to be the fix. **The
+  load-bearing fix is the 13.69px of slack**, recorded above.
+
+- **The hover lift no longer repaints marked squares.** `README:148` scopes the hover fill shift to
+  *unmarked* squares. The rule was `[data-skin='scorecard'] .skin-cell:not(:disabled):hover`, and a
+  retractable marked cell is not disabled — so at equal specificity to the `[data-mark]` rule and
+  later in the file, hover won and a stamped square lost its own fill under the pointer. Now scoped to
+  `.skin-cell[data-mark='none']:not(:disabled):hover`.
+
+- **`.skin-banner` gained the brief's and README:115's `letter-spacing: .18em`** on the "CALLED · 2s"
+  label, which the first version omitted.
+
+- **The iPad card gap's source, since it read as unsourced.** `gap: 4px` at phone is HTML:747; `gap:
+  5px` at the 834px breakpoint is the **desktop artboard's own grid gap** (HTML:433 —
+  `grid-template-columns:repeat(5,1fr);gap:5px`). `docs/design/README.md`:85 tabulates only the mobile
+  4px, which is why the pair looks unsourced against the README alone. Both are the handoff's.
+
 - **The ink-ring mark instrument is not `paintedFill`.** `paintedFill`/`deltaE` (copied a fourth time
   from `skin-confetti.gate.ts`, per this issue's own instruction to keep the FINAL-GATE
   consolidation out of scope) proves two *fills* are different; Scorecard's mark is a **border-only**
@@ -1358,7 +1458,17 @@ the same state.
   read the exact same white for earned, inherited and unmarked alike and pass against a version of
   the CSS with no ring at all. `skin-scorecard.gate.ts`'s own `ringColour()` reads the `::after`'s
   `border-color`/`opacity` directly instead — the actual painted property carrying the mark — and
-  `null` stands for "no ring" (an unmarked cell has no matching `[data-mark]` selector at all). Two
+  `null` stands for "no *visible* ring".
+
+  **Correction to this entry's first version, which stated the wrong reason.** It said an unmarked
+  cell "has no matching `[data-mark]` selector at all". That is false: the base rule is
+  `[data-skin='scorecard'] .skin-cell[data-mark]::after`, an attribute **presence** selector, and
+  `card-grid.tsx` renders `data-mark="none"` on unmarked cells — so an unmarked cell *does* match and
+  *does* get a `::after` box with the ring's full geometry. What makes it invisible is the
+  `opacity: 0` (and `border-color: transparent`) on that base rule, which is the resting pre-stamp
+  state asserted by the mark-motion test. So `ringColour()`'s `opacity === 0` guard is the entire
+  reason it returns `null` for unmarked. The assertion was always correct; the account of *why* was
+  not, and an instrument the batch's colour story rests on must not ship with a wrong one. Two
   known limitations of the `paintedFill` instrument this issue had to work around rather than trigger
   are recorded in `skin-scorecard.gate.ts`'s own comments: it cannot see a border at all (only a
   covering `background-color`), and it always treats a queried pseudo-element as topmost regardless
@@ -1383,18 +1493,60 @@ the same state.
   `room.gate.ts`'s own `expectHeaderOnOneLine`, which cycles every skin including this one, failed at
   1.999 lines before the fix. The same trap #106's own comment on this exact hook records for
   Confetti's `7px 15px`. Fixed the same way: the incumbent `px-2 py-1` is kept (no padding override),
-  and the run-status `<p>` itself drops from the unskinned `text-xs` (12px) to `11px` — a type-scale
-  correction, the same kind Pit Wall's own `.skin-note` comment describes for JetBrains Mono, not a
-  layout change. `room.gate.ts`'s full skin-cycle run (`re-skins across four presses`,
-  `holds the die and the Theme button beside the room code and Share`) is green with both in place.
+  and the run-status `<p>` drops from the unskinned `text-xs` (12px) to `11px` at phone widths — a
+  type-scale correction, the same kind Pit Wall's own `.skin-note` comment describes for JetBrains
+  Mono, not a layout change. Both values are the artboards' own: `11px` is the mobile artboard's
+  (HTML:741) and `12px` is the desktop artboard's (HTML:414), so the iPad block restores `12px` where
+  the row has the width for it. The 2px border on this control costs the row twice — its own width
+  *and* the die's, since `die-button.tsx` sizes the die off this button's rendered height — and is
+  kept, because the 2px ink border is the skin's defining token.
 
-- **The header renders on one line at `phone-small` with this skin's own 34px-class Theme button —
-  measured, not assumed.** With the fixes above, the run-status paragraph holds `0.999` lines
-  (`getBoundingClientRect().height / lineHeight`) at `phone-small`, and the die — sized from the
-  Theme button's own rendered height via `die-button.tsx`'s `ResizeObserver`, not a constant — comes
-  out within the room's own 1px tolerance of it (measured ~28-30px depending on exact copy shown, in
-  line with the handoff's own "34px in Scorecard" note that the *button's* box height, border
-  included, is what the die tracks).
+  This padding deviation is **not** on its own what made the header fit: see the bullet below for the
+  2.17px of slack it left behind and what CI did with it.
+
+- **The header renders on one line at `phone-small` — and the first version of this entry proved
+  that "one line" is the wrong thing to measure.** CI run 32603690712 failed
+  `room.gate.ts:358 › holds the die and the Theme button beside the room code and Share` at
+  `[phone-small]`, on the Scorecard leg of the skin cycle (`room.gate.ts:424`), with `1.9985` line
+  boxes against `<= 1.01`. It passed locally. The reason is that the row had **2.17px of slack** and
+  nothing could see it: `expectHeaderOnOneLine` is a cliff, reading identically at 2px of spare width
+  and at 20px, and saying nothing at all until the row has already wrapped.
+
+  The `<p>` is the header's only `flex-1` child, so it is handed exactly what the h1, Share and the
+  control group leave behind. Measured at `phone-small` (375px, `13px 16px` padding, `gap-2`):
+
+  | | h1 box | `<p>` box | text needs | slack |
+  |---|---|---|---|---|
+  | shipped in CI run 32603690712 (`letter-spacing: .08em`) | 96.26px | 62.70px | 60.53px | **2.17px** |
+  | now (`letter-spacing: normal` at phone) | 84.75px | 74.22px | 60.53px | **13.69px (22.6%)** |
+
+  **The deviation, disclosed:** the h1's `letter-spacing: 0.08em` (HTML:740) is dropped at phone
+  widths and restored at iPad (HTML:414, in the `min-width: 834px` block). The justification is that
+  the artboard's header is not this header — HTML:740 carries a bare 4-character code (`K4V2`), one
+  stat (`Lap 34`), the die and the Theme button, while the real header carries `Room ABCD` (9
+  characters), `0/24 · 6 here` **and** a Share button. The artboard's tracking was never budgeted
+  against this row's contents, and 11.5px of tracking on a 9-character string is the cheapest width
+  in the row.
+
+  For scale on how much margin 13.69px is: the *fallback* face renders the same string at 67.52px
+  against Baloo 2's 60.53px, so the row now holds one line even in the swap state — i.e. the fix is
+  robust to the whole per-face delta, not tuned to a boundary.
+
+  **New assertion, so this cannot recur silently:** `skin-scorecard.gate.ts`'s
+  `the card header › leaves the run-status line real slack, not just one line` measures the margin
+  itself (`available - Range width`) at all four viewports and fails below a 4px floor. Restoring
+  `letter-spacing: .08em` fails it locally at `phone-small` (`needs 60.53px in a 63.38px box`), which
+  is precisely the regression CI caught and local runs did not.
+
+- **The 34px Theme button is NOT shipped, and that is the cost of the disclosed padding deviation.**
+  The handoff tabulates a 34px Theme button for this skin; the button measures **~28-30px**. It is
+  not met, and it cannot be while the padding deviation above stands, because the handoff's own
+  `padding: 5px 12px` is exactly what was dropped to buy the header its width back. The acceptance
+  criterion's "(34px)" parenthetical is therefore unmet as written — recorded here rather than left
+  to read as satisfied. What *is* asserted is the relationship the criterion is really about: the die
+  is sized from the Theme button's own rendered height via `die-button.tsx`'s `ResizeObserver`, not a
+  constant, and comes out within the room's 1px tolerance of it at whatever height the button
+  actually has.
 
 - **A structural change this issue made to two shared components, both class hooks, no behavioural
   change.** `room-screen.tsx`'s join-screen name-field `<label>` gained a `skin-field-label` class
@@ -1403,16 +1555,39 @@ the same state.
   own dashed desktop divider; Pit Wall's hairline and Slipstream/Confetti's plain `border-rule` are
   untouched, since none of their own rules target the new class).
 
-- **A disclosed copy deviation, matching this screen's own established precedent.** The handoff's
-  literal copy for this skin is "Take a card" (primary action), "SIGN HERE" (name-field label),
-  "Admit one to room" (room-code label — added net-new, no accessible-name conflict), and "Already
-  signed in" (roster heading). Per `room-screen.tsx`'s own prior precedent for "Enter room" vs the
-  handoff's literal "ENTER ROOM"/"Let's play", the DOM text for the primary action and the roster
-  heading stays exactly as it already was for every other skin (`apps/web/test/` and every gate query
-  one accessible name across all four skins); only the *visual weight* — size, spacing, case — is
-  this skin's own CSS. "Admit one to room" is genuinely new decorative text (`.skin-code-bar::before`,
-  the same technique #106 used for its own "Room code" label), since nothing existing carries that
-  string and so nothing conflicts with it.
+- **A disclosed copy deviation, and it rests on an OPEN FINAL-GATE QUESTION — not on precedent.**
+  The first version of this entry called it "this screen's own established precedent". That was wrong,
+  and it was wrong in exactly the way #106 was already pulled up on. **`docs/SURFACES.md`:1234-1250
+  (written in #106's round-2 review) explicitly rejects that framing**: #104's `Join` → `Enter room`
+  rename was a change *toward* #104's own brief copy, which is the opposite of keeping a name the
+  handoff contradicts. That entry records the accurate justification — a cross-skin
+  **accessible-name contract** — as an **open FINAL-GATE question**, and it is still open. Nothing
+  about it is settled, and this slice does not get to settle it.
+
+  The handoff's literal copy for this skin is "Take a card" (primary action), "SIGN HERE" (name-field
+  label), "Admit one to room" (room-code label), and "Already signed in" (roster heading). This slice
+  keeps the existing DOM text for the primary action, and extends the same unresolved call to **two
+  further controls**:
+
+  | handoff copy | DOM text kept | control |
+  |---|---|---|
+  | "Take a card" | "Enter room" | primary action (`ACTION_BUTTON`) — already under the open question |
+  | "SIGN HERE" | "Your name" | join-screen name-field `<label>` — **added by this slice** |
+  | "Already signed in" | existing roster heading | join-screen roster heading — **added by this slice** |
+
+  Both additions are listed here so the FINAL-GATE operator sees the full extent of what is deferred:
+  the open question now covers three controls across four skins, not one. The mechanism that argues
+  for keeping them is unchanged and is the only justification offered — `apps/web/test/` and every
+  gate query one accessible name per control across all four skins, so a per-skin rename is a
+  cross-slice retarget of assertions in slices still under review, not a CSS change. The mechanism is
+  a *reason to defer*, not a licence; either every skin's visible primary-action copy becomes
+  per-skin with the accessible name decoupled from it, or the handoff's per-theme copy is formally
+  superseded by the contract. Not a call for a skin slice to make unilaterally, and this slice does
+  not claim to have made it.
+
+  "Admit one to room" is the one piece that is genuinely uncontested: it is new decorative text on
+  `.skin-code-bar::before` (`aria-hidden`, the same technique #106 used for its own "Room code"
+  label), so nothing existing carries that string and no accessible name conflicts with it.
 
 - **The rotated ticket box, checked at its own worst viewport.** `transform: rotate(-2.5deg)`
   inflates the room code's bounding box, and a transform is invisible to `scrollWidth` — this issue's

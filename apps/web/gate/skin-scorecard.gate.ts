@@ -141,13 +141,18 @@ const MIN_DELTA_E = 12;
  * So this reads the ring's own `border-color` and `opacity` directly off the
  * `::after` — the actual painted property carrying the mark — rather than
  * asking what the instrument built for a filled overlay would (wrongly)
- * report. `null` for "no visible ring" (opacity 0, or fully transparent),
- * which is what an unmarked cell's `[data-mark]`-less state renders (the
- * `::after` rule is scoped to `.skin-cell[data-mark]`, so an unmarked cell has
- * no matching selector and therefore no ring at all — `getComputedStyle`
- * still answers for a pseudo-element that no rule targets, just with the
- * browser's own initial values, which is exactly the "no ring" case this
- * returns `null` for).
+ * report.
+ *
+ * `null` means "no *visible* ring", and it is worth being exact about where
+ * that comes from, because the obvious reading is wrong. The base rule is
+ * `[data-skin='scorecard'] .skin-cell[data-mark]::after` — an attribute
+ * **presence** selector — and `card-grid.tsx` renders `data-mark="none"` on an
+ * unmarked cell. So an unmarked cell **does** match, and **does** get a
+ * `::after` box with the ring's geometry. What makes it invisible is the
+ * `opacity: 0` on that base rule (the resting pre-stamp state, asserted at
+ * `stamps the ring in over 160ms` below), and the `opacity === 0` guard here is
+ * therefore the whole of why this returns `null` for unmarked — not a missing
+ * selector.
  */
 async function ringColour(
   locator: ReturnType<Page['locator']>,
@@ -225,6 +230,8 @@ test.describe('the card', () => {
         borderWidth: after.borderTopWidth,
         borderRadius: after.borderTopLeftRadius,
         opacity: after.opacity,
+        ringWidth: parseFloat(after.width),
+        ringHeight: parseFloat(after.height),
       };
     });
 
@@ -232,12 +239,34 @@ test.describe('the card', () => {
       'rgba(229, 80, 42, 0.72)',
     );
     expect(style.opacity, 'the earned ring is shown').toBe('1');
-    // A closed ring, not a box: `border-radius: 999px` on a roughly-square
-    // inset reads as `50%` of the box once computed, i.e. a full circle/ellipse.
+
+    /*
+      A closed ring, not a rounded box — asserted as the real relationship
+      rather than as `> 0`.
+
+      The previous version of this assertion was `parseFloat(borderRadius) > 0`
+      against a comment claiming `999px` "resolves near 50% of its own box". It
+      does not: `getComputedStyle` hands back the literal `999px` for
+      `border-radius: 999px`, so that assertion passed for *any* non-zero
+      radius, including a 1px near-square. Two claims replace it, and each can
+      fail on its own:
+
+      - the declared value really is the handoff's `999px` (a corner rounding
+        that got retuned to, say, `10px` fails here);
+      - and that value genuinely saturates *this* box — a radius at or past half
+        the ring's larger side is what makes a rounded rect a full stadium/round
+        rather than a box with soft corners. The ring is `inset: 6%` of a cell,
+        so its own side is tens of px at every viewport and `999px` clears half
+        of it many times over. A 1px radius fails this; so does a radius that
+        stops being saturating because the ring's box grew.
+    */
+    expect(style.borderRadius, 'the ring`s declared corner radius').toBe('999px');
+    const halfLongestSide = Math.max(style.ringWidth, style.ringHeight) / 2;
+    expect(halfLongestSide, 'the ring has a measurable box').toBeGreaterThan(4);
     expect(
       parseFloat(style.borderRadius),
-      'the ring is a closed circle (999px resolves near 50% of its own box)',
-    ).toBeGreaterThan(0);
+      `the ring's ${style.borderRadius} radius against half its own ${style.ringWidth}x${style.ringHeight} box (${halfLongestSide}px) — a closed round, not soft corners`,
+    ).toBeGreaterThanOrEqual(halfLongestSide);
 
     const expectedWidth = info.project.name.startsWith('ipad') ? '5px' : '4px';
     expect(
@@ -247,20 +276,35 @@ test.describe('the card', () => {
   });
 
   /**
-   * This issue's own acceptance criterion: the ring is an overlay, so
-   * `expectNoCellClipped` — which measures the `[data-label]` span's own
-   * `Range`, per `card-grid.tsx`'s `overflows()` — must pass for every one of
-   * the pool's worst 24 at every viewport with the ring actually drawn (an
-   * earned/inherited card, not an empty one), proving the ring is never
-   * counted as label content leaving the box.
+   * This issue's own acceptance criterion: the ring is an overlay, so it must
+   * not enter the `[data-label]` span's own `Range` — which is what
+   * `gate/measure.ts`'s `overflow()` measures.
    *
-   * Broken-then-fixed, per this issue's own instruction to prove the test can
-   * fail: temporarily changing `[data-skin='scorecard'] .skin-cell[data-mark]`
-   * from `position: absolute` to a `position: static` sibling *inside*
-   * `[data-label]` (i.e. making the ring part of the label's own text flow)
-   * made this fail at every viewport with an "overflows" report on marked
-   * cells specifically — restoring the `::after` overlay made it pass again.
-   * See this PR's own description for the paired before/after run.
+   * The previous version of this test asserted two fixture guards plus
+   * `expectNoCellClipped(page)`, and that was not a test of this claim at all:
+   * `expectNoCellClipped` is already asserted on this same page state three
+   * other times in this file, and a `::after` can never appear in
+   * `range.selectNodeContents(label)` — so it could not fail for the reason it
+   * is named after. It is replaced by the two things that can:
+   *
+   * 1. **`[data-label]` has no positioned descendants.** This is the actual
+   *    regression the claim guards against — a ring re-implemented as a
+   *    positioned child *inside* the label (rather than the cell's `::after`)
+   *    would be inside the `Range`, and this catches it directly.
+   * 2. **The ring's own box really does extend past the label's box, while the
+   *    label's `Range` does not extend past the label's own content box.** The
+   *    first half is what makes the claim non-vacuous: the ring is `inset: 6%`
+   *    of the *cell*, so it is materially larger than the centred label, which
+   *    means if it *were* in flow it would necessarily have grown the label's
+   *    measured box. Asserting the geometry proves the exclusion is real rather
+   *    than true-by-construction.
+   *
+   * Broken-then-fixed (one account, and the run is pasted in this PR's own
+   * comment): injecting `<span style="position:absolute;inset:-40%">` as a child
+   * of every `[data-mark='earned'] [data-label]` via `page.evaluate` — i.e. the
+   * ring as a positioned descendant of the label instead of the cell's
+   * `::after` — fails assertion 1 at all four viewports ("labels with a
+   * positioned descendant" non-empty). Removing the injected span passes.
    */
   test('does not let the ink ring enter the label`s own measured box', async ({
     page,
@@ -270,9 +314,72 @@ test.describe('the card', () => {
 
     const card = page.getByLabel('Your card');
     const earnedCount = await card.locator('[data-mark="earned"]').count();
-    const inheritedCount = await card.locator('[data-mark="inherited"]').count();
     expect(earnedCount, 'the mid-race fixture has earned cells').toBeGreaterThan(0);
-    expect(inheritedCount, 'the mid-race fixture has inherited cells').toBeGreaterThan(0);
+
+    const geometry = await card.evaluate((grid) => {
+      const positioned: string[] = [];
+      for (const label of grid.querySelectorAll('[data-label]')) {
+        for (const child of label.querySelectorAll('*')) {
+          if (getComputedStyle(child).position !== 'static') {
+            positioned.push(label.textContent ?? '');
+          }
+        }
+      }
+
+      // The earned cell's ring against that cell's own label.
+      const cell = grid.querySelector('[data-mark="earned"]')!;
+      const label = cell.querySelector('[data-label]')!;
+      const after = getComputedStyle(cell, '::after');
+      const labelBox = label.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      const rects = [...range.getClientRects()];
+
+      const labelStyle = getComputedStyle(label);
+      const contentTop =
+        labelBox.top +
+        parseFloat(labelStyle.paddingTop) +
+        parseFloat(labelStyle.borderTopWidth);
+      const contentBottom =
+        labelBox.bottom -
+        parseFloat(labelStyle.paddingBottom) -
+        parseFloat(labelStyle.borderBottomWidth);
+
+      return {
+        positioned,
+        ringWidth: parseFloat(after.width),
+        ringHeight: parseFloat(after.height),
+        labelWidth: labelBox.width,
+        labelHeight: labelBox.height,
+        rangeCount: rects.length,
+        rangeOverflow:
+          rects.length === 0
+            ? 0
+            : Math.max(
+                ...rects.map((r) => Math.max(contentTop - r.top, r.bottom - contentBottom)),
+              ),
+      };
+    });
+
+    expect(
+      geometry.positioned,
+      'labels with a positioned descendant — the ring must never be one',
+    ).toEqual([]);
+
+    // Non-vacuous: the ring is bigger than the label it draws over, so an
+    // in-flow ring could not have left the label's box the size it is.
+    expect(geometry.rangeCount, 'the label has rendered text to measure').toBeGreaterThan(0);
+    expect(
+      geometry.ringHeight,
+      `the ring's ${geometry.ringWidth}x${geometry.ringHeight} box against the label's ${geometry.labelWidth.toFixed(1)}x${geometry.labelHeight.toFixed(1)}`,
+    ).toBeGreaterThan(geometry.labelHeight);
+
+    // And the label's own text still sits inside its own content box, with the
+    // ring drawn on top of it — `measure.ts`'s own 0.5px rounding budget.
+    expect(
+      geometry.rangeOverflow,
+      "the marked label's own Range against its own content box",
+    ).toBeLessThanOrEqual(0.5);
 
     await expectNoCellClipped(page);
   });
@@ -397,6 +504,76 @@ test.describe('the card', () => {
       motion.unmarked.transform,
       'the unmarked ring waits at the pre-stamp 1.15 scale',
     ).toContain('matrix(1.15, 0, 0, 1.15');
+  });
+});
+
+test.describe('the card header', () => {
+  /**
+   * This issue's second acceptance criterion, asserted as **slack** rather than
+   * as a line count — because a line count is exactly what let the regression
+   * through.
+   *
+   * `room.gate.ts`'s `expectHeaderOnOneLine` asks whether the row wraps
+   * (`<= 1.01` line boxes). That is a cliff: it reads identically at 2px of
+   * spare width and at 20px, and it says nothing until the row has already
+   * failed. #107 first shipped a header with 2.17px of slack at `phone-small`,
+   * which passed that check locally and wrapped to `1.9985` in CI
+   * (run 32603690712) — the header was one rounding difference from failing and
+   * no assertion could see it.
+   *
+   * So this measures the margin itself. The `<p>` is the header's only `flex-1`
+   * child, so it is handed exactly the width the h1, the Share button and the
+   * control group leave behind and nothing more; the union of its `Range`
+   * rects is the width its text actually needs. The difference between the two
+   * is the whole safety margin of the row, and it is asserted against a floor.
+   *
+   * The floor is 4px, and 4px is chosen from a measurement rather than picked:
+   * the *fallback* face renders this string 6.99px wider than Baloo 2 does at
+   * `phone-small` (60.53px against 67.52px), which is the largest realistic
+   * per-face variation this row can see, and it is what the CI failure was
+   * actually made of. A floor of 4px therefore fails long before a wrap, while
+   * staying well under the 13.69px the shipped rule now has. Measured slack is
+   * annotated at every viewport, so `docs/SURFACES.md` does not have to be
+   * re-derived by hand next time this row is touched.
+   */
+  test('leaves the run-status line real slack, not just one line', async ({
+    page,
+  }, info) => {
+    await useScorecardCookie(page);
+    await openRoom(page, 'start');
+
+    const header = page.getByRole('banner').or(page.locator('header')).first();
+    await expect(header.getByRole('button', { name: 'Theme' })).toBeVisible();
+
+    const measured = await header.evaluate((bar) => {
+      const status = bar.querySelector('p')!;
+      const range = document.createRange();
+      range.selectNodeContents(status);
+      const needed = [...range.getClientRects()].reduce((a, r) => a + r.width, 0);
+      const style = getComputedStyle(status);
+      const box = status.getBoundingClientRect();
+
+      return {
+        available: box.width,
+        needed,
+        lines: box.height / parseFloat(style.lineHeight),
+        fontSize: style.fontSize,
+        text: status.textContent ?? '',
+      };
+    });
+
+    const slack = measured.available - measured.needed;
+
+    info.annotations.push({
+      type: 'header slack',
+      description: `${info.project.name}: "${measured.text}" at ${measured.fontSize} — needs ${measured.needed.toFixed(2)}px in a ${measured.available.toFixed(2)}px box, slack ${slack.toFixed(2)}px, ${measured.lines.toFixed(4)} lines`,
+    });
+
+    expect(measured.lines, 'the run-status line holds one line').toBeLessThanOrEqual(1.01);
+    expect(
+      slack,
+      `"${measured.text}" needs ${measured.needed.toFixed(2)}px in a ${measured.available.toFixed(2)}px box`,
+    ).toBeGreaterThan(4);
   });
 });
 

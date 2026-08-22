@@ -1727,10 +1727,18 @@ body {
 /*
  * Name field: no box, a 2px ink bottom rule. `.skin-field-label` is this
  * issue's own hook, added to the `<label>` in `room-screen.tsx` — the handoff's
- * copy is "SIGN HERE", but the DOM text stays "Your name" (this screen's own
- * disclosed precedent: "Enter room" rather than the handoff's literal "ENTER
- * ROOM"/"Take a card"), so only the visual weight — small, bold, spaced,
- * uppercase, muted — is this skin's to set.
+ * copy is "SIGN HERE", but the DOM text stays "Your name", so only the visual
+ * weight (small, bold, spaced, uppercase, muted) is this skin's to set.
+ *
+ * **Not a settled precedent.** `docs/SURFACES.md`:1234-1250 explicitly rejected
+ * the framing that #104's `Join` → `Enter room` rename was precedent for this,
+ * and recorded the real justification — a cross-skin accessible-name contract —
+ * as an **open FINAL-GATE question**, not an established practice. Keeping
+ * "Your name" here is the same unresolved call applied to a second control, and
+ * it is recorded as such in this skin's own SURFACES entry rather than claimed
+ * as settled. The reason it is not decided inside this slice: `apps/web/test/`
+ * and every gate query one accessible name per control across all four skins,
+ * so a per-skin rename is a cross-slice retarget, not a CSS change.
  */
 [data-skin='scorecard'] .skin-field-label {
   display: block;
@@ -1868,22 +1876,14 @@ body {
   gap: 4px;
 }
 /*
- * Baloo 2's rendered glyph metrics (ascent+descent) run taller than the base
- * `leading-tight` (`line-height: 1.25`) line box at any font size this
- * token reaches — measured directly (`getClientRects()` on a two-line
- * label), the glyph box is consistently taller than 1.25 line-heights would
- * give it, which `gate/measure.ts`'s `overflow()` (comparing the *label
- * span's own* box against its rendered `Range`, not the cell's) reports as a
- * uniform ~1.7px bottom overflow on every multi-line label regardless of its
- * text — a font-metrics mismatch, not a width problem, so a narrower `cqw`
- * would not have touched it.
+ * Baloo 2's glyph metrics need a taller line box than `leading-tight` gives —
+ * see the `line-height` note on `.skin-cell` below for the measured sweep, the
+ * mechanism, and the disclosed deviation from the artboard's own value.
  *
- * Set on `.skin-cell` (the button `CELL` renders) rather than on
- * `.skin-card-grid` (the `<ul>`): `leading-tight` is `card-grid.tsx`'s own
- * class on each button directly, and an explicit declaration on the element
- * itself always wins over an inherited value from an ancestor, layer or no
- * layer — a grid-level rule here would silently do nothing. Folded into the
- * cell's own rule below rather than a second selector.
+ * `gap: 4px` at phone is HTML:747's own value; `5px` at iPad is the desktop
+ * artboard's own grid gap (HTML:433 — `grid-template-columns:repeat(5,1fr);
+ * gap:5px`). `docs/design/README.md`:85 tabulates only the mobile 4px, which is
+ * why this pair reads as unsourced against the README alone.
  */
 @media (min-width: 834px) {
   [data-skin='scorecard'] .skin-card-grid {
@@ -1895,14 +1895,44 @@ body {
  * Card cell: `#fffdf7`, 2px ink, square (no radius — the one place this skin's
  * own `--skin-radius: 0.75rem` token, tuned for boxes/fields/pills, is
  * deliberately overridden, per the handoff's own "Radius ... 999px on pills
- * and the ink ring" naming cells apart from that ladder). `line-height: 1.5`
- * is the Baloo 2 glyph-metrics fix the comment above this block explains.
+ * and the ink ring" naming cells apart from that ladder).
+ *
+ * **`line-height: 1.62` is a disclosed spec-vs-reality deviation, and the spec
+ * range is not reachable at all.** The handoff gives the cell
+ * `line-height: 1.12` (mobile, HTML:749) and `1.15` (desktop, HTML:436);
+ * `docs/design/README.md`:104 gives `1.08–1.15`. Those values clip real labels,
+ * measured against the pool's own worst 24 at `/legibility` at all four matrix
+ * viewports (the binding one is `ipad-11-portrait`):
+ *
+ *     line-height   1.12    1.15    1.25    1.40    1.50    1.54    1.60    1.62
+ *     worst over   +3.40   +3.19   +2.48   +1.43   +0.72   +0.45   +0.03   +0.00
+ *
+ * `gate/measure.ts`'s budget is 0.5px, so everything at or below 1.52 fails the
+ * gate outright and 1.54 clears it only by 0.05px — inside the rounding
+ * tolerance, not clear of the metrics. **1.62 is the measured minimum at which
+ * the overflow is actually zero**, and it is what ships: the mechanism is that
+ * `[data-label]` is a block span, so its height is line-box driven, while
+ * `overflow()` compares that box against `Range.getClientRects()`, which
+ * returns *font-content-area* rects. Baloo 2's ascent+descent is ~1.6em, so any
+ * line box shorter than that overflows by a constant no narrower `cqw` can
+ * touch. (The shipped 1.65 was 0.03 above this minimum, not 43% above a
+ * reachable one.)
+ *
+ * Why the artboard can afford 1.12 and this cannot: the artboard's cells are
+ * static divs holding hand-picked short labels under `overflow: hidden`, while
+ * these hold the pool's real worst 24 under shrink-to-fit. Raising the line
+ * height does reduce text per cell and so pushes `fitLabel`'s shrink lower —
+ * the same second-order cost #105 disclosed for its own token.
+ *
+ * Set on `.skin-cell` rather than `.skin-card-grid` for the reason the block
+ * above this one gives: `leading-tight` is `card-grid.tsx`'s own class on the
+ * button itself, and an inherited value cannot beat it.
  */
 [data-skin='scorecard'] .skin-cell {
   position: relative;
   border-width: 2px;
   border-radius: 0;
-  line-height: 1.65;
+  line-height: 1.62;
   transition: background-color 140ms ease-out;
 }
 /*
@@ -1925,9 +1955,17 @@ body {
   color: var(--skin-ink);
   font-weight: 700;
 }
-/* Hover (pointer only, README's *Hover (desktop)*): the fill shifts to white. */
+/*
+ * Hover (pointer only, README's *Hover (desktop)*): the fill shifts to white.
+ *
+ * `[data-mark='none']` rather than a bare `:hover`: README:148 scopes the hover
+ * lift to *unmarked* squares, and a retractable marked cell is not disabled, so
+ * a bare `:not(:disabled):hover` also repainted marked cells — at equal
+ * specificity to the `[data-mark]` rule above and later in the file, so hover
+ * won and a stamped square lost its own fill under the pointer.
+ */
 @media (hover: hover) and (pointer: fine) {
-  [data-skin='scorecard'] .skin-cell:not(:disabled):hover {
+  [data-skin='scorecard'] .skin-cell[data-mark='none']:not(:disabled):hover {
     background-color: #fff;
   }
 }
@@ -2127,6 +2165,8 @@ body {
   background-color: #1f7a6b;
   border-top: 2px solid #2b2118;
   color: #f7f1e4;
+  /* The brief's and README:115's own tracking for the "CALLED · 2s" label. */
+  letter-spacing: 0.18em;
 }
 
 /*
@@ -2139,10 +2179,35 @@ body {
   border-bottom-color: #2b2118;
   padding: 13px 16px;
 }
+/*
+ * **`letter-spacing: 0.08em` (HTML:740) is a disclosed deviation at phone
+ * widths, and the reason is that the artboard's header is not this header.**
+ * HTML:740 carries a bare 4-character code (`K4V2`), one stat (`Lap 34`), the
+ * die and the Theme button. The real header carries `Room ABCD` (9 characters),
+ * `0/24 · 6 here` *and* a Share button — so the artboard's tracking was never
+ * budgeted against this row's actual contents.
+ *
+ * Measured at `phone-small` (375px), with the header's own `13px 16px` padding
+ * and `gap-2`: the `<p>` is the row's only `flex-1` child, so it gets exactly
+ * the leftover width and nothing more. With `.08em` the h1 measured 96.26px,
+ * leaving the `<p>` a 62.70px box for 60.53px of text — **2.17px of slack**,
+ * which is what shipped and what CI run 32603690712 broke at `phone-small`
+ * (`1.9985` line boxes). Reclaiming the tracking takes the h1 to 84.75px and
+ * the `<p>`'s box to 74.22px against the same 60.53px of text — **13.69px of
+ * slack, 22.6%**. For scale: the *fallback* face renders that same string at
+ * 67.52px, so the row now holds one line even in the swap state that caused the
+ * CI failure (see `settleSkinFonts` in `gate/room-fixture.ts`, which removes
+ * that race outright). Both halves are deliberate: real slack, and a measuring
+ * instrument that can see the state it grades.
+ *
+ * The iPad block below restores the handoff's `.08em` — the deviation is
+ * confined to the one viewport class whose budget is real. `docs/SURFACES.md`
+ * records the measured numbers.
+ */
 [data-skin='scorecard'] .skin-card-header h1 {
   font-size: 16px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: normal;
 }
 /*
  * The run-status line (`room-screen.tsx`'s own `p.text-xs.tabular-nums`, no
@@ -2166,6 +2231,15 @@ body {
   }
   [data-skin='scorecard'] .skin-card-header h1 {
     font-size: 19px;
+    /* The handoff's own tracking (HTML:414), restored where the row can afford
+       it — see the phone rule above for why it is dropped at phone widths. */
+    letter-spacing: 0.08em;
+  }
+  /* The desktop artboard's own value (HTML:414 gives the stats row `12px`); the
+     `11px` above is the *mobile* artboard's (HTML:741). Both are real, and the
+     iPad row has the width for the larger one. */
+  [data-skin='scorecard'] .skin-card-header > p {
+    font-size: 12px;
   }
 }
 

@@ -714,11 +714,17 @@ export function RoomScreen({
             <div className="flex flex-col gap-1">
               {/*
                 `skin-field-label` (#107): Scorecard's own "SIGN HERE" label is a
-                visual weight change only — the DOM text stays "Your name", the
-                same disclosed precedent this screen's own primary action already
-                uses for "Enter room" vs the handoff's literal "Take a card" — so
+                visual weight change only — the DOM text stays "Your name", so
                 `apps/web/test/` and every gate keep querying one accessible name
                 across all four skins.
+
+                This is **not** settled precedent. `docs/SURFACES.md`:1234-1250
+                rejected the claim that #104's `Join` → `Enter room` rename
+                justified it, and recorded the cross-skin accessible-name
+                contract as an *open FINAL-GATE question*. Keeping "Your name"
+                applies that unresolved call to a second control; #107's own
+                SURFACES entry lists it, and the roster heading, under the same
+                open question rather than as an established practice.
               */}
               <label htmlFor="join-name" className="skin-field-label">
                 Your name
