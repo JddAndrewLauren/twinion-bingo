@@ -22,7 +22,7 @@ function source(patch: Partial<ThemeSource> = {}): ThemeSource {
         entityType: 'racer',
         label: '{racer} wins',
         description: '{racer} wins it for {team}.',
-        exclusivityGroup: 'out:{racer}',
+        exclusivityGroups: ['out:{racer}'],
         tierByEntityTier: { top: 'medium', low: 'excluded' },
       },
     ],
@@ -32,7 +32,7 @@ function source(patch: Partial<ThemeSource> = {}): ThemeSource {
         label: 'Red flag',
         description: 'The race is stopped.',
         tier: 'rare',
-        exclusivityGroup: 'flag',
+        exclusivityGroups: ['flag'],
       },
     ],
     overrides: { prune: [], reword: {} },
@@ -42,7 +42,7 @@ function source(patch: Partial<ThemeSource> = {}): ThemeSource {
 
 /** One hand-crafted square, so a test can vary nothing but the label. */
 function handcraftedWithLabel(label: string) {
-  return { key: 'one', label, description: '', tier: 'rare' as const, exclusivityGroup: 'one' };
+  return { key: 'one', label, description: '', tier: 'rare' as const, exclusivityGroups: ['one'] };
 }
 
 describe('buildPool', () => {
@@ -55,7 +55,7 @@ describe('buildPool', () => {
       description: 'Rio wins it for Alpha.',
       tier: 'medium',
       source: 'generated',
-      exclusivityGroup: 'out:R1',
+      exclusivityGroups: ['out:R1'],
       templateId: 'racer_wins',
     });
   });
@@ -75,7 +75,7 @@ describe('buildPool', () => {
       description: 'The race is stopped.',
       tier: 'rare',
       source: 'handcrafted',
-      exclusivityGroup: 'flag',
+      exclusivityGroups: ['flag'],
       templateId: null,
     });
   });
@@ -121,7 +121,7 @@ describe('buildPool', () => {
               label: 'A label that is altogether too long',
               description: '',
               tier: 'rare',
-              exclusivityGroup: 'long',
+              exclusivityGroups: ['long'],
             },
           ],
         }),
@@ -171,7 +171,7 @@ describe('buildPool', () => {
               entityType: 'marshal',
               label: '{marshal} waves',
               description: '',
-              exclusivityGroup: 'ghost',
+              exclusivityGroups: ['ghost'],
               tierByEntityTier: { top: 'medium' },
             },
           ],
@@ -230,7 +230,7 @@ describe('buildPool', () => {
               label: 'A label that is altogether too long',
               description: '',
               tier: 'rare',
-              exclusivityGroup: 'long',
+              exclusivityGroups: ['long'],
             },
           ],
           overrides: { prune: ['t.v1:hand:gone'], reword: {} },

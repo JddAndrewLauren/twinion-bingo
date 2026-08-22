@@ -1,6 +1,3910 @@
 {
   "themeId": "indycar",
-  "poolVersion": "v1",
+  "poolVersion": "v2",
   "freeCentre": "GREEN FLAG",
-  "squares": []
+  "squares": [
+    {
+      "id": "indycar.v2:driver_avoidable_contact:ARM",
+      "label": "Armstrong avoidable contact",
+      "description": "Armstrong is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:ARM"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:COL",
+      "label": "Collet avoidable contact",
+      "description": "Collet is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:COL"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:DIX",
+      "label": "Dixon avoidable contact",
+      "description": "Dixon is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:DIX"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:ERI",
+      "label": "Ericsson avoidable contact",
+      "description": "Ericsson is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:ERI"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:FER",
+      "label": "Ferrucci avoidable contact",
+      "description": "Ferrucci is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:FER"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:FOS",
+      "label": "Foster avoidable contact",
+      "description": "Foster is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:FOS"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:GRO",
+      "label": "Grosjean avoidable contact",
+      "description": "Grosjean is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:GRO"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:HAU",
+      "label": "Hauger avoidable contact",
+      "description": "Hauger is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:HAU"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:KIR",
+      "label": "Kirkwood avoidable contact",
+      "description": "Kirkwood is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:KIR"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:LUN",
+      "label": "Lundgaard avoidable contact",
+      "description": "Lundgaard is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:LUN"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:MAL",
+      "label": "Malukas avoidable contact",
+      "description": "Malukas is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:MAL"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:MCG",
+      "label": "McLaughlin avoidable contact",
+      "description": "McLaughlin is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:MCG"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:NEW",
+      "label": "Newgarden avoidable contact",
+      "description": "Newgarden is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:NEW"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:OWA",
+      "label": "O'Ward avoidable contact",
+      "description": "O'Ward is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:OWA"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:PAL",
+      "label": "Palou avoidable contact",
+      "description": "Palou is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:PAL"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:POW",
+      "label": "Power avoidable contact",
+      "description": "Power is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:POW"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:RAH",
+      "label": "Rahal avoidable contact",
+      "description": "Rahal is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:RAH"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:RAS",
+      "label": "Rasmussen avoidable contact",
+      "description": "Rasmussen is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:RAS"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:ROB",
+      "label": "Robb avoidable contact",
+      "description": "Robb is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:ROB"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:ROS",
+      "label": "Rosenqvist avoidable contact",
+      "description": "Rosenqvist is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:ROS"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:RSI",
+      "label": "Rossi avoidable contact",
+      "description": "Rossi is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:RSI"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:SCH",
+      "label": "Schumacher avoidable contact",
+      "description": "Schumacher is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:SCH"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:SIE",
+      "label": "Siegel avoidable contact",
+      "description": "Siegel is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:SIE"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:SIM",
+      "label": "Simpson avoidable contact",
+      "description": "Simpson is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:SIM"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_avoidable_contact:VEE",
+      "label": "VeeKay avoidable contact",
+      "description": "VeeKay is handed an avoidable-contact penalty in the tight confines of a street circuit.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "avoidable_contact:VEE"
+      ],
+      "templateId": "driver_avoidable_contact"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:ARM",
+      "label": "Armstrong beats teammate",
+      "description": "Armstrong finishes ahead of the other Meyer Shank Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:MSR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:COL",
+      "label": "Collet beats teammate",
+      "description": "Collet finishes ahead of the other AJ Foyt Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:FOY"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:DIX",
+      "label": "Dixon beats teammate",
+      "description": "Dixon finishes ahead of the other Chip Ganassi Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:GAN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:ERI",
+      "label": "Ericsson beats teammate",
+      "description": "Ericsson finishes ahead of the other Andretti Global car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:AND"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:FER",
+      "label": "Ferrucci beats teammate",
+      "description": "Ferrucci finishes ahead of the other AJ Foyt Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:FOY"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:FOS",
+      "label": "Foster beats teammate",
+      "description": "Foster finishes ahead of the other Rahal Letterman Lanigan car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:RLL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:GRO",
+      "label": "Grosjean beats teammate",
+      "description": "Grosjean finishes ahead of the other Dale Coyne Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:COY"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:HAU",
+      "label": "Hauger beats teammate",
+      "description": "Hauger finishes ahead of the other Dale Coyne Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:COY"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:KIR",
+      "label": "Kirkwood beats teammate",
+      "description": "Kirkwood finishes ahead of the other Andretti Global car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:AND"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:LUN",
+      "label": "Lundgaard beats teammate",
+      "description": "Lundgaard finishes ahead of the other Arrow McLaren car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:MCL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:MAL",
+      "label": "Malukas beats teammate",
+      "description": "Malukas finishes ahead of the other Team Penske car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:PEN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:MCG",
+      "label": "McLaughlin beats teammate",
+      "description": "McLaughlin finishes ahead of the other Team Penske car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:PEN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:NEW",
+      "label": "Newgarden beats teammate",
+      "description": "Newgarden finishes ahead of the other Team Penske car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:PEN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:OWA",
+      "label": "O'Ward beats teammate",
+      "description": "O'Ward finishes ahead of the other Arrow McLaren car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:MCL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:PAL",
+      "label": "Palou beats teammate",
+      "description": "Palou finishes ahead of the other Chip Ganassi Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:GAN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:POW",
+      "label": "Power beats teammate",
+      "description": "Power finishes ahead of the other Andretti Global car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:AND"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:RAH",
+      "label": "Rahal beats teammate",
+      "description": "Rahal finishes ahead of the other Rahal Letterman Lanigan car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:RLL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:RAS",
+      "label": "Rasmussen beats teammate",
+      "description": "Rasmussen finishes ahead of the other Ed Carpenter Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:ECR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:ROB",
+      "label": "Robb beats teammate",
+      "description": "Robb finishes ahead of the other Juncos Hollinger Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:JHR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:ROS",
+      "label": "Rosenqvist beats teammate",
+      "description": "Rosenqvist finishes ahead of the other Meyer Shank Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:MSR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:RSI",
+      "label": "Rossi beats teammate",
+      "description": "Rossi finishes ahead of the other Ed Carpenter Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:ECR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:SCH",
+      "label": "Schumacher beats teammate",
+      "description": "Schumacher finishes ahead of the other Rahal Letterman Lanigan car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:RLL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:SIE",
+      "label": "Siegel beats teammate",
+      "description": "Siegel finishes ahead of the other Arrow McLaren car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:MCL"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:SIM",
+      "label": "Simpson beats teammate",
+      "description": "Simpson finishes ahead of the other Chip Ganassi Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:GAN"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_beats_teammate:VEE",
+      "label": "VeeKay beats teammate",
+      "description": "VeeKay finishes ahead of the other Juncos Hollinger Racing car.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "teammate:JHR"
+      ],
+      "templateId": "driver_beats_teammate"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:ARM",
+      "label": "Armstrong blend line penalty",
+      "description": "Armstrong is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:ARM"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:COL",
+      "label": "Collet blend line penalty",
+      "description": "Collet is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:COL"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:DIX",
+      "label": "Dixon blend line penalty",
+      "description": "Dixon is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:DIX"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:ERI",
+      "label": "Ericsson blend line penalty",
+      "description": "Ericsson is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:ERI"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:FER",
+      "label": "Ferrucci blend line penalty",
+      "description": "Ferrucci is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:FER"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:FOS",
+      "label": "Foster blend line penalty",
+      "description": "Foster is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:FOS"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:GRO",
+      "label": "Grosjean blend line penalty",
+      "description": "Grosjean is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:GRO"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:HAU",
+      "label": "Hauger blend line penalty",
+      "description": "Hauger is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:HAU"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:KIR",
+      "label": "Kirkwood blend line penalty",
+      "description": "Kirkwood is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:KIR"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:LUN",
+      "label": "Lundgaard blend line penalty",
+      "description": "Lundgaard is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:LUN"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:MAL",
+      "label": "Malukas blend line penalty",
+      "description": "Malukas is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:MAL"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:MCG",
+      "label": "McLaughlin blend line penalty",
+      "description": "McLaughlin is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:MCG"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:NEW",
+      "label": "Newgarden blend line penalty",
+      "description": "Newgarden is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:NEW"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:OWA",
+      "label": "O'Ward blend line penalty",
+      "description": "O'Ward is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:OWA"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:PAL",
+      "label": "Palou blend line penalty",
+      "description": "Palou is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:PAL"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:POW",
+      "label": "Power blend line penalty",
+      "description": "Power is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:POW"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:RAH",
+      "label": "Rahal blend line penalty",
+      "description": "Rahal is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:RAH"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:RAS",
+      "label": "Rasmussen blend line penalty",
+      "description": "Rasmussen is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:RAS"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:ROB",
+      "label": "Robb blend line penalty",
+      "description": "Robb is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:ROB"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:ROS",
+      "label": "Rosenqvist blend line penalty",
+      "description": "Rosenqvist is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:ROS"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:RSI",
+      "label": "Rossi blend line penalty",
+      "description": "Rossi is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:RSI"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:SCH",
+      "label": "Schumacher blend line penalty",
+      "description": "Schumacher is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:SCH"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:SIE",
+      "label": "Siegel blend line penalty",
+      "description": "Siegel is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:SIE"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:SIM",
+      "label": "Simpson blend line penalty",
+      "description": "Simpson is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:SIM"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_blend_line:VEE",
+      "label": "VeeKay blend line penalty",
+      "description": "VeeKay is penalised for crossing the blend line on the way out of the pits, before the merge point.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "blend_line:VEE"
+      ],
+      "templateId": "driver_blend_line"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:ARM",
+      "label": "Armstrong DNFs",
+      "description": "Armstrong fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:COL",
+      "label": "Collet DNFs",
+      "description": "Collet fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:DIX",
+      "label": "Dixon DNFs",
+      "description": "Dixon fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:ERI",
+      "label": "Ericsson DNFs",
+      "description": "Ericsson fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:FER",
+      "label": "Ferrucci DNFs",
+      "description": "Ferrucci fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:FOS",
+      "label": "Foster DNFs",
+      "description": "Foster fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:GRO",
+      "label": "Grosjean DNFs",
+      "description": "Grosjean fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:HAU",
+      "label": "Hauger DNFs",
+      "description": "Hauger fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:KIR",
+      "label": "Kirkwood DNFs",
+      "description": "Kirkwood fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:LUN",
+      "label": "Lundgaard DNFs",
+      "description": "Lundgaard fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:MAL",
+      "label": "Malukas DNFs",
+      "description": "Malukas fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:MCG",
+      "label": "McLaughlin DNFs",
+      "description": "McLaughlin fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:NEW",
+      "label": "Newgarden DNFs",
+      "description": "Newgarden fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:OWA",
+      "label": "O'Ward DNFs",
+      "description": "O'Ward fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:PAL",
+      "label": "Palou DNFs",
+      "description": "Palou fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:POW",
+      "label": "Power DNFs",
+      "description": "Power fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:RAH",
+      "label": "Rahal DNFs",
+      "description": "Rahal fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:RAS",
+      "label": "Rasmussen DNFs",
+      "description": "Rasmussen fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:ROB",
+      "label": "Robb DNFs",
+      "description": "Robb fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:ROS",
+      "label": "Rosenqvist DNFs",
+      "description": "Rosenqvist fails to finish the race.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:RSI",
+      "label": "Rossi DNFs",
+      "description": "Rossi fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:SCH",
+      "label": "Schumacher DNFs",
+      "description": "Schumacher fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:SIE",
+      "label": "Siegel DNFs",
+      "description": "Siegel fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:SIM",
+      "label": "Simpson DNFs",
+      "description": "Simpson fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_dnf:VEE",
+      "label": "VeeKay DNFs",
+      "description": "VeeKay fails to finish the race.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
+      "templateId": "driver_dnf"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:ARM",
+      "label": "Armstrong into the wall",
+      "description": "Armstrong makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:ARM",
+        "finish:ARM"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:COL",
+      "label": "Collet into the wall",
+      "description": "Collet makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:COL",
+        "finish:COL"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:DIX",
+      "label": "Dixon into the wall",
+      "description": "Dixon makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:DIX",
+        "finish:DIX"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:ERI",
+      "label": "Ericsson into the wall",
+      "description": "Ericsson makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:ERI",
+        "finish:ERI"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:FER",
+      "label": "Ferrucci into the wall",
+      "description": "Ferrucci makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:FER",
+        "finish:FER"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:FOS",
+      "label": "Foster into the wall",
+      "description": "Foster makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:FOS",
+        "finish:FOS"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:GRO",
+      "label": "Grosjean into the wall",
+      "description": "Grosjean makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:GRO",
+        "finish:GRO"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:HAU",
+      "label": "Hauger into the wall",
+      "description": "Hauger makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:HAU",
+        "finish:HAU"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:KIR",
+      "label": "Kirkwood into the wall",
+      "description": "Kirkwood makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:KIR",
+        "finish:KIR"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:LUN",
+      "label": "Lundgaard into the wall",
+      "description": "Lundgaard makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:LUN",
+        "finish:LUN"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:MAL",
+      "label": "Malukas into the wall",
+      "description": "Malukas makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:MAL",
+        "finish:MAL"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:MCG",
+      "label": "McLaughlin into the wall",
+      "description": "McLaughlin makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:MCG",
+        "finish:MCG"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:NEW",
+      "label": "Newgarden into the wall",
+      "description": "Newgarden makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:NEW",
+        "finish:NEW"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:OWA",
+      "label": "O'Ward into the wall",
+      "description": "O'Ward makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:OWA",
+        "finish:OWA"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:PAL",
+      "label": "Palou into the wall",
+      "description": "Palou makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:PAL",
+        "finish:PAL"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:POW",
+      "label": "Power into the wall",
+      "description": "Power makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:POW",
+        "finish:POW"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:RAH",
+      "label": "Rahal into the wall",
+      "description": "Rahal makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:RAH",
+        "finish:RAH"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:RAS",
+      "label": "Rasmussen into the wall",
+      "description": "Rasmussen makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:RAS",
+        "finish:RAS"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:ROB",
+      "label": "Robb into the wall",
+      "description": "Robb makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:ROB",
+        "finish:ROB"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:ROS",
+      "label": "Rosenqvist into the wall",
+      "description": "Rosenqvist makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:ROS",
+        "finish:ROS"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:RSI",
+      "label": "Rossi into the wall",
+      "description": "Rossi makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:RSI",
+        "finish:RSI"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:SCH",
+      "label": "Schumacher into the wall",
+      "description": "Schumacher makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:SCH",
+        "finish:SCH"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:SIE",
+      "label": "Siegel into the wall",
+      "description": "Siegel makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:SIE",
+        "finish:SIE"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:SIM",
+      "label": "Simpson into the wall",
+      "description": "Simpson makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:SIM",
+        "finish:SIM"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_in_wall:VEE",
+      "label": "VeeKay into the wall",
+      "description": "VeeKay makes contact with the wall on an oval, race over or not.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wall:VEE",
+        "finish:VEE"
+      ],
+      "templateId": "driver_in_wall"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:ARM",
+      "label": "Armstrong leads a lap",
+      "description": "Armstrong is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:ARM"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:DIX",
+      "label": "Dixon leads a lap",
+      "description": "Dixon is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:DIX"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:ERI",
+      "label": "Ericsson leads a lap",
+      "description": "Ericsson is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:ERI"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:FER",
+      "label": "Ferrucci leads a lap",
+      "description": "Ferrucci is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:FER"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:FOS",
+      "label": "Foster leads a lap",
+      "description": "Foster is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:FOS"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:GRO",
+      "label": "Grosjean leads a lap",
+      "description": "Grosjean is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:GRO"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:HAU",
+      "label": "Hauger leads a lap",
+      "description": "Hauger is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:HAU"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:KIR",
+      "label": "Kirkwood leads a lap",
+      "description": "Kirkwood is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:KIR"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:LUN",
+      "label": "Lundgaard leads a lap",
+      "description": "Lundgaard is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:LUN"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:MAL",
+      "label": "Malukas leads a lap",
+      "description": "Malukas is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:MAL"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:MCG",
+      "label": "McLaughlin leads a lap",
+      "description": "McLaughlin is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:MCG"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:NEW",
+      "label": "Newgarden leads a lap",
+      "description": "Newgarden is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:NEW"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:OWA",
+      "label": "O'Ward leads a lap",
+      "description": "O'Ward is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:OWA"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:PAL",
+      "label": "Palou leads a lap",
+      "description": "Palou is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:PAL"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:POW",
+      "label": "Power leads a lap",
+      "description": "Power is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:POW"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:RAH",
+      "label": "Rahal leads a lap",
+      "description": "Rahal is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:RAH"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:ROS",
+      "label": "Rosenqvist leads a lap",
+      "description": "Rosenqvist is the race leader at the end of any lap.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:ROS"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:RSI",
+      "label": "Rossi leads a lap",
+      "description": "Rossi is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:RSI"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:SIE",
+      "label": "Siegel leads a lap",
+      "description": "Siegel is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:SIE"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:SIM",
+      "label": "Simpson leads a lap",
+      "description": "Simpson is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:SIM"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_leads_lap:VEE",
+      "label": "VeeKay leads a lap",
+      "description": "VeeKay is the race leader at the end of any lap.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "leads_lap:VEE"
+      ],
+      "templateId": "driver_leads_lap"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:ARM",
+      "label": "Armstrong moans at the wall",
+      "description": "Armstrong complains about the car over Meyer Shank Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ARM"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:COL",
+      "label": "Collet moans at the wall",
+      "description": "Collet complains about the car over AJ Foyt Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:COL"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:DIX",
+      "label": "Dixon moans at the wall",
+      "description": "Dixon complains about the car over Chip Ganassi Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:DIX"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:ERI",
+      "label": "Ericsson moans at the wall",
+      "description": "Ericsson complains about the car over Andretti Global team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ERI"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:FER",
+      "label": "Ferrucci moans at the wall",
+      "description": "Ferrucci complains about the car over AJ Foyt Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:FER"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:FOS",
+      "label": "Foster moans at the wall",
+      "description": "Foster complains about the car over Rahal Letterman Lanigan team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:FOS"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:GRO",
+      "label": "Grosjean moans at the wall",
+      "description": "Grosjean complains about the car over Dale Coyne Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:GRO"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:HAU",
+      "label": "Hauger moans at the wall",
+      "description": "Hauger complains about the car over Dale Coyne Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:HAU"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:KIR",
+      "label": "Kirkwood moans at the wall",
+      "description": "Kirkwood complains about the car over Andretti Global team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:KIR"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:LUN",
+      "label": "Lundgaard moans at the wall",
+      "description": "Lundgaard complains about the car over Arrow McLaren team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:LUN"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:MAL",
+      "label": "Malukas moans at the wall",
+      "description": "Malukas complains about the car over Team Penske team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:MAL"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:MCG",
+      "label": "McLaughlin moans at the wall",
+      "description": "McLaughlin complains about the car over Team Penske team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:MCG"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:NEW",
+      "label": "Newgarden moans at the wall",
+      "description": "Newgarden complains about the car over Team Penske team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:NEW"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:OWA",
+      "label": "O'Ward moans at the wall",
+      "description": "O'Ward complains about the car over Arrow McLaren team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:OWA"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:PAL",
+      "label": "Palou moans at the wall",
+      "description": "Palou complains about the car over Chip Ganassi Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:PAL"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:POW",
+      "label": "Power moans at the wall",
+      "description": "Power complains about the car over Andretti Global team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:POW"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:RAH",
+      "label": "Rahal moans at the wall",
+      "description": "Rahal complains about the car over Rahal Letterman Lanigan team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RAH"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:RAS",
+      "label": "Rasmussen moans at the wall",
+      "description": "Rasmussen complains about the car over Ed Carpenter Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RAS"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:ROB",
+      "label": "Robb moans at the wall",
+      "description": "Robb complains about the car over Juncos Hollinger Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ROB"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:ROS",
+      "label": "Rosenqvist moans at the wall",
+      "description": "Rosenqvist complains about the car over Meyer Shank Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ROS"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:RSI",
+      "label": "Rossi moans at the wall",
+      "description": "Rossi complains about the car over Ed Carpenter Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RSI"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:SCH",
+      "label": "Schumacher moans at the wall",
+      "description": "Schumacher complains about the car over Rahal Letterman Lanigan team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SCH"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:SIE",
+      "label": "Siegel moans at the wall",
+      "description": "Siegel complains about the car over Arrow McLaren team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SIE"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:SIM",
+      "label": "Simpson moans at the wall",
+      "description": "Simpson complains about the car over Chip Ganassi Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SIM"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_moans_at_wall:VEE",
+      "label": "VeeKay moans at the wall",
+      "description": "VeeKay complains about the car over Juncos Hollinger Racing team radio.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:VEE"
+      ],
+      "templateId": "driver_moans_at_wall"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:ARM",
+      "label": "Armstrong out of push-to-pass",
+      "description": "Armstrong complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ARM"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:COL",
+      "label": "Collet out of push-to-pass",
+      "description": "Collet complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:COL"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:DIX",
+      "label": "Dixon out of push-to-pass",
+      "description": "Dixon complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:DIX"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:ERI",
+      "label": "Ericsson out of push-to-pass",
+      "description": "Ericsson complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ERI"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:FER",
+      "label": "Ferrucci out of push-to-pass",
+      "description": "Ferrucci complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:FER"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:FOS",
+      "label": "Foster out of push-to-pass",
+      "description": "Foster complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:FOS"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:GRO",
+      "label": "Grosjean out of push-to-pass",
+      "description": "Grosjean complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:GRO"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:HAU",
+      "label": "Hauger out of push-to-pass",
+      "description": "Hauger complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:HAU"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:KIR",
+      "label": "Kirkwood out of push-to-pass",
+      "description": "Kirkwood complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:KIR"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:LUN",
+      "label": "Lundgaard out of push-to-pass",
+      "description": "Lundgaard complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:LUN"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:MAL",
+      "label": "Malukas out of push-to-pass",
+      "description": "Malukas complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:MAL"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:MCG",
+      "label": "McLaughlin out of push-to-pass",
+      "description": "McLaughlin complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:MCG"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:NEW",
+      "label": "Newgarden out of push-to-pass",
+      "description": "Newgarden complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:NEW"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:OWA",
+      "label": "O'Ward out of push-to-pass",
+      "description": "O'Ward complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:OWA"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:PAL",
+      "label": "Palou out of push-to-pass",
+      "description": "Palou complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:PAL"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:POW",
+      "label": "Power out of push-to-pass",
+      "description": "Power complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:POW"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:RAH",
+      "label": "Rahal out of push-to-pass",
+      "description": "Rahal complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RAH"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:RAS",
+      "label": "Rasmussen out of push-to-pass",
+      "description": "Rasmussen complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RAS"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:ROB",
+      "label": "Robb out of push-to-pass",
+      "description": "Robb complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ROB"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:ROS",
+      "label": "Rosenqvist out of push-to-pass",
+      "description": "Rosenqvist complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:ROS"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:RSI",
+      "label": "Rossi out of push-to-pass",
+      "description": "Rossi complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:RSI"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:SCH",
+      "label": "Schumacher out of push-to-pass",
+      "description": "Schumacher complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SCH"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:SIE",
+      "label": "Siegel out of push-to-pass",
+      "description": "Siegel complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SIE"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:SIM",
+      "label": "Simpson out of push-to-pass",
+      "description": "Simpson complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:SIM"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_p2p_moan:VEE",
+      "label": "VeeKay out of push-to-pass",
+      "description": "VeeKay complains on the radio about running out of push-to-pass.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "radio_moan:VEE"
+      ],
+      "templateId": "driver_p2p_moan"
+    },
+    {
+      "id": "indycar.v2:driver_podium:ARM",
+      "label": "Armstrong on the podium",
+      "description": "Armstrong finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:ARM",
+        "finish:ARM"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:DIX",
+      "label": "Dixon on the podium",
+      "description": "Dixon finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:DIX",
+        "finish:DIX"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:ERI",
+      "label": "Ericsson on the podium",
+      "description": "Ericsson finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:ERI",
+        "finish:ERI"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:FER",
+      "label": "Ferrucci on the podium",
+      "description": "Ferrucci finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:FER",
+        "finish:FER"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:FOS",
+      "label": "Foster on the podium",
+      "description": "Foster finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:FOS",
+        "finish:FOS"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:GRO",
+      "label": "Grosjean on the podium",
+      "description": "Grosjean finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:GRO",
+        "finish:GRO"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:HAU",
+      "label": "Hauger on the podium",
+      "description": "Hauger finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:HAU",
+        "finish:HAU"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:KIR",
+      "label": "Kirkwood on the podium",
+      "description": "Kirkwood finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:KIR",
+        "finish:KIR"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:LUN",
+      "label": "Lundgaard on the podium",
+      "description": "Lundgaard finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:LUN",
+        "finish:LUN"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:MAL",
+      "label": "Malukas on the podium",
+      "description": "Malukas finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:MAL",
+        "finish:MAL"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:MCG",
+      "label": "McLaughlin on the podium",
+      "description": "McLaughlin finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:MCG",
+        "finish:MCG"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:NEW",
+      "label": "Newgarden on the podium",
+      "description": "Newgarden finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:NEW",
+        "finish:NEW"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:OWA",
+      "label": "O'Ward on the podium",
+      "description": "O'Ward finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:OWA",
+        "finish:OWA"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:PAL",
+      "label": "Palou on the podium",
+      "description": "Palou finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:PAL",
+        "finish:PAL"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:POW",
+      "label": "Power on the podium",
+      "description": "Power finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:POW",
+        "finish:POW"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:RAH",
+      "label": "Rahal on the podium",
+      "description": "Rahal finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:RAH",
+        "finish:RAH"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:ROS",
+      "label": "Rosenqvist on the podium",
+      "description": "Rosenqvist finishes in the top three.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:ROS",
+        "finish:ROS"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:RSI",
+      "label": "Rossi on the podium",
+      "description": "Rossi finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:RSI",
+        "finish:RSI"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:SIE",
+      "label": "Siegel on the podium",
+      "description": "Siegel finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:SIE",
+        "finish:SIE"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:SIM",
+      "label": "Simpson on the podium",
+      "description": "Simpson finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:SIM",
+        "finish:SIM"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_podium:VEE",
+      "label": "VeeKay on the podium",
+      "description": "VeeKay finishes in the top three.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "podium:VEE",
+        "finish:VEE"
+      ],
+      "templateId": "driver_podium"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:ARM",
+      "label": "Armstrong wins the shootout",
+      "description": "Armstrong leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ARM"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:COL",
+      "label": "Collet wins the shootout",
+      "description": "Collet leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:COL"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:DIX",
+      "label": "Dixon wins the shootout",
+      "description": "Dixon leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:DIX"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:ERI",
+      "label": "Ericsson wins the shootout",
+      "description": "Ericsson leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ERI"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:FER",
+      "label": "Ferrucci wins the shootout",
+      "description": "Ferrucci leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:FER"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:FOS",
+      "label": "Foster wins the shootout",
+      "description": "Foster leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:FOS"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:GRO",
+      "label": "Grosjean wins the shootout",
+      "description": "Grosjean leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:GRO"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:HAU",
+      "label": "Hauger wins the shootout",
+      "description": "Hauger leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:HAU"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:KIR",
+      "label": "Kirkwood wins the shootout",
+      "description": "Kirkwood leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:KIR"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:LUN",
+      "label": "Lundgaard wins the shootout",
+      "description": "Lundgaard leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:LUN"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:MAL",
+      "label": "Malukas wins the shootout",
+      "description": "Malukas leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:MAL"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:MCG",
+      "label": "McLaughlin wins the shootout",
+      "description": "McLaughlin leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:MCG"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:NEW",
+      "label": "Newgarden wins the shootout",
+      "description": "Newgarden leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:NEW"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:OWA",
+      "label": "O'Ward wins the shootout",
+      "description": "O'Ward leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:OWA"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:PAL",
+      "label": "Palou wins the shootout",
+      "description": "Palou leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:PAL"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:POW",
+      "label": "Power wins the shootout",
+      "description": "Power leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:POW"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:RAH",
+      "label": "Rahal wins the shootout",
+      "description": "Rahal leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RAH"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:RAS",
+      "label": "Rasmussen wins the shootout",
+      "description": "Rasmussen leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RAS"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:ROB",
+      "label": "Robb wins the shootout",
+      "description": "Robb leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ROB"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:ROS",
+      "label": "Rosenqvist wins the shootout",
+      "description": "Rosenqvist leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ROS"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:RSI",
+      "label": "Rossi wins the shootout",
+      "description": "Rossi leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RSI"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:SCH",
+      "label": "Schumacher wins the shootout",
+      "description": "Schumacher leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:SCH"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:SIE",
+      "label": "Siegel wins the shootout",
+      "description": "Siegel leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:SIE"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:SIM",
+      "label": "Simpson wins the shootout",
+      "description": "Simpson leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:SIM"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_shootout:VEE",
+      "label": "VeeKay wins the shootout",
+      "description": "VeeKay leads the field to the checkered flag on a two-lap shootout restart.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:VEE"
+      ],
+      "templateId": "driver_shootout"
+    },
+    {
+      "id": "indycar.v2:driver_swears:ARM",
+      "label": "Armstrong swears on radio",
+      "description": "Armstrong swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:ARM"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:COL",
+      "label": "Collet swears on radio",
+      "description": "Collet swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:COL"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:DIX",
+      "label": "Dixon swears on radio",
+      "description": "Dixon swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:DIX"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:ERI",
+      "label": "Ericsson swears on radio",
+      "description": "Ericsson swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:ERI"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:FER",
+      "label": "Ferrucci swears on radio",
+      "description": "Ferrucci swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:FER"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:FOS",
+      "label": "Foster swears on radio",
+      "description": "Foster swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:FOS"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:GRO",
+      "label": "Grosjean swears on radio",
+      "description": "Grosjean swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:GRO"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:HAU",
+      "label": "Hauger swears on radio",
+      "description": "Hauger swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:HAU"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:KIR",
+      "label": "Kirkwood swears on radio",
+      "description": "Kirkwood swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:KIR"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:LUN",
+      "label": "Lundgaard swears on radio",
+      "description": "Lundgaard swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:LUN"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:MAL",
+      "label": "Malukas swears on radio",
+      "description": "Malukas swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:MAL"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:MCG",
+      "label": "McLaughlin swears on radio",
+      "description": "McLaughlin swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:MCG"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:NEW",
+      "label": "Newgarden swears on radio",
+      "description": "Newgarden swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:NEW"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:OWA",
+      "label": "O'Ward swears on radio",
+      "description": "O'Ward swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:OWA"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:PAL",
+      "label": "Palou swears on radio",
+      "description": "Palou swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:PAL"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:POW",
+      "label": "Power swears on radio",
+      "description": "Power swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:POW"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:RAH",
+      "label": "Rahal swears on radio",
+      "description": "Rahal swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:RAH"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:RAS",
+      "label": "Rasmussen swears on radio",
+      "description": "Rasmussen swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:RAS"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:ROB",
+      "label": "Robb swears on radio",
+      "description": "Robb swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:ROB"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:ROS",
+      "label": "Rosenqvist swears on radio",
+      "description": "Rosenqvist swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:ROS"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:RSI",
+      "label": "Rossi swears on radio",
+      "description": "Rossi swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:RSI"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:SCH",
+      "label": "Schumacher swears on radio",
+      "description": "Schumacher swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:SCH"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:SIE",
+      "label": "Siegel swears on radio",
+      "description": "Siegel swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:SIE"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:SIM",
+      "label": "Simpson swears on radio",
+      "description": "Simpson swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:SIM"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_swears:VEE",
+      "label": "VeeKay swears on radio",
+      "description": "VeeKay swears over team radio, bleeped or not.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "swears:VEE"
+      ],
+      "templateId": "driver_swears"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:ARM",
+      "label": "Armstrong in the top ten",
+      "description": "Armstrong finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:ARM",
+        "finish:ARM"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:COL",
+      "label": "Collet in the top ten",
+      "description": "Collet finishes tenth or better.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:COL",
+        "finish:COL"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:DIX",
+      "label": "Dixon in the top ten",
+      "description": "Dixon finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:DIX",
+        "finish:DIX"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:FER",
+      "label": "Ferrucci in the top ten",
+      "description": "Ferrucci finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:FER",
+        "finish:FER"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:FOS",
+      "label": "Foster in the top ten",
+      "description": "Foster finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:FOS",
+        "finish:FOS"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:GRO",
+      "label": "Grosjean in the top ten",
+      "description": "Grosjean finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:GRO",
+        "finish:GRO"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:HAU",
+      "label": "Hauger in the top ten",
+      "description": "Hauger finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:HAU",
+        "finish:HAU"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:POW",
+      "label": "Power in the top ten",
+      "description": "Power finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:POW",
+        "finish:POW"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:RAH",
+      "label": "Rahal in the top ten",
+      "description": "Rahal finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:RAH",
+        "finish:RAH"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:RAS",
+      "label": "Rasmussen in the top ten",
+      "description": "Rasmussen finishes tenth or better.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:RAS",
+        "finish:RAS"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:ROB",
+      "label": "Robb in the top ten",
+      "description": "Robb finishes tenth or better.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:ROB",
+        "finish:ROB"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:RSI",
+      "label": "Rossi in the top ten",
+      "description": "Rossi finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:RSI",
+        "finish:RSI"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:SCH",
+      "label": "Schumacher in the top ten",
+      "description": "Schumacher finishes tenth or better.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:SCH",
+        "finish:SCH"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:SIE",
+      "label": "Siegel in the top ten",
+      "description": "Siegel finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:SIE",
+        "finish:SIE"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:SIM",
+      "label": "Simpson in the top ten",
+      "description": "Simpson finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:SIM",
+        "finish:SIM"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_top_ten:VEE",
+      "label": "VeeKay in the top ten",
+      "description": "VeeKay finishes tenth or better.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "top_ten:VEE",
+        "finish:VEE"
+      ],
+      "templateId": "driver_top_ten"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:ARM",
+      "label": "Armstrong gets a wave-around",
+      "description": "Armstrong unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:ARM"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:COL",
+      "label": "Collet gets a wave-around",
+      "description": "Collet unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:COL"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:DIX",
+      "label": "Dixon gets a wave-around",
+      "description": "Dixon unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:DIX"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:ERI",
+      "label": "Ericsson gets a wave-around",
+      "description": "Ericsson unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:ERI"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:FER",
+      "label": "Ferrucci gets a wave-around",
+      "description": "Ferrucci unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:FER"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:FOS",
+      "label": "Foster gets a wave-around",
+      "description": "Foster unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:FOS"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:GRO",
+      "label": "Grosjean gets a wave-around",
+      "description": "Grosjean unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:GRO"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:HAU",
+      "label": "Hauger gets a wave-around",
+      "description": "Hauger unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:HAU"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:KIR",
+      "label": "Kirkwood gets a wave-around",
+      "description": "Kirkwood unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:KIR"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:LUN",
+      "label": "Lundgaard gets a wave-around",
+      "description": "Lundgaard unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:LUN"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:MAL",
+      "label": "Malukas gets a wave-around",
+      "description": "Malukas unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:MAL"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:MCG",
+      "label": "McLaughlin gets a wave-around",
+      "description": "McLaughlin unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:MCG"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:NEW",
+      "label": "Newgarden gets a wave-around",
+      "description": "Newgarden unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:NEW"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:OWA",
+      "label": "O'Ward gets a wave-around",
+      "description": "O'Ward unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:OWA"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:PAL",
+      "label": "Palou gets a wave-around",
+      "description": "Palou unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:PAL"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:POW",
+      "label": "Power gets a wave-around",
+      "description": "Power unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:POW"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:RAH",
+      "label": "Rahal gets a wave-around",
+      "description": "Rahal unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:RAH"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:RAS",
+      "label": "Rasmussen gets a wave-around",
+      "description": "Rasmussen unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:RAS"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:ROB",
+      "label": "Robb gets a wave-around",
+      "description": "Robb unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:ROB"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:ROS",
+      "label": "Rosenqvist gets a wave-around",
+      "description": "Rosenqvist unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:ROS"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:RSI",
+      "label": "Rossi gets a wave-around",
+      "description": "Rossi unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:RSI"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:SCH",
+      "label": "Schumacher gets a wave-around",
+      "description": "Schumacher unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:SCH"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:SIE",
+      "label": "Siegel gets a wave-around",
+      "description": "Siegel unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:SIE"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:SIM",
+      "label": "Simpson gets a wave-around",
+      "description": "Simpson unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:SIM"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wave_around:VEE",
+      "label": "VeeKay gets a wave-around",
+      "description": "VeeKay unlaps themselves under a full-course caution using the wave-around.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "wave_around:VEE"
+      ],
+      "templateId": "driver_wave_around"
+    },
+    {
+      "id": "indycar.v2:driver_wins:ARM",
+      "label": "Armstrong wins",
+      "description": "Armstrong takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ARM"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:DIX",
+      "label": "Dixon wins",
+      "description": "Dixon takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:DIX"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:ERI",
+      "label": "Ericsson wins",
+      "description": "Ericsson takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ERI"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:FER",
+      "label": "Ferrucci wins",
+      "description": "Ferrucci takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:FER"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:FOS",
+      "label": "Foster wins",
+      "description": "Foster takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:FOS"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:GRO",
+      "label": "Grosjean wins",
+      "description": "Grosjean takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:GRO"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:HAU",
+      "label": "Hauger wins",
+      "description": "Hauger takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:HAU"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:KIR",
+      "label": "Kirkwood wins",
+      "description": "Kirkwood takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:KIR"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:LUN",
+      "label": "Lundgaard wins",
+      "description": "Lundgaard takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:LUN"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:MAL",
+      "label": "Malukas wins",
+      "description": "Malukas takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:MAL"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:MCG",
+      "label": "McLaughlin wins",
+      "description": "McLaughlin takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:MCG"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:NEW",
+      "label": "Newgarden wins",
+      "description": "Newgarden takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:NEW"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:OWA",
+      "label": "O'Ward wins",
+      "description": "O'Ward takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:OWA"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:PAL",
+      "label": "Palou wins",
+      "description": "Palou takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:PAL"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:POW",
+      "label": "Power wins",
+      "description": "Power takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:POW"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:RAH",
+      "label": "Rahal wins",
+      "description": "Rahal takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RAH"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:ROS",
+      "label": "Rosenqvist wins",
+      "description": "Rosenqvist takes the checkered flag in first place.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ROS"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:RSI",
+      "label": "Rossi wins",
+      "description": "Rossi takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RSI"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:SIE",
+      "label": "Siegel wins",
+      "description": "Siegel takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:SIE"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:SIM",
+      "label": "Simpson wins",
+      "description": "Simpson takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:SIM"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:driver_wins:VEE",
+      "label": "VeeKay wins",
+      "description": "VeeKay takes the checkered flag in first place.",
+      "tier": "rare",
+      "source": "generated",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:VEE"
+      ],
+      "templateId": "driver_wins"
+    },
+    {
+      "id": "indycar.v2:team_fumble:AND",
+      "label": "Andretti Global fumble",
+      "description": "A pit stop for Andretti Global goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:AND"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:COY",
+      "label": "Dale Coyne Racing fumble",
+      "description": "A pit stop for Dale Coyne Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:COY"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:ECR",
+      "label": "Ed Carpenter Racing fumble",
+      "description": "A pit stop for Ed Carpenter Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:ECR"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:FOY",
+      "label": "AJ Foyt Racing fumble",
+      "description": "A pit stop for AJ Foyt Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:FOY"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:GAN",
+      "label": "Chip Ganassi Racing fumble",
+      "description": "A pit stop for Chip Ganassi Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:GAN"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:JHR",
+      "label": "Juncos Hollinger Racing fumble",
+      "description": "A pit stop for Juncos Hollinger Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:JHR"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:MCL",
+      "label": "Arrow McLaren fumble",
+      "description": "A pit stop for Arrow McLaren goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:MCL"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:MSR",
+      "label": "Meyer Shank Racing fumble",
+      "description": "A pit stop for Meyer Shank Racing goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:MSR"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:PEN",
+      "label": "Team Penske fumble",
+      "description": "A pit stop for Team Penske goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:PEN"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_fumble:RLL",
+      "label": "Rahal Letterman Lanigan fumble",
+      "description": "A pit stop for Rahal Letterman Lanigan goes wrong — slow, unsafe or a wheel not on.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "fumble:RLL"
+      ],
+      "templateId": "team_fumble"
+    },
+    {
+      "id": "indycar.v2:team_podium:AND",
+      "label": "Andretti Global podium",
+      "description": "A Andretti Global car finishes on the podium.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:AND"
+      ],
+      "templateId": "team_podium"
+    },
+    {
+      "id": "indycar.v2:team_podium:GAN",
+      "label": "Chip Ganassi Racing podium",
+      "description": "A Chip Ganassi Racing car finishes on the podium.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:GAN"
+      ],
+      "templateId": "team_podium"
+    },
+    {
+      "id": "indycar.v2:team_podium:MCL",
+      "label": "Arrow McLaren podium",
+      "description": "A Arrow McLaren car finishes on the podium.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:MCL"
+      ],
+      "templateId": "team_podium"
+    },
+    {
+      "id": "indycar.v2:team_podium:MSR",
+      "label": "Meyer Shank Racing podium",
+      "description": "A Meyer Shank Racing car finishes on the podium.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:MSR"
+      ],
+      "templateId": "team_podium"
+    },
+    {
+      "id": "indycar.v2:team_podium:PEN",
+      "label": "Team Penske podium",
+      "description": "A Team Penske car finishes on the podium.",
+      "tier": "certain",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:PEN"
+      ],
+      "templateId": "team_podium"
+    },
+    {
+      "id": "indycar.v2:team_podium:RLL",
+      "label": "Rahal Letterman Lanigan podium",
+      "description": "A Rahal Letterman Lanigan car finishes on the podium.",
+      "tier": "medium",
+      "source": "generated",
+      "exclusivityGroups": [
+        "team_podium:RLL"
+      ],
+      "templateId": "team_podium"
+    }
+  ]
 }

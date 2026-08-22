@@ -102,7 +102,7 @@ describe('the fixture pool', () => {
   });
 
   it('shares exclusivity groups between squares, so a card has to exclude some', () => {
-    const groups = new Set(fixture.squares.map((s) => s.exclusivityGroup));
+    const groups = new Set(fixture.squares.flatMap((s) => s.exclusivityGroups));
 
     expect(groups.size).toBeLessThan(fixture.squares.length);
   });
@@ -221,10 +221,12 @@ describe('composing a deck from the real F1 pool', () => {
     const card = dealCard(deck, 'seed-one', 'player-a');
     const groups = deck
       .filter((square) => card.includes(square.id))
-      .map((square) => square.exclusivityGroup);
+      .flatMap((square) => square.exclusivityGroups);
 
     expect(card).toHaveLength(CARD_SQUARES);
-    expect(new Set(groups).size).toBe(CARD_SQUARES);
+    // No two dealt squares share a group: a square can carry several, so the
+    // union can run over CARD_SQUARES, but every group in it names exactly one.
+    expect(new Set(groups).size).toBe(groups.length);
   });
 
   /**
@@ -301,16 +303,16 @@ describe('the card tier bounds, against the real F1 pool', () => {
     ).toBeGreaterThanOrEqual(MIN_CERTAIN_PER_CARD);
   });
 
-  it('still deals 24 squares in 24 distinct groups under the bounds', () => {
+  it('still deals 24 squares with no two sharing a group under the bounds', () => {
     const deck = composeDeck(f1, 'bounds-0');
     const byId = new Map(deck.map((square) => [square.id, square]));
 
     for (const player of PLAYERS) {
       const card = dealCard(deck, 'bounds-0', `player-${player}`);
-      const groups = card.map((id) => byId.get(id)!.exclusivityGroup);
+      const groups = card.flatMap((id) => byId.get(id)!.exclusivityGroups);
 
       expect(card, `player ${player}`).toHaveLength(CARD_SQUARES);
-      expect(new Set(groups).size, `player ${player}`).toBe(CARD_SQUARES);
+      expect(new Set(groups).size, `player ${player}`).toBe(groups.length);
     }
 
     expect(cards).toHaveLength(SEEDS * PLAYERS.length);
@@ -372,7 +374,7 @@ describe('refusing a deck the bounds cannot be met from', () => {
       description: 'A square.',
       tier,
       source: 'generated',
-      exclusivityGroup: `group-${index}`,
+      exclusivityGroups: [`group-${index}`],
       templateId: 't',
     })) satisfies PoolSquare[];
   }
@@ -409,7 +411,7 @@ describe('refusing a deck the bounds cannot be met from', () => {
       ...fixture,
       squares: fixture.squares.map((square, index) =>
         square.tier === 'certain'
-          ? { ...square, exclusivityGroup: `safety-car-${index % 3}` }
+          ? { ...square, exclusivityGroups: [`safety-car-${index % 3}`] }
           : square,
       ),
     };
@@ -437,7 +439,7 @@ describe('dealing a card', () => {
 
   it('puts at most one square per exclusivity group on a card', () => {
     const byId = new Map(deck.map((square) => [square.id, square]));
-    const groups = card.map((id) => byId.get(id)!.exclusivityGroup);
+    const groups = card.flatMap((id) => byId.get(id)!.exclusivityGroups);
 
     expect(new Set(groups).size).toBe(groups.length);
   });
@@ -486,7 +488,7 @@ describe('dealing a card', () => {
       description: 'A square.',
       tier: 'medium',
       source: 'generated',
-      exclusivityGroup: index < 4 ? 'one' : 'two',
+      exclusivityGroups: [index < 4 ? 'one' : 'two'],
       templateId: 't',
     })) satisfies PoolSquare[];
 
