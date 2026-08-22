@@ -21,19 +21,30 @@
  * (`.skin-code span`), because it is the handoff's number for one skin and not a
  * shared default; putting it here would make the other three inherit a size
  * their own tables do not name.
+ *
+ * #105 (Slipstream): the `<span aria-hidden className="skin-code-bar">` below the
+ * `<p>` is the sheared bar under the one-word room code — a sibling of the `<p>`
+ * rather than a fifth child *inside* it, because `gate/skin-pitwall.gate.ts` counts
+ * `code.locator('span')` and asserts exactly 4 (the four boxed characters). It
+ * renders unconditionally, the same "one React tree for every skin" pattern the
+ * four character spans already use, and is a visual no-op for every skin but
+ * Slipstream until its own `[data-skin='X'] .skin-code-bar` rule exists.
  */
 export function RoomCode({ code }: { code: string }) {
   return (
-    <p aria-label={`Room code ${code}`} className="skin-code flex gap-2">
-      {[...code].map((character, index) => (
-        <span
-          key={index}
-          aria-hidden
-          className="flex flex-1 items-center justify-center rounded-skin border border-rule text-2xl font-bold"
-        >
-          {character}
-        </span>
-      ))}
-    </p>
+    <>
+      <p aria-label={`Room code ${code}`} className="skin-code flex gap-2">
+        {[...code].map((character, index) => (
+          <span
+            key={index}
+            aria-hidden
+            className="flex flex-1 items-center justify-center rounded-skin border border-rule text-2xl font-bold"
+          >
+            {character}
+          </span>
+        ))}
+      </p>
+      <span aria-hidden className="skin-code-bar hidden" />
+    </>
   );
 }

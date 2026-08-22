@@ -13,8 +13,20 @@ import type { Roster } from '../../room-api';
  * name is chosen), so there is never a `— YOU` row here — the tag exists purely
  * for the host, until the player submits a name and the screen swaps to the
  * post-join roster (`room-screen.tsx`'s own `<ul>`, untouched by this issue).
+ *
+ * #105 (Slipstream): the trailing `[data-overflow-chip]` `<li>` is the "+N"
+ * chip the handoff's pill-row skins truncate to at phone widths ("four names
+ * plus an accent-filled `+N` chip"). It renders whenever the roster holds more
+ * than four players — a *data*-conditional, not a *skin*-conditional, the same
+ * way the `HOST` tag above is — and stays `hidden` by default so Pit Wall's
+ * table (which has no truncation) never sees it; only
+ * `[data-skin='slipstream'] .skin-roster li[data-overflow-chip]` in
+ * `globals.css` makes it visible, and only under the same narrow-width media
+ * query that hides players 5+.
  */
 export function RosterPreview({ roster }: { roster: Roster }) {
+  const overflow = roster.players.length - 4;
+
   return (
     <div className="skin-roster flex flex-col gap-1">
       <p className="skin-roster-heading text-xs font-semibold text-muted">
@@ -35,6 +47,11 @@ export function RosterPreview({ roster }: { roster: Roster }) {
             )}
           </li>
         ))}
+        {overflow > 0 && (
+          <li data-overflow-chip className="hidden">
+            +{overflow}
+          </li>
+        )}
       </ul>
     </div>
   );

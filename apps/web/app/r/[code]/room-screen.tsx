@@ -727,15 +727,31 @@ export function RoomScreen({
               className={`${ACTION_BUTTON} skin-action-primary`}
             >
               {/*
-                "Enter room" rather than the handoff's literal "ENTER ROOM":
-                `lobby.gate.ts` and `test/room-screen.test.tsx` name this button
-                by its accessible text, and #104 keeps that text in sentence
-                case and lets `[data-skin='pitwall'] .skin-action-primary`'s
-                `text-transform: uppercase` carry the visual, the same pattern
-                the roster's `HOST` tag uses — rather than baking upper case
-                into the DOM text every skin and every screen reader gets.
+                #105 (Slipstream): the button itself stays an unsheared rectangle
+                — its own bounding box is what `expectThumbSized` measures — and
+                the `skewX(-8deg)` the handoff draws lands on this inner fill
+                span instead, with the label counter-skewed inside *that*, the
+                same "shear an inner element, not the hit box" pattern
+                `skin-button.tsx`'s own `.skin-theme-fill` uses. A no-op wrapper
+                for the three skins with no shear: `.skin-action-primary-fill`
+                and `.skin-action-primary-label` carry no rules of their own
+                outside `[data-skin='slipstream']`.
               */}
-              {joining ? 'Entering…' : 'Enter room'}
+              <span className="skin-action-primary-fill flex h-full w-full items-center justify-center">
+                <span className="skin-action-primary-label">
+                  {/*
+                    "Enter room" rather than the handoff's literal "ENTER ROOM":
+                    `lobby.gate.ts` and `test/room-screen.test.tsx` name this
+                    button by its accessible text, and #104 keeps that text in
+                    sentence case and lets `[data-skin='pitwall']
+                    .skin-action-primary`'s `text-transform: uppercase` carry
+                    the visual, the same pattern the roster's `HOST` tag uses —
+                    rather than baking upper case into the DOM text every skin
+                    and every screen reader gets.
+                  */}
+                  {joining ? 'Entering…' : 'Enter room'}
+                </span>
+              </span>
             </button>
             {joinFailed !== null && <p role="alert">{joinFailed}</p>}
             {/*

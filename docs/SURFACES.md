@@ -833,6 +833,83 @@ than left as the app's old hardcoded emerald/grey.
   **"Join"** accordingly — a genuine, disclosed rename to match the brief's own primary-action copy,
   not a loosened assertion.
 
+**#105's gate run** (WebKit with `hasTouch`, all four matrix viewports — 307 tests green, 41
+skipped, up from #104's 266/38; the new file adds 11 tests, one of them `phone-small`-only, which is
+exactly `+41` passed and `+3` skipped): Slipstream's own structure lands — the sheared join/card
+type, the diagonal line field, the gradient-clipped one-word room code with its sheared bar, the
+pill-row roster with its phone-width truncation, the numeral-only progress readout, and the
+earned/inherited/unmarked cell distinction — gated in `gate/skin-slipstream.gate.ts`, reusing
+`skin-pitwall.gate.ts`'s own `paintedFill()`/`deltaE()` instrument rather than a new one.
+
+- **The card's own cell/font table, this skin's row** (`sizes its type against the card`-style
+  numbers, taken from `gate/skin-slipstream.gate.ts`'s own `carries the pool without a cell clipping`
+  annotations; cell widths are identical to Pit Wall's — the grid geometry is skin-agnostic — only
+  the font size differs, from this skin's own smaller per-skin label-size token):
+
+  | Viewport | Cell | Font |
+  | --- | --- | --- |
+  | `phone-small` | 70px | 7.0px |
+  | `phone` | 73px | 7.3px |
+  | `ipad-11-portrait` | 162px | 15.7px |
+  | `ipad-11-landscape` | 108px | 10.6px |
+
+- **The label size moved by a per-skin token, `SHRINK_FLOOR` untouched — confirmed by diff**:
+  `git diff` against this branch's base touches no line of `card-grid.tsx`. The fix is
+  `[data-skin='slipstream'] ul[aria-label='Your card'] { font-size: 1.9cqw; }` in `globals.css`, a
+  smaller *starting* size than the shared `3cqw` (`card-grid.tsx`'s own constant, untouched) — Archivo
+  900 uppercase is substantially wider than Roboto Condensed at the same size, and the shared base
+  still clipped several of the pool's real worst labels even after the existing shrink-to-fit
+  algorithm ran to its unmoved floor. `1.9cqw` gives that same algorithm enough headroom to fit
+  Archivo's extra width on both the synthetic 30-character/13-character-word cap (`room.gate.ts`'s own
+  fixture, reused by `skin-slipstream.gate.ts`) and the committed pool's real worst 24
+  (`/legibility`), at all four viewports, with margin left before the floor.
+- **Earned, inherited and unmarked render three distinguishable fills**, gated the same way #104's
+  own card is: `paintedFill()` composites each cell's ancestor chain to opaque 8-bit sRGB and
+  `deltaE()` scores the three pairs against the same **ΔE 12** floor. **The inherited treatment is
+  invented**, since the mocks show only base/marked/free (the same gap #104 recorded for Pit Wall) —
+  a heavier `rgba(255,255,255,.22)` wash, hue-neutral against the solid-yellow earned fill and
+  distinguishable from the `rgba(255,255,255,.06)` unmarked base by weight alone. Seeded and reverted:
+  weakening the wash to `rgba(255,255,255,.07)` (barely past the unmarked base) fails
+  `inherited vs unmarked` at **ΔE 0.49**; restored and green again.
+- **The primary action's and the Theme button's hit elements are ≥44×44 at `phone-small`, on their
+  unsheared expanders.** This skin is the first to put a `transform: skewX()` on an interactive box,
+  and a skew on the element Playwright measures would deform its bounding box — so the shear moved to
+  an inner "fill" span in both `room-screen.tsx` (`.skin-action-primary-fill`) and `skin-button.tsx`
+  (`.skin-theme-fill`), leaving the outer `<button>` — and the Theme button's existing
+  `[data-hit-expand]` sibling from #103 — as a plain, unsheared rectangle. A no-op restructuring for
+  the three skins with no shear: the classes that used to sit on the button now sit on the fill
+  instead, rendering byte-identical.
+- **The room code is real, selectable text**, not an image, at `phone-small` and every other
+  viewport: `textContent` reads `ABCD` regardless of the `background-clip: text` gradient painted
+  over it, and a `@supports` guard falls back to solid `#f2ff00` text where the clip is unsupported.
+  The gradient itself is one continuous sweep across the four separate `<span>`s `room-code.tsx`
+  already renders (unconditionally, for every skin) — `background-size: 400% 100%` plus each span's
+  own `background-position-x` (`0%`, `33.3333%`, `66.6667%`, `100%`) is the CSS percentage-position
+  formula landing each span on its own quarter of one continuous four-span-wide gradient image.
+- **The roster truncates to four names plus a `+N` chip below `1024px`, and shows every name at and
+  above it** — `1024px` (Tailwind's stock `lg`) rather than the `834px` "phone vs iPad" swap the rest
+  of this skin's type scale uses, because it is the same breakpoint `room-screen.tsx`'s join screen
+  already switches its one/two-column layout at. Gated on the fixture's own six-player roster (Ash,
+  Bea, Wilhelmina Featherstone, Cal, Dev, Eve): `phone`/`phone-small`/`ipad-11-portrait` show the
+  first four plus `+2`; `ipad-11-landscape` shows all six with no chip. Seeded and reverted: widening
+  the truncation cutoff from `nth-child(n+5)` to `nth-child(n+9)` leaves `Dev` visible at `phone`
+  where the test expects it hidden — fails, then restored and green.
+- **No host mark on a pill, disclosed rather than invented.** The handoff's own mock
+  (`Bingo Screens.dc.html` #1b/#2b) draws every roster pill identically — plain names, no host
+  affordance — which this issue's spec-precedence rule takes over the README's screen-level "with
+  host marked": `you` is always `null` on this screen regardless (nobody has joined yet), so only the
+  host half of that sentence could ever apply, and the mock the HTML wins over does not draw it.
+- **The "looking for" list keeps Pit Wall's hairline separators rather than the handoff's sheared
+  accent bars**, and the call banner and background field are otherwise built to the brief. Neither
+  is a named acceptance criterion for this issue and both are visual-fidelity gaps rather than
+  functional ones — disclosed here and on the issue rather than silently shipped as "done".
+- **Two shared components picked up a wrapping span each, with no behavioural change**:
+  `progress-readout.tsx`'s numeral is now `<span class="skin-progress-count">` plus
+  `<span class="skin-progress-of">` instead of one text run (both still `aria-hidden`, so no
+  accessible-name assertion moves), and `room-code.tsx` gained a sibling `<span class="skin-code-bar">`
+  after its four character spans rather than a fifth child inside them — `skin-pitwall.gate.ts`'s own
+  `code.locator('span')` count of 4 stays true.
+
 ## Adding a surface or a screen
 
 Add the row when the screen lands, in the same PR. A screen that exists and is not in this table is

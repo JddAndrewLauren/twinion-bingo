@@ -44,6 +44,19 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
  * rendered height and match it — the design handoff's "size the die from the
  * theme button beside it", read literally rather than approximated through a
  * CSS technique. Nothing here reads or writes the ref itself.
+ *
+ * **`.skin-theme-fill` (#105).** Slipstream's own button is sheared
+ * (`transform: skewX(-10deg)`), and a transform on the *button itself* would
+ * skew `[data-hit-expand]` right along with it — it is a positioned descendant,
+ * so it renders inside the same transformed space, and `expectThumbSized`
+ * reads a `getBoundingClientRect()` that would come back deformed. So the
+ * border/padding/type that used to sit directly on the `<button>` now sit on
+ * this one inner span instead: the button stays a plain, unsheared rectangle
+ * (what `ref` and `[data-hit-expand]` both measure against), and only the fill
+ * — the thing a skin actually paints — carries a skin's own transform. A no-op
+ * restructuring for the three skins with no shear: `.skin-theme-fill` inherits
+ * exactly the classes the button used to carry, so Pit Wall, Confetti and
+ * Scorecard render byte-identical.
  */
 export const SkinButton = forwardRef<HTMLButtonElement, { initialSkin: Skin }>(
   function SkinButton({ initialSkin }, ref) {
@@ -65,21 +78,31 @@ export const SkinButton = forwardRef<HTMLButtonElement, { initialSkin: Skin }>(
         type="button"
         onClick={press}
         aria-label="Theme"
-        className="relative inline-flex items-center gap-1 rounded-skin border border-rule px-2 py-1 text-xs text-ink"
+        className="skin-theme relative inline-flex items-center"
       >
-        {/*
-          Remounted every press (`key={spins}`) so the 360° spin — declared once,
-          skin-agnostically, in `globals.css` — restarts rather than being a no-op
-          the second time the class is already present.
-        */}
-        <span
-          key={spins}
-          aria-hidden
-          className={`inline-block${spins > 0 ? ' skin-glyph-spin' : ''}`}
-        >
-          ↻
+        <span className="skin-theme-fill inline-flex items-center gap-1 rounded-skin border border-rule px-2 py-1 text-xs text-ink">
+          {/*
+            The glyph and the word share one `skin-theme-label` wrapper so a
+            skin that counter-skews the fill (Slipstream) counter-skews both
+            together, matching the handoff's own single sheared pill rather than
+            two independently-skewed pieces.
+          */}
+          <span className="skin-theme-label inline-flex items-center gap-1">
+            {/*
+              Remounted every press (`key={spins}`) so the 360° spin — declared
+              once, skin-agnostically, in `globals.css` — restarts rather than
+              being a no-op the second time the class is already present.
+            */}
+            <span
+              key={spins}
+              aria-hidden
+              className={`inline-block${spins > 0 ? ' skin-glyph-spin' : ''}`}
+            >
+              ↻
+            </span>
+            <span> Theme</span>
+          </span>
         </span>
-        <span> Theme</span>
         {/* The hit-target expander — see the note above the component. */}
         <span
           aria-hidden

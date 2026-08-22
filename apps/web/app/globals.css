@@ -570,3 +570,417 @@ body {
   outline: 2px solid var(--skin-accent);
   outline-offset: 2px;
 }
+
+/*
+ * #105 — Slipstream's structure: sheared italic display type, a diagonal line
+ * field, marked squares as solid yellow blocks. Same pattern #104 set for Pit
+ * Wall — every rule below is scoped to `[data-skin='slipstream']`, so the other
+ * three skins are untouched, and every hook (`.skin-code`, `.skin-field`,
+ * `.skin-cell`, `.skin-roster`, `.skin-progress-*`, `.skin-banner`,
+ * `.skin-theme-*`, `.skin-action-primary*`) is a class the shared component
+ * tree already renders for every skin rather than a per-skin component.
+ *
+ * Breakpoints follow the two conventions already in this file: `834px` for a
+ * phone → iPad *type-scale* swap (`.skin-code span`'s own precedent), and
+ * `1024px` — Tailwind's stock `lg`, the same number `room-screen.tsx` switches
+ * the join screen's one/two-column layout at — for the roster's truncated →
+ * full swap, since that is the same layout boundary the handoff's "on mobile
+ * these truncate ... on desktop show all nine" is drawn against.
+ *
+ * **Letter-spacing on the room code is `-.06em` at both viewports, not the
+ * mobile artboard's own `-.05em`.** Per this issue's spec-precedence rule (an
+ * HTML value outside the brief's stated point takes the brief's value, with
+ * the deviation disclosed): the brief's *Room code treatment* and *Design
+ * tokens* sections both give one number, `-.06em`, with no per-viewport range;
+ * the desktop artboard agrees; only the mobile artboard's inline style differs,
+ * by a single hundredth of an em. Read as an artboard rounding rather than a
+ * deliberate per-viewport value.
+ */
+[data-skin='slipstream'] {
+  --skin-font-ui: var(--font-archivo), system-ui, sans-serif;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * The diagonal line field (README's *Background field*), on `body` rather than
+ * per screen: every Slipstream surface is the same dark ground, and `body`
+ * already carries `bg-surface` as a plain `background-color` — a
+ * `background-image` on the same element composites over it with no extra
+ * wrapper. `background-attachment: fixed` keeps the lines from visibly
+ * scrolling past static content on the one screen that scrolls (the phone
+ * layout's card column).
+ */
+[data-skin='slipstream'] body {
+  background-image: repeating-linear-gradient(
+    72deg,
+    rgba(255, 255, 255, 0.045) 0 2px,
+    transparent 2px 26px
+  );
+  background-attachment: fixed;
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] body {
+    background-image: repeating-linear-gradient(
+      72deg,
+      rgba(255, 255, 255, 0.045) 0 2px,
+      transparent 2px 34px
+    );
+  }
+}
+
+/*
+ * Room code: one word, italic 900, gradient-clipped, with a sheared bar under
+ * it — the opposite structure from Pit Wall's four boxed cells, on the same
+ * four `<span>`s `room-code.tsx` already renders unconditionally.
+ *
+ * **The gradient reads as one continuous sweep across four separate elements**
+ * rather than four independent copies of the same gradient, which is what a
+ * naive `background: linear-gradient(...); background-clip: text` on each span
+ * would paint. `background-size: 400% 100%` stretches the gradient image to
+ * four span-widths, and each span's own `background-position-x` — `0%`, then
+ * `33.3333%`, `66.6667%`, `100%` — is the CSS percentage-position formula
+ * (`position% × (bgSize − boxSize)`) working out to exactly one, two and three
+ * box-widths of leftward shift, i.e. exactly where that span's slice of a
+ * continuous four-span-wide gradient would fall. Requires the four spans to be
+ * equal width, which `flex flex-1` (room-code.tsx's own class) already
+ * guarantees.
+ *
+ * **Degrades to a solid fill, not an image, where `background-clip: text` is
+ * unavailable** (this issue's own trap): `color: #f2ff00` is the base
+ * declaration, so a browser with no support for the clip paints ordinary solid
+ * yellow text — still real, still selectable — and only a
+ * `@supports` block upgrades it to the gradient.
+ */
+[data-skin='slipstream'] .skin-code {
+  gap: 0;
+}
+[data-skin='slipstream'] .skin-code span {
+  aspect-ratio: auto;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 96px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.06em;
+  color: #f2ff00;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  [data-skin='slipstream'] .skin-code span {
+    background-image: linear-gradient(92deg, #f2ff00, #ff1f4b);
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(1) {
+    background-position-x: 0%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(2) {
+    background-position-x: 33.3333%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(3) {
+    background-position-x: 66.6667%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(4) {
+    background-position-x: 100%;
+  }
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-code span {
+    font-size: 188px;
+    line-height: 0.82;
+  }
+}
+/* The sheared bar under the code — a sibling of `.skin-code`'s own `<p>`. */
+[data-skin='slipstream'] .skin-code-bar {
+  display: block;
+  height: 5px;
+  width: 74%;
+  margin-top: 12px;
+  background-color: var(--skin-accent);
+  transform: skewX(-24deg);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-code-bar {
+    height: 7px;
+    width: 62%;
+  }
+}
+
+/* Name field: a left accent bar rather than Pit Wall's ruled box. */
+[data-skin='slipstream'] .skin-field {
+  background-color: var(--skin-raised);
+  border: none;
+  border-left: 4px solid var(--skin-accent);
+  border-radius: 0;
+  padding: 15px 16px;
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-field {
+    padding: 16px 18px;
+    font-size: 24px;
+  }
+}
+
+/*
+ * The join screen's primary action. The button itself stays a plain, unsheared
+ * rectangle (`room-screen.tsx`'s own note on why); this skin's fill and
+ * transform land on `.skin-action-primary-fill` instead, with the label
+ * counter-skewed inside that.
+ */
+[data-skin='slipstream'] .skin-action-primary {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: var(--skin-surface);
+}
+[data-skin='slipstream'] .skin-action-primary-fill {
+  background-color: var(--skin-accent);
+  transform: skewX(-8deg);
+  font-size: 16px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+[data-skin='slipstream'] .skin-action-primary-label {
+  display: inline-block;
+  transform: skewX(8deg);
+}
+[data-skin='slipstream'] .skin-action-primary:disabled .skin-action-primary-fill {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-action-primary-fill {
+    font-size: 17px;
+  }
+}
+
+/* The Theme button (`skin-button.tsx`): same "shear the fill, not the hit box"
+   pattern as the primary action above. */
+[data-skin='slipstream'] .skin-theme-fill {
+  background-color: var(--skin-accent);
+  border: none;
+  border-radius: 0;
+  padding: 7px 13px;
+  font-size: 11px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--skin-surface);
+  transform: skewX(-10deg);
+}
+[data-skin='slipstream'] .skin-theme-label {
+  transform: skewX(10deg);
+}
+
+/*
+ * Roster: a wrapping pill row rather than Pit Wall's indexed table, truncated
+ * to four names plus an overflow chip below `1024px` and shown in full at and
+ * above it (README's "on mobile these truncate to four names plus a `+N`
+ * chip ... on desktop show all nine").
+ *
+ * **No host/you tag on a pill.** The handoff's own mock (`Bingo Screens.dc.html`
+ * #1b/#2b) draws every pill identically — plain names, no host mark — which
+ * the spec-precedence rule takes over the README's screen-level "roster ...
+ * with host marked": `you` is always `null` on this screen regardless (a
+ * player has not yet joined), so only the host half of that sentence could
+ * ever apply here, and the mock the HTML wins over simply does not draw it.
+ * Disclosed on the issue rather than invented.
+ */
+[data-skin='slipstream'] .skin-roster-heading {
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--skin-muted-strong);
+}
+[data-skin='slipstream'] .skin-roster ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+/*
+ * `:not([data-overflow-chip])` on purpose — the chip's own `display` is
+ * controlled *only* by the narrow-width media query below, layered on top of
+ * its own `hidden` (Tailwind, `display: none`) default in `roster-preview.tsx`.
+ * A plain `.skin-roster li` rule here would set `display: inline-flex`
+ * unconditionally on the chip too — higher specificity than `.hidden` — which
+ * is exactly the bug this comment is here to stop someone reintroducing: the
+ * chip showed at every viewport, `ipad-11-landscape` included, because this
+ * rule alone decided its display before the media query ever got a say.
+ */
+[data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]) {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+[data-skin='slipstream'] .skin-roster-index,
+[data-skin='slipstream'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--skin-ink);
+  border-color: transparent;
+  background-color: var(--skin-free-rule);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-roster ul {
+    gap: 9px;
+  }
+  [data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]) {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  [data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 1023.98px) {
+  [data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]):nth-child(n + 5) {
+    display: none;
+  }
+  [data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+    display: inline-flex;
+  }
+}
+
+/*
+ * Progress readout: a bare numeral rather than Pit Wall's 12-segment bar
+ * (README's *Progress readout per theme*: "numeral only ... with `/ 24 MARKED`
+ * beneath"). The literal word "MARKED" is a `::after` on the total span rather
+ * than DOM text, since this whole paragraph is `aria-hidden` — the accessible
+ * text is the `role="progressbar"` label above it — so there is no accessible
+ * name for a generated string to be missing from.
+ */
+[data-skin='slipstream'] .skin-progress-track {
+  display: none;
+}
+[data-skin='slipstream'] .skin-progress-number {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-skin='slipstream'] .skin-progress-count {
+  font-size: 52px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: var(--skin-accent);
+}
+[data-skin='slipstream'] .skin-progress-of {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: var(--skin-muted);
+}
+[data-skin='slipstream'] .skin-progress-of::after {
+  content: ' MARKED';
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-progress-count {
+    font-size: 82px;
+  }
+}
+
+/*
+ * Card cell. The base state (`border-rule bg-raised`) is already token-driven
+ * from #102/this issue's own token block, so only the two `markedStyle()`
+ * literal overrides need a rule here — the same `[data-mark]` cascade #104
+ * introduced for Pit Wall.
+ *
+ * **The label face is switched to Archivo 900 uppercase here, at the grid
+ * itself, rather than by touching `card-font.ts`** — that module's own comment
+ * says its shared instance is pinned to the un-weighted `100 900` axis
+ * specifically so `card-grid.tsx`'s `font-semibold` (600) resolves correctly
+ * for the *Pit Wall/default* face, and repointing it would move every skin's
+ * card at once. `[data-label]` sits inside `.skin-cell`, so this reaches every
+ * label (and the free centre's own un-labelled span) without touching
+ * `card-grid.tsx` or `card-font.ts`.
+ *
+ * **The label size is this skin's own per-skin token, not a `SHRINK_FLOOR`
+ * change** (this issue's own trap): the shared `text-[3cqw]` in `card-grid.tsx`
+ * is calibrated for Roboto Condensed's width, and Archivo 900 is
+ * *substantially* wider at the same size — measured, the shared base clipped
+ * multiple worst-case labels even after the existing shrink-to-fit algorithm
+ * ran to its floor. `2.35cqw` here is the fix: a smaller *starting* size for
+ * this skin only, so the same algorithm — untouched, `SHRINK_FLOOR` untouched —
+ * has enough headroom to fit Archivo's extra width without reaching the floor
+ * on the pool's real worst labels. Applied to the grid `<ul>` itself (which
+ * `card-grid.tsx` already gives an `aria-label` to measure against) rather than
+ * to `[data-label]` directly, so it cascades to the free centre's label too.
+ */
+[data-skin='slipstream'] ul[aria-label='Your card'] {
+  font-size: 1.9cqw;
+}
+[data-skin='slipstream'] .skin-cell {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  border-radius: 0;
+  transition: background-color 140ms ease-out;
+}
+[data-skin='slipstream'] .skin-cell[data-mark='earned'] {
+  background-color: var(--skin-accent);
+  border-color: var(--skin-accent);
+  color: var(--skin-surface);
+}
+/*
+ * Inherited — invented for this issue, since the mocks show only base/marked/
+ * free (the same gap #104 records for Pit Wall). A heavier, hue-neutral white
+ * wash over the base `rgba(255,255,255,.06)` fill: distinct from the unmarked
+ * cell by weight alone and from the solid-yellow earned fill by both hue and
+ * lightness, so it reads as "already filled in" rather than as a dimmer copy
+ * of either — the same "must not look claimable" requirement `CONTEXT.md`
+ * states and `gate/skin-slipstream.gate.ts` measures with the same
+ * `paintedFill()`/`deltaE()` instrument #104's own gate introduced.
+ */
+[data-skin='slipstream'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--skin-ink);
+}
+/* Hover (pointer only, README's *Hover (desktop)*): the fill raises. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='slipstream'] .skin-cell:not(:disabled):hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Call banner: full accent fill, dark text. */
+[data-skin='slipstream'] .skin-banner {
+  background-color: var(--skin-accent);
+  border: none;
+  color: var(--skin-surface);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+/* Focus: every interactive element gets a 2px accent ring, offset 2px. */
+[data-skin='slipstream'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
