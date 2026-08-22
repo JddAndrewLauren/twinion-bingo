@@ -1999,9 +1999,12 @@ describe('prizes, standings and the timeline', () => {
     const panel = await openRace();
     const list = within(panel).getByRole('heading', { name: 'Standings' })
       .parentElement!;
+    // "1"/"2" is #106's rank badge (`results.tsx`'s `skin-standing-rank`,
+    // unconditional across skins — see `docs/design/README.md`'s Confetti
+    // "each rank sits in a 20px filled circle").
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
-    ).toEqual(['Ash2', 'Bea0']);
+    ).toEqual(['1Ash2', '2Bea0']);
   });
 
   it('calls the standings final once the full house has closed the game', async () => {
@@ -2160,10 +2163,11 @@ describe('a replayed log', () => {
       [...race.querySelectorAll('li')].map((item) => item.textContent);
 
     const before = await read();
+    // "1"/"2" is #106's rank badge (`results.tsx`'s `skin-standing-rank`).
     expect(before).toEqual([
       'first line — Bea',
-      'Ash1',
-      'Bea0',
+      '1Ash1',
+      '2Bea0',
       '+42:10Bea spotted Square 7',
     ]);
 

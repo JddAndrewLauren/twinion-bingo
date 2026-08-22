@@ -227,6 +227,18 @@ body {
 }
 
 /*
+ * #106's roster "+N" row (`roster-preview.tsx`) is unconditionally rendered —
+ * the "one React tree for every skin" rule this file's other hooks follow —
+ * so it needs a skin-agnostic default of hidden, the same way a plain
+ * unstyled `.skin-roster-tag` would otherwise show through on a skin that has
+ * not claimed it. Only `[data-skin='confetti']`'s own rule below shows it, at
+ * `phone`/`phone-small` only.
+ */
+[data-roster-more] {
+  display: none;
+}
+
+/*
  * The dice's colour (`die-button.tsx`), per docs/design/README.md's "Header
  * controls" section — chosen per **surface**, not per skin, so it stays scoped
  * to `[data-die-surface]` rather than joining the token layer above. One
@@ -248,17 +260,16 @@ body {
   color: rgba(32, 24, 15, 0.55);
 }
 /*
- * Confetti's second value, `rgba(255, 255, 255, 0.85)`, belongs to the blue
- * `#2f6bff` card header the handoff draws — and no component paints that
- * background yet (#106, "Skins, slice 5: Confetti", is what lands it). The rule is
- * "match the muted label beside it on that same bar", so the surface-correct
- * value for the game header *as it exists today* is the cream bar's value
- * above, which is what the die therefore keeps: white-on-cream is precisely
- * the invisible die this rule exists to prevent. #106 adds the
- * `svg[data-die-surface='card']` override in the same commit as the blue
- * header; `data-die-surface` is already on the `<svg>` so that is a one-rule
- * change, and `die-button.tsx`'s `surface` prop already distinguishes the two.
+ * #106 lands the second surface the comment above used to describe as
+ * missing: the card screen's header is now Confetti's own blue `#2f6bff`
+ * (`.skin-card-header`, below), so the die sitting on it gets the handoff's
+ * second value — `rgba(255, 255, 255, 0.85)` — matching the muted stat text
+ * beside it in that same bar. The join/lobby headers stay cream, so
+ * `svg[data-die-surface='join']` is untouched above.
  */
+[data-skin='confetti'] svg[data-die-surface='card'] {
+  color: rgba(255, 255, 255, 0.85);
+}
 
 /*
  * #104 — Pit Wall's *structure*, everything the "Where per-skin styling lives"
@@ -732,6 +743,182 @@ body {
 }
 
 /*
+ * #106 — Confetti's *structure*, the app's first light surface and the
+ * per-region work `docs/design/README.md`'s Confetti column asks for, same
+ * "keep it in CSS, not in TSX" rule #104 established: every rule below is
+ * scoped to `[data-skin='confetti']`, so the other three skins are untouched.
+ *
+ * Two breakpoints are used throughout, matching #104's own convention:
+ * unprefixed for phone (`phone-small`/`phone`), `@media (min-width: 834px)`
+ * for iPad (`ipad-11-portrait`/`ipad-11-landscape`).
+ */
+
+/*
+ * Card-screen header: the blue `#2f6bff` card the handoff draws
+ * ("Card screen ... Header (room code + run status)"), which is also the
+ * surface `svg[data-die-surface='card']` above now matches. Padding/line
+ * layout are left exactly as the header's own utilities set them
+ * (`px-2 py-2`, `items-center`, `justify-between`) — this issue restyles the
+ * existing docked header rather than rebuilding its layout.
+ *
+ * **The header re-points the skin's own text/rule/accent tokens, it does not
+ * just set `color`.** Painting this ground blue is what makes the slice own the
+ * legibility of everything standing on it: the header's children each re-set
+ * their own colour from the light-skin tokens (`text-muted` on the stats line,
+ * `text-ink`/`border-rule` on the Theme button, `--skin-accent` in the focus
+ * rule), so `color: #fff` on the parent alone is overridden three times over
+ * and leaves dark ink and an orange ring on blue. Redefining the *tokens*
+ * inside this scope is one declaration per role instead of one selector per
+ * child, and it reaches every later control mounted here without a fourth.
+ *
+ * The values are the HTML's own: white for ink, white at `.85` (phone, line
+ * 664) / `.9` (iPad, line 317) for the muted run status, a white-alpha rule
+ * where the light skin's near-black one would vanish, and white for the ring —
+ * `#fff` on `#2f6bff` is 4.50:1, where the skin's `#ff5c39` accent would be
+ * 1.47:1 and effectively no focus indicator at all.
+ *
+ * **The re-point is on the header's children, not on the header — and `dialog`
+ * is excluded.** The paint (`background-color`/`color`/`border-bottom`) stays
+ * on the `<header>`; only the token block moved down one level. The reason is
+ * that a token re-point inherits into *everything* inside the scope, and the
+ * share dialog is inside it: `<ShareRoom>` returns a fragment, so its
+ * `<button>` **and** its always-mounted `<dialog>` are both direct children of
+ * this header (`room-screen.tsx`). The dialog is `bg-raised … text-ink-strong
+ * border-rule`, and `@theme inline` compiles those to `var(--skin-*)` — the
+ * very mechanism this re-point relies on — so the header's white ink landed on
+ * the dialog's white `--skin-raised` panel: room code, share link and both
+ * buttons at 1.00:1, with white focus rings, measured in Chromium. Scoping to
+ * `> :not(dialog)` is the smallest fix that keeps the mechanism: every control
+ * that stands on the blue still inherits the white roles (the token block sits
+ * on each direct child, and custom properties inherit down its subtree), while
+ * the dialog — which stands on its own raised panel and not on the blue at all
+ * — keeps the skin's root values. Gated by `keeps the share dialog on the
+ * light skin's own ink inside the blue header`, which fails at 1.0000:1
+ * without the `> :not(dialog)`.
+ */
+[data-skin='confetti'] .skin-card-header {
+  background-color: #2f6bff;
+  color: #fff;
+  border-bottom: none;
+}
+[data-skin='confetti'] .skin-card-header > :not(dialog) {
+  --skin-ink: #fff;
+  --skin-ink-strong: #fff;
+  --skin-muted-soft: rgba(255, 255, 255, 0.75);
+  --skin-muted: rgba(255, 255, 255, 0.85);
+  --skin-muted-strong: rgba(255, 255, 255, 0.95);
+  --skin-rule-soft: rgba(255, 255, 255, 0.22);
+  --skin-rule: rgba(255, 255, 255, 0.35);
+  --skin-rule-strong: rgba(255, 255, 255, 0.45);
+  --skin-accent: #fff;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-header > :not(dialog) {
+    --skin-muted: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/*
+ * The Theme button as the handoff's own pill: `#ffd23f` fill, `#20180f` text,
+ * `border-radius: 999px`, padding 7px 15px, 12px/600 mixed case
+ * (`docs/design/README.md` § *Theme button per theme* → `confetti`, and the
+ * HTML draws exactly that pill in both card headers — lines 664 and 317).
+ *
+ * Skin-scoped and surface-agnostic on purpose. The pill is the handoff's value
+ * for this control in *every* Confetti surface, not a patch for the blue
+ * header, and it happens to be the fix for the header too: `text-ink` on blue
+ * was 3.89:1 with an invisible `rgba(32,24,15,.11)` border, while dark ink on
+ * `#ffd23f` is 12.13:1 on both the cream join bar and this header.
+ *
+ * **On `.skin-theme-fill`, not on the `<button>` — #105's hook.** This rule
+ * originally used `button[aria-label='Theme']`, since at the time the border,
+ * padding and type all sat on the button itself. #105 moved them onto the one
+ * inner `.skin-theme-fill` span (so a sheared skin cannot deform
+ * `[data-hit-expand]`), which made the attribute selector the wrong element
+ * twice over: the span's own `border border-rule` and `rounded-skin` would
+ * keep painting over a yellow button, and any padding would land on a box
+ * that no longer owns the pill's geometry. Routed through the hook the base
+ * now provides — the same element Slipstream paints — so the pill is one box
+ * again.
+ *
+ * **The handoff's `padding: 7px 15px` is still *not* applied — the disclosed
+ * deviation stands, and now it is measured rather than argued.** Routing onto
+ * `.skin-theme-fill` made the padding *reachable* (the base ships a per-skin
+ * size on this very hook — Slipstream's `7px 13px`), so it was applied and the
+ * gate was run: `room.gate.ts`'s `expectHeaderOnOneLine` fails at
+ * `phone-small` in the Confetti leg of the skin cycle, `the slim bar's > p
+ * holds one line` receiving **1.998** — the run-status paragraph wraps to two
+ * lines, because `7px 15px` over the incumbent `px-2 py-1` is +14px of width
+ * in the tightest row in the app (#103's own arithmetic, quoted in
+ * `room-screen.tsx`, is what forced that line down from ~200px to under ~110px
+ * to fit this button at `phone-small` in the first place). Reverted rather
+ * than forced: buying those 14px means relitigating #103's header budget, and
+ * #108 sizes the die off this button's rendered height on top of that — both
+ * out of scope for a skin slice. The incumbent `px-2 py-1` (8px/4px) is kept,
+ * so this rule changes colour, corner radius and weight — no padding, no
+ * border width, no font size. `font-weight: 600` (the handoff's own value) does
+ * re-flow the label's advance width slightly, so "no layout change" is a claim
+ * about the box model rather than an absolute one; the header's own
+ * `expectHeaderOnOneLine`/`expectDieMatchesTheme`/`expectNoHorizontalScroll`
+ * checks cover it at all four viewports.
+ * The legibility defect it exists for is carried entirely by the fill and the
+ * ink, both of which are the handoff's own values.
+ */
+[data-skin='confetti'] .skin-theme-fill {
+  background-color: #ffd23f;
+  color: #20180f;
+  border-color: transparent;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/*
+ * Room code: one card, one string — not Pit Wall's four boxed characters.
+ * The four `<span>`s stay in the DOM (`room-code.tsx` is unconditional across
+ * skins), but here they sit flush in a row with a generated "Room code"
+ * label above them, using the same `flex-wrap` + `flex-basis: 100%`
+ * technique as a "label row, then content row" layout without a second
+ * wrapping element — the pseudo-element becomes the room code `<p>`'s first
+ * flex item and `flex: 0 0 100%` forces it, and only it, onto its own line.
+ */
+[data-skin='confetti'] .skin-code {
+  flex-wrap: wrap;
+  gap: 0;
+  background-color: #2f6bff;
+  color: #fff;
+  border-radius: 26px;
+  padding: 20px;
+}
+[data-skin='confetti'] .skin-code::before {
+  content: 'Room code';
+  flex: 0 0 100%;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+[data-skin='confetti'] .skin-code span {
+  flex: none;
+  aspect-ratio: unset;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  justify-content: flex-start;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-code {
+    border-radius: 32px;
+    padding: 30px;
+  }
+  [data-skin='confetti'] .skin-code span {
+    font-size: 88px;
+  }
+}
+
+/*
  * The join screen's primary action. The button itself stays a plain, unsheared
  * rectangle (`room-screen.tsx`'s own note on why); this skin's fill and
  * transform land on `.skin-action-primary-fill` instead, with the label
@@ -1008,6 +1195,407 @@ body {
 
 /* Focus: every interactive element gets a 2px accent ring, offset 2px. */
 [data-skin='slipstream'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * Name field: white fill (already `--skin-raised`, so no rule needed for it),
+ * a 2px ink border and a decorative "edit" affordance at the right edge.
+ * `pointer-events: none` on the affordance so it never steals a tap or a
+ * click from the input sitting under it.
+ */
+[data-skin='confetti'] .skin-field {
+  position: relative;
+  border-width: 2px;
+  border-color: #20180f;
+  border-radius: 22px;
+  padding: 16px 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+[data-skin='confetti'] .skin-field::after {
+  content: 'edit';
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.4;
+  pointer-events: none;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-field {
+    border-radius: 24px;
+    padding: 17px 22px;
+    font-size: 21px;
+  }
+}
+
+/*
+ * Primary action: the accent fill and the hard offset ledge
+ * (`box-shadow: 0 4px 0 #c93c1e`, `0 5px 0` at iPad — README's "no blur
+ * shadows anywhere"). The handoff's own copy for this button is "Let's
+ * play", but the DOM text stays "Enter room"/"Entering…" across every skin —
+ * #104's own disclosed precedent (`docs/SURFACES.md`'s "A disclosed copy
+ * change"): the accessible name is shared by `lobby.gate.ts` and
+ * `test/room-screen.test.tsx` across all four skins, so only the visual
+ * treatment is per-skin and the wording is not.
+ */
+[data-skin='confetti'] .skin-action-primary {
+  background-color: var(--skin-accent);
+  border: none;
+  color: #fff;
+  border-radius: 22px;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #c93c1e;
+}
+[data-skin='confetti'] .skin-action-primary:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+  box-shadow: none;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-action-primary {
+    border-radius: 24px;
+    font-size: 20px;
+    box-shadow: 0 5px 0 #c93c1e;
+  }
+}
+
+/*
+ * Roster: a wrapping pill row rather than Pit Wall's indexed table. The index
+ * and the `Host` tag are Pit Wall's own devices (README's roster table is
+ * per-theme), so both are hidden here; `roster-preview.tsx`'s "+N" row
+ * (#106) is shown only at phone widths, where the row also truncates to four
+ * names — both driven by `data-roster-overflow`/`data-roster-more`, which
+ * that component renders unconditionally for every skin.
+ */
+[data-skin='confetti'] .skin-roster-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-skin='confetti'] .skin-roster-row {
+  background-color: #ffd23f;
+  border-radius: 999px;
+  padding: 7px 14px;
+  gap: 0;
+}
+[data-skin='confetti'] .skin-roster-index,
+[data-skin='confetti'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='confetti'] .skin-roster-row[data-roster-overflow='true'] {
+  display: none;
+}
+[data-skin='confetti'] [data-roster-more] {
+  display: flex;
+  background-color: var(--skin-marked);
+  color: #fff;
+  font-weight: 600;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-roster-row[data-roster-overflow='true'] {
+    display: flex;
+  }
+  [data-skin='confetti'] [data-roster-more] {
+    display: none;
+  }
+}
+
+/*
+ * Card grid face: Fredoka 600 mixed case (README's "Labels Fredoka 600 mixed
+ * case — not uppercase"), overriding `card-grid.tsx`'s shared
+ * `cardFont.className` (Roboto Condensed, #12's face for every skin before
+ * this issue). `.skin-card-grid` is unconditional across skins, same pattern
+ * as every other hook in this file.
+ *
+ * **The size is a class, not an inline style — this issue's own "Traps"
+ * section.** `card-grid.tsx`'s `CARD_TEXT` (`text-[3cqw]`) is a class for
+ * exactly the reason stated there: jsdom cannot resolve `cqw` and throws out
+ * of `getComputedStyle`, which would take every role query in `apps/web/test/`
+ * down with it if this were a `style` prop instead. Fredoka is a wide face —
+ * this issue's other named trap — so the fraction is reduced from the shared
+ * 3cqw rather than left to `SHRINK_FLOOR`, which `card-grid.tsx`'s own gate
+ * (`legibility.gate.ts`, and this issue's own confetti run of it) exists to
+ * keep unreached rather than routinely hit.
+ */
+[data-skin='confetti'] .skin-card-grid {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 2.6cqw;
+  /*
+   * The handoff's own grid gap — `docs/design/README.md`:85 ("gap ... 5px
+   * (`confetti`)" phone, "gaps 3/4/7/5px per the theme order" desktop) and the
+   * HTML at line 670 (`gap:5px`, phone artboard) and line 337 (`gap:7px`,
+   * desktop artboard). Both sources agree, so there is no precedence question.
+   *
+   * **Skin-scoped, deliberately.** `card-grid.tsx`'s shared `gap-1` (4px) is
+   * left exactly as it was for the other three skins: this selector is
+   * `[data-skin] .class` (0,2,0) and beats the utility's single class (0,1,0),
+   * so Pit Wall, Slipstream and Scorecard keep the 4px their own slices are
+   * measured against. Changing the utility itself would have moved the
+   * available cell width under every skin at once — including #105's label
+   * token, tuned against today's 4px in a review round running concurrently
+   * with this one.
+   */
+  gap: 5px;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-grid {
+    gap: 7px;
+  }
+}
+
+/*
+ * Card cell. Unmarked is already token-driven (`--skin-raised`/`--skin-rule`
+ * resolve to Confetti's white/`.11` numbers), so only the border weight and
+ * the per-viewport radius need saying — `rounded-skin` alone would give every
+ * cell the flat 1rem token rather than the handoff's 14px phone / 20px iPad.
+ */
+[data-skin='confetti'] .skin-cell {
+  position: relative;
+  border-width: 2px;
+  border-radius: 14px;
+  transition:
+    background-color 140ms ease-out,
+    transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-cell {
+    border-radius: 20px;
+  }
+}
+/*
+ * The label rides above the earned overlay below, matching the HTML's own
+ * z-index stack (`<span style="position:relative;z-index:2">` over the marked
+ * overlay at line 674 / line 341). Without this the overlay would simply cover
+ * the text it is supposed to sit behind.
+ */
+[data-skin='confetti'] .skin-cell > [data-label] {
+  position: relative;
+  z-index: 1;
+}
+/*
+ * Earned: a solid green fill that bleeds past the cell's own border (README's
+ * "Card cell" table, "marked solid `#16a34a` bleeding 2px past the border").
+ *
+ * **An overlay layer, `inset: -2px`, exactly as the handoff renders it** — the
+ * HTML draws the marked state as `position:absolute; inset:-2px;
+ * background:#16a34a; border-radius:14px/20px` behind a re-drawn white label
+ * (line 674 phone, line 341 iPad), and a `::before` is that span without
+ * asking `card-grid.tsx` for a second element per cell. The full 2px is the
+ * handoff's number: at this skin's own 5px gap (above), 2px of bleed on each of
+ * two neighbours still leaves 1px clear, so the geometry the mocks draw is
+ * self-consistent and needs no deviation. `skin-confetti.gate.ts` measures that
+ * clearance rather than asserting it by eye.
+ *
+ * **The overlay is what makes the handoff's mark motion expressible**, which is
+ * the other reason it is a layer and not a `background-color`: "scales the fill
+ * from 0.85 to 1 with a slight overshoot (`cubic-bezier(.34,1.56,.64,1)`,
+ * 220ms)" (README:142) is a `transform` on the fill, and a `background-color`
+ * cannot be scaled. The pseudo-element exists on every marked-or-not cell so
+ * there is something to transition *from*; the base rule's plain `ease-out` is
+ * what "unmarking reverses without the overshoot" means, since a transition
+ * takes its timing function from the state it is going *to*.
+ *
+ * `overflow: hidden` on `.CELL` (`card-grid.tsx`) is what the shrink-to-fit
+ * backstop needs for a long label, so `overflow: visible` stays scoped to the
+ * earned state alone.
+ */
+[data-skin='confetti'] .skin-cell[data-mark]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  border-radius: inherit;
+  background-color: var(--skin-marked);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+[data-skin='confetti'] .skin-cell[data-mark='earned']::before {
+  opacity: 1;
+  transform: scale(1);
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-skin='confetti'] .skin-cell[data-mark='earned'] {
+  overflow: visible;
+  /*
+   * The cell keeps its own white fill under the overlay, exactly as the HTML
+   * does (`background:#fff` on the cell, the green as a layer above it). It
+   * also neutralises `card-grid.tsx`'s `bg-emerald-800` fallback class, which
+   * would otherwise be the colour showing around the overlay's edge for the
+   * 220ms it scales up from 0.85.
+   */
+  background-color: var(--skin-raised);
+  border-color: transparent;
+  color: #fff;
+}
+/*
+ * Inherited — invented for #106, since the mocks show only base/marked/free
+ * (the same gap #104 found in Pit Wall). Against a *white* cell rather than
+ * Pit Wall's near-black one, so the fill has to carry real weight rather than
+ * a faint wash: a solid ink-tinted grey, composited well clear of both white
+ * (unmarked) and the earned green — `gate/skin-confetti.gate.ts` measures all
+ * three pairwise the same way `skin-pitwall.gate.ts` does, reusing that
+ * file's `paintedFill`/`deltaE` technique rather than a new one. The label
+ * stays dark ink rather than being dimmed further, for the same reason
+ * #104's own inherited rule keeps its label at full contrast: the fill alone
+ * carries the state, so the text does not also have to.
+ */
+[data-skin='confetti'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(32, 24, 15, 0.32);
+  border-color: rgba(32, 24, 15, 0.32);
+  color: #20180f;
+}
+/* Hover (pointer only, README's *Hover (desktop)*): the cell scales up. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='confetti'] .skin-cell:not(:disabled):hover {
+    transform: scale(1.03);
+  }
+}
+
+/*
+ * Progress readout: a numeral beside a single rounded track rather than Pit
+ * Wall's numeral-under-segments. The 12 segments stay in the DOM
+ * (`progress-readout.tsx` is unconditional), flush against each other with no
+ * gap and `overflow: hidden` on the rounded track — so a contiguous run of
+ * filled segments from the left reads as one continuous fill rather than as
+ * 12 blocks, the same approximation `Math.round(marks/total * 12)` already
+ * makes for the numeral above it.
+ */
+[data-skin='confetti'] .skin-progress {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+[data-skin='confetti'] .skin-progress-track {
+  order: 1;
+  flex: 1;
+  gap: 0;
+  height: 9px;
+  border-radius: 999px;
+  background-color: rgba(32, 24, 15, 0.1);
+  overflow: hidden;
+}
+[data-skin='confetti'] .skin-progress-segment {
+  height: 100%;
+  background-color: transparent;
+}
+[data-skin='confetti'] .skin-progress-segment[data-filled='true'] {
+  background-color: var(--skin-marked);
+}
+[data-skin='confetti'] .skin-progress-number {
+  order: 0;
+  color: var(--skin-accent);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-progress-track {
+    height: 11px;
+  }
+  [data-skin='confetti'] .skin-progress-number {
+    font-size: 52px;
+  }
+}
+
+/*
+ * Standings (desktop left rail): each rank in a 20px filled circle
+ * (`results.tsx`'s `.skin-standing-rank`, #106).
+ */
+[data-skin='confetti'] .skin-standing-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background-color: var(--skin-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/*
+ * "Looking for": individual rounded cards rather than Pit Wall's hairline
+ * rows. `divide-rule-soft`/`border-t` are the accordion's own utilities
+ * (`looking-for.tsx`); overriding the row's own border to `none` here is what
+ * lets each `<li>` read as its own card instead of a divided list.
+ */
+[data-skin='confetti'] .skin-looking li {
+  background-color: var(--skin-raised);
+  border: 2px solid rgba(32, 24, 15, 0.1);
+  border-top: 2px solid rgba(32, 24, 15, 0.1);
+  border-radius: 16px;
+  margin-bottom: 9px;
+}
+[data-skin='confetti'] .skin-looking-label {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+[data-skin='confetti'] .skin-looking-desc {
+  font-size: 12px;
+  line-height: 1.35;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-looking li {
+    border-radius: 18px;
+  }
+}
+
+/*
+ * Call banner: the docked bottom slot, restyled in place — same "the banner
+ * stays docked" rule #104 used. A decorative "!" badge is added as a
+ * `::before` rather than in `room-screen.tsx`'s markup, so the text node
+ * both the toast and the undo row carry (matched verbatim by
+ * `apps/web/test/` and `apps/web/gate/`) is untouched; `aria-hidden` is not
+ * needed on a `::before` since generated content is already outside the
+ * accessibility tree.
+ */
+[data-skin='confetti'] .skin-banner {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background-color: #ffd23f;
+  border-top: none;
+  color: #20180f;
+}
+[data-skin='confetti'] .skin-banner::before {
+  content: '!';
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background-color: #20180f;
+  color: #ffd23f;
+  font-size: 17px;
+  font-weight: 700;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-banner::before {
+    width: 38px;
+    height: 38px;
+    font-size: 19px;
+  }
+}
+
+/*
+ * Focus: the accent ring on the cream/white surfaces (README's *Focus*), same
+ * one-selector-for-every-interactive-element rule as Pit Wall's.
+ */
+[data-skin='confetti'] :is(button, a, input, [tabindex]):focus-visible {
   outline: 2px solid var(--skin-accent);
   outline-offset: 2px;
 }

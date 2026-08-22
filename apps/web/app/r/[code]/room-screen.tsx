@@ -213,13 +213,27 @@ function labelFor(game: Game, squareId: string): string {
  * - **Reduced motion.** Checked here rather than left to the library's own
  *   `disableForReducedMotion`, so the criterion is this app's and can be
  *   asserted rather than delegated.
+ *
+ * **#106's addition: an explicit palette on the Confetti skin.** The library's own
+ * default mix leans on pale pastels (its own README's example swatches run light),
+ * which is precisely what disappears against this skin's `#fffbf2` ground — the
+ * one skin this app draws with a light surface at all. Read straight off `<html
+ * data-skin>` rather than plumbed through props: `celebrate` is a module-level
+ * function with no access to `RoomScreen`'s `initialSkin` (which is only ever the
+ * *server-rendered* skin besides), and `SkinButton` already writes the live skin to
+ * that same attribute on every press, so this reads the one place a press actually
+ * lands. The other three skins are untouched — dark grounds are what the library's
+ * default mix was already tuned against.
  */
+const CONFETTI_SKIN_PALETTE = ['#ff5c39', '#2f6bff', '#ffd23f', '#16a34a', '#20180f'];
+
 function celebrate(prizeKind: string): void {
   if (document.visibilityState !== 'visible') return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   // A full house is D5's one-way door and the end of the session, not a cheer.
   const finale = prizeKind === 'FULL_HOUSE';
+  const skin = document.documentElement.dataset.skin;
 
   void confetti({
     particleCount: finale ? 220 : 80,
@@ -227,6 +241,7 @@ function celebrate(prizeKind: string): void {
     startVelocity: finale ? 55 : 40,
     // Fired from below the card so the burst travels up past it.
     origin: { y: 0.9 },
+    ...(skin === 'confetti' ? { colors: CONFETTI_SKIN_PALETTE } : {}),
   });
 }
 
@@ -861,7 +876,15 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-center justify-between gap-2 border-b border-rule-soft px-2 py-2">
+        {/*
+          #106: `.skin-card-header` is the hook for Confetti's own blue
+          `#2f6bff` card-screen header (README's "Card header" background) — the
+          surface `globals.css`'s die-surface comment names as not yet painted
+          by any component. Unconditional, same as every other `.skin-*` hook
+          in this file: the other three skins render no rule against it and
+          this header stays exactly as it was for them.
+        */}
+        <header className="skin-card-header flex shrink-0 items-center justify-between gap-2 border-b border-rule-soft px-2 py-2">
           <h1 className="shrink-0 text-sm font-semibold">Room {code}</h1>
           {/*
             #103 shortened this from "24 marks · full house next · 12 here" (once
