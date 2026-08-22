@@ -10,6 +10,7 @@ import {
   fetchGame,
   fetchRoster,
   joinRoom,
+  rerollCard,
   retractCall,
   startGame,
   subscribeToRoomEvents,
@@ -74,7 +75,7 @@ const TOAST_MS = 4000;
  */
 const UNDO_WINDOW_MS = 10_000;
 
-type Action = 'join' | 'start' | 'call' | 'retract';
+type Action = 'join' | 'start' | 'call' | 'retract' | 'reroll';
 
 /** Every status this screen distinguishes from the generic sentence, by action. */
 const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = {
@@ -97,6 +98,13 @@ const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = 
     404: 'That call is gone.',
     409: 'This game has finished.',
   },
+  // The API answers three different facts with 409 here — a live mark, no
+  // different card left to deal, and a finished game — and this is one sentence
+  // for all three rather than three read out of `error.body`. `describeFailure`
+  // is status-keyed by design (#76) and logs the body verbatim; matching on prose
+  // would couple this screen to the server's wording for a branch only a race
+  // with an in-flight frame can reach.
+  reroll: { 409: 'This card cannot be re-rolled now.' },
 };
 
 /** The one fixed sentence each action falls back to for a status it does not name. */
@@ -105,6 +113,7 @@ const FALLBACK_SENTENCES: Record<Action, string> = {
   start: 'Could not start the game.',
   call: 'Could not call that square.',
   retract: 'Could not take that call back.',
+  reroll: 'Could not re-roll your card.',
 };
 
 /**
@@ -270,6 +279,18 @@ export function RoomScreen({
   /** The mark a tap on the card is asking to take back, once the window has shut. */
   const [confirming, setConfirming] = useState<Mark | null>(null);
   const [retractFailed, setRetractFailed] = useState<string | null>(null);
+  /**
+   * In flight. It earns its place the way `starting` does rather than the way a
+   * spinner would: the request is not idempotent, so a second tap deals a second
+   * card and burns the claim boundary twice (ADR-0006).
+   */
+  const [rerolling, setRerolling] = useState(false);
+  /**
+   * That a re-roll landed. Announced rather than shown, because the swap itself is
+   * silent: 24 cell labels change under a screen reader with nothing to say so.
+   */
+  const [rerolled, setRerolled] = useState(false);
+  const [rerollFailed, setRerollFailed] = useState<string | null>(null);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
   /**
@@ -541,6 +562,51 @@ export function RoomScreen({
     }
   }
 
+  /**
+   * #87's re-roll: immediate on the tap, no confirmation. The response carries the
+   * whole replacement view and is applied straight from the 200 the way `start()`
+   * is, because the thumb should not wait out a round trip plus the stream's 50ms
+   * debounce.
+   *
+   * That snapshot *can* be stale, though — the API reads the view after its
+   * transaction commits, and the `CARD_REROLLED` frame this request appends has
+   * already reached this device by then. A call landing on the replacement card in
+   * that window can be re-read and then overwritten by this slower response. So the
+   * apply is followed by a `reload` bump: the same reconvergence `call()` and
+   * `retract()` lean on, one round trip instead of waiting out the next unrelated
+   * frame.
+   *
+   * Three pieces of adjacent state are deliberately left alone. `undo`, because a
+   * host can call a deck square that is on no card of theirs — that call is still
+   * theirs to take back after a re-roll. `toast`, because it is news about the
+   * room rather than about which card you hold. `confirming`, because it is a
+   * `fixed inset-0` layer, so the button underneath it is untappable anyway.
+   */
+  async function reroll() {
+    const token = readToken(code);
+    if (token === undefined || game === null) return;
+
+    setRerolling(true);
+    setRerolled(false);
+    setRerollFailed(null);
+
+    try {
+      const replacement = await rerollCard(apiUrl, game.id, token);
+      // The ref too, or the stream callback goes on naming squares off the old card.
+      gameRef.current = replacement;
+      setGame(replacement);
+      // `CardGrid` does not unmount across the swap, so its own cleanup does not
+      // fire and a held square's prose would sit under a card that no longer has it.
+      setPeek(null);
+      setRerolled(true);
+      setReload((count) => count + 1);
+    } catch (error) {
+      setRerollFailed(describeFailure('reroll', error));
+    } finally {
+      setRerolling(false);
+    }
+  }
+
   if (load === 'loading') {
     return (
       <div className={COLUMN}>
@@ -625,6 +691,15 @@ export function RoomScreen({
      * sheet stop offering them rather than letting a tap fail.
      */
     const finished = game.state === 'done';
+
+    /**
+     * The server's rule, restated (ADR-0006): a mark of either kind prevents
+     * another re-roll. `marks.length` and nothing filtered by the claim boundary —
+     * `inheritedMarks` is about *claiming*, not about *clean* — so a card carrying
+     * only inherited marks is offered nothing here, exactly as the server would
+     * refuse it.
+     */
+    const canReroll = game.state === 'live' && game.marks.length === 0;
 
     const nextPrize = nextPrizeName(game);
 
@@ -772,8 +847,15 @@ export function RoomScreen({
               phone on its side — the height is what binds rather than the width.
               Capping on `dvh` keeps the whole card on screen instead of letting it
               run off the bottom of its own column.
+
+              `12rem` rather than `8rem` since #87: the re-roll slot beneath the grid
+              is reserved permanently, so its 56px (44 plus the `gap-3`) is chrome
+              at every moment of a game rather than only while the offer stands.
+              At all four matrix viewports this is a no-op — width binds at each of
+              them — and it only does work on a rotated phone, which is the short
+              viewport the cap exists for.
             */}
-            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_8rem)] flex-col gap-3">
+            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_12rem)] flex-col gap-3">
               {deck !== null && sheetOpen ? (
                 <DeckSheet
                   deck={deck}
@@ -795,6 +877,44 @@ export function RoomScreen({
                     finished={finished}
                   />
                   {/*
+                    Directly beneath the card it re-rolls (#87), and reserved whether
+                    or not the offer stands, so nothing below jumps when the first
+                    call marks the card and withdraws the button. Hidden rather than
+                    shown-disabled because a card with a mark is not one that becomes
+                    re-rollable again later: the offer is over, and a permanently dead
+                    button is furniture.
+
+                    Immediate, with no confirmation step — #87 asks for the action to
+                    be one tap. The consequence ADR-0006 attaches to it is stated
+                    beside the button instead of gating it.
+                  */}
+                  <div className="min-h-11">
+                    {canReroll && (
+                      <button
+                        type="button"
+                        onClick={() => void reroll()}
+                        disabled={rerolling}
+                        aria-describedby="reroll-consequence"
+                        className={ACTION_BUTTON}
+                      >
+                        {rerolling ? 'Re-rolling…' : 'Re-roll card'}
+                      </button>
+                    )}
+                  </div>
+                  {canReroll && (
+                    /*
+                      Careful not to over-claim in either direction. ADR-0006 rejects
+                      only a replacement whose membership set is unchanged, so the
+                      promise is "a different 24", not 24 different squares. And it is
+                      only the calls that land on the *new* card that arrive grey.
+                    */
+                    <p id="reroll-consequence" className="text-sm text-neutral-400">
+                      A different 24 from the same deck. Any square already called
+                      that lands on the new card arrives grey: it still counts in the
+                      standings, but it can never win you a prize.
+                    </p>
+                  )}
+                  {/*
                     Phone layout only. At `lg` the list has a tab of its own in the
                     right pane, and carrying it in both places would be two ways to
                     read one thing.
@@ -815,6 +935,8 @@ export function RoomScreen({
               )}
               {callFailed !== null && <p role="alert">{callFailed}</p>}
               {retractFailed !== null && <p role="alert">{retractFailed}</p>}
+              {rerollFailed !== null && <p role="alert">{rerollFailed}</p>}
+              {rerolled && <p role="status">New card dealt.</p>}
             </div>
           </section>
 

@@ -228,6 +228,29 @@ export async function startGame(
 }
 
 /**
+ * Deal this player a different 24 from the same deck (#85). Only offered on a card
+ * with no mark of either kind, which is the rule the server checks — so a 409 here
+ * is a card that picked up a mark between the offer and the tap.
+ *
+ * What comes back is the whole replacement view, applied directly rather than waited
+ * for: the `CARD_REROLLED` frame schedules the same re-read a moment later anyway.
+ */
+export async function rerollCard(
+  apiUrl: string,
+  gameId: string,
+  token: string,
+): Promise<Game> {
+  const res = await fetch(
+    `${apiUrl}/games/${encodeURIComponent(gameId)}/card/reroll`,
+    { method: 'POST', headers: { authorization: `Bearer ${token}` } },
+  );
+
+  if (!res.ok) throw await apiError(res);
+
+  return (await res.json()) as Game;
+}
+
+/**
  * Tap a square you hold and it marks for everyone holding it (D1). The mark still
  * arrives by the next read of the game, the same path every other phone takes —
  * what comes back here is the row itself, because D8's ten-second undo has to

@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openRoom } from './room-fixture';
+import { CARD, openRoom } from './room-fixture';
 import {
   expectBesideTheCard,
   expectClearOfTheCard,
@@ -768,6 +768,105 @@ test.describe('the host deck sheet', () => {
     await back.tap();
     await expect(page.getByRole('dialog')).toBeHidden();
     await expect(row).toHaveAttribute('aria-pressed', 'false');
+  });
+});
+
+
+/**
+ * #87's re-roll, which is a layout claim before it is anything else: the offer sits
+ * directly *beneath* the grid, so the grid itself never moves when the first call
+ * withdraws the button — `does not shift the grid when a call lands` above is the
+ * regression guard for that, and is expected to stay green untouched. The slot is
+ * still reserved permanently so that what sits below it does not jump either.
+ */
+test.describe('re-rolling a clean card', () => {
+  const rerollButton = (page: Page) =>
+    page.getByRole('button', { name: 'Re-roll card' });
+
+  test('offers a clean card a re-roll a thumb can hit', async ({ page }) => {
+    await openRoom(page, 'start');
+
+    const button = rerollButton(page);
+    await expect(button).toBeVisible();
+    // Beneath the card and still whole on screen — a real assertion at
+    // `phone-small`, where the grid runs most of the way to the bottom.
+    await expectThumbSized(button, 'the re-roll button');
+    await expectWholeOnScreen(page, button, 'the re-roll button');
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * The consequence ADR-0006 attaches to a re-roll, now stated beside the button
+   * rather than gating it (#87 asks for the action to be immediate). It is prose in
+   * flow, so what a browser has to say about it is that no line of it is clipped.
+   */
+  test('states the consequence without clipping a line of it', async ({ page }) => {
+    await openRoom(page, 'start');
+
+    const consequence = page.locator('#reroll-consequence');
+    await expect(consequence).toBeVisible();
+    await expectNoRowClipped(consequence, 'the re-roll consequence');
+    await expectWholeOnScreen(page, consequence, 'the re-roll consequence');
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * The replacement card, measured. It is 24 labels no run has ever graded — which
+   * is the whole reason the fixture deals a different worst-case set rather than the
+   * same one back.
+   */
+  test('deals a replacement card whose cells clip nothing', async ({ page }) => {
+    const room = await openRoom(page, 'start');
+
+    await rerollButton(page).tap();
+
+    // The swap has happened when a square the old card held is gone.
+    await expect(page.getByRole('button', { name: CARD[0]!.label })).toHaveCount(0);
+    await expectNoCellClipped(page);
+    await expectNoHorizontalScroll(page);
+
+    // The replacement view is applied in place rather than remounting the screen,
+    // so the stream this browser was already holding is the one it still holds.
+    expect(await room.streams()).toBe(1);
+  });
+
+  test('offers no re-roll on a card a call has marked', async ({ page }) => {
+    await openRoom(page, 'mid');
+
+    await expect(rerollButton(page)).toHaveCount(0);
+  });
+
+  test('offers no re-roll once the game is done', async ({ page }) => {
+    await openRoom(page, 'done');
+
+    await expect(rerollButton(page)).toHaveCount(0);
+  });
+
+  /** No card on screen behind the sheet, so there is nothing there to re-roll. */
+  test('offers no re-roll while the deck sheet is up', async ({ page }) => {
+    await openRoom(page, 'start');
+
+    await page.getByRole('button', { name: 'Host deck sheet' }).tap();
+    await expect(rerollButton(page)).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Back to your card' }).tap();
+    await expect(rerollButton(page)).toBeVisible();
+  });
+
+  /**
+   * The two-pane layout's promise, with a row of chrome the card column did not have
+   * before: both columns still side by side, and the page still does not scroll.
+   */
+  test('keeps both columns up with the offer on screen', async ({ page }) => {
+    test.skip(!twoPane(), 'a two-pane claim');
+
+    await openRoom(page, 'start');
+    await expect(rerollButton(page)).toBeVisible();
+
+    // The pane opens on the list, so that is the one that is up beside the card.
+    const pane = page.getByRole('tabpanel', { name: /Looking for/ });
+    await expectBesideTheCard(page, pane, 'the right pane');
+    await expectNoVerticalScroll(page, 'the re-roll offer up');
   });
 });
 

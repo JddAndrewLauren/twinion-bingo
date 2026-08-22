@@ -104,6 +104,15 @@ const CARD: CardSquare[] = LABELS.map(([label, description], index) => ({
   tier: index < 8 ? 'certain' : index < 20 ? 'medium' : 'rare',
 }));
 
+/**
+ * The 24 a re-roll deals instead (#87): sixteen of the card's own worst-case labels
+ * and eight deck squares, so the replacement is a card no earlier run has measured
+ * while still being drawn from the same 40-square deck the host's sheet shows.
+ * `Investigation` (13) is the longest word in either half, which is what a cell
+ * actually breaks on.
+ */
+const REROLLED: CardSquare[] = [...CARD.slice(8), ...DECK_EXTRA.slice(0, 8)];
+
 /** Which of the card's squares the fixture serves as already marked. */
 export type Stage =
   /** Lights out: nothing called, so the list carries all 24 rows — its worst case. */
@@ -145,10 +154,10 @@ export type Fixture = {
  * a second answer. It was two sources once, and both of the ways that went wrong
  * are recorded at the `/call` route below.
  */
-function gameFor(stage: Stage, calls: Mark[]): Game {
+function gameFor(stage: Stage, calls: Mark[], dealt: CardSquare[]): Game {
   const deckSquares = [...CARD, ...DECK_EXTRA];
   const byId = new Map(calls.map((call) => [call.squareId, call]));
-  const onTheCard = CARD.filter((square) => byId.has(square.id));
+  const onTheCard = dealt.filter((square) => byId.has(square.id));
 
   const prizes: PrizeAward[] =
     stage === 'start'
@@ -176,7 +185,9 @@ function gameFor(stage: Stage, calls: Mark[]): Game {
     id: GAME_ID,
     state: stage === 'done' ? 'done' : 'live',
     freeCentre: 'LIGHTS OUT',
-    card: CARD,
+    // Whichever 24 this browser is holding — the deck below is the room's and does
+    // not change when one player re-rolls.
+    card: dealt,
     deck: {
       squares: deckSquares,
       // In deck order, as the API sends it, and carrying the row rather than the
@@ -218,6 +229,12 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
    * pre-seeded calls keep the `100 + index` seqs and the alternating spotter the
    * timeline was written against; everything the routes below append lands here too.
    */
+  /**
+   * The 24 this browser is holding. A re-roll replaces it and nothing else: the
+   * deck, the log and the roster are the room's and are untouched by it.
+   */
+  let dealt: CardSquare[] = CARD;
+
   const calls: Mark[] = marked.map((squareId, index) => ({
     squareId,
     seq: 100 + index,
@@ -268,7 +285,7 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
 
   await page.route('**/rooms/ABCD/game', (route) =>
-    json(route, gameFor(stage, calls)),
+    json(route, gameFor(stage, calls, dealt)),
   );
   await page.route('**/rooms/ABCD', (route) => json(route, ROSTER));
   /**
@@ -299,6 +316,16 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
     calls.push(appended);
 
     return json(route, { ...appended, appended: true });
+  });
+
+  /**
+   * #87's re-roll. The 200 carries the whole replacement view, which is what the
+   * screen applies directly rather than waiting for the re-read the frame prompts.
+   */
+  await page.route(`**/games/${GAME_ID}/card/reroll`, (route) => {
+    dealt = REROLLED;
+
+    return json(route, gameFor(stage, calls, dealt));
   });
 
   await page.route(`**/games/${GAME_ID}/retract`, (route) => {
@@ -395,4 +422,4 @@ export async function openLobby(page: Page, state: Lobby): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
 }
 
-export { CARD, GUEST, HOST, LONG_NAME };
+export { CARD, GUEST, HOST, LONG_NAME, REROLLED };
