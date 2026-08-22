@@ -37,7 +37,7 @@ export default function Legibility() {
       not give.
     */
     <div className="flex min-h-dvh flex-col lg:h-dvh">
-      <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-rule-soft px-3 py-2">
+      <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-rule-soft px-2 py-2">
         <h1 className="text-sm font-semibold">Legibility</h1>
         <p className="text-xs tabular-nums text-muted">
           the F1 pool&rsquo;s worst 24 labels

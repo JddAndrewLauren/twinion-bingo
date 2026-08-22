@@ -606,8 +606,14 @@ describe('the slim bar', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     // The first rung has gone, so the rung being played for is the second — D5's
-    // ladder is climbed in order and only the next one is worth naming.
-    expect(await screen.findByText('2 marks · two lines next · 2 here')).toBeDefined();
+    // ladder is climbed in order and only the next one is worth naming. #103
+    // shortened "N marks" to "N/24" and moved "· <rung> next" into a nested
+    // `hidden lg:inline` span, which is why this reads `.textContent` (which
+    // descends into it) rather than `findByText` (whose default matcher only
+    // sees a node's own direct text, per `getNodeText`, and so never sees the
+    // span's text as part of the paragraph's).
+    const stats = await screen.findByText(/here$/, { selector: 'p' });
+    expect(stats.textContent).toBe('2/24 · two lines next · 2 here');
   });
 
   it('stops naming a rung once the full house has gone', async () => {
@@ -626,7 +632,7 @@ describe('the slim bar', () => {
 
     // Not "full house next" and not an empty gap where a rung was: there is
     // nothing left to play for, so the bar stops claiming there is.
-    expect(await screen.findByText('0 marks · 2 here')).toBeDefined();
+    expect(await screen.findByText('0/24 · 2 here')).toBeDefined();
   });
 
   /**

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
-import { parseSkin, SKIN_COOKIE, type Skin } from './skin';
+import { currentSkin } from './current-skin';
+import type { Skin } from './skin';
 import { SKIN_FONT_VARIABLES } from './skin-fonts';
 import { siteOrigin } from './site-origin';
 import './globals.css';
@@ -25,20 +25,6 @@ const THEME_COLOR: Record<Skin, string> = {
   confetti: '#fffbf2',
   scorecard: '#f7f1e4',
 };
-
-/**
- * The skin this request is rendering, read once from the cookie
- * `skin-button.tsx` writes. No fallback to `localStorage` and no client-side
- * read: the root layout is already dynamic (`generateMetadata` below reads
- * request headers via `siteOrigin()`), so a cookie read costs nothing extra
- * here and is what lets `data-skin` and `themeColor` both be correct on the
- * very first paint — no `useEffect` flips them after the fact.
- */
-async function currentSkin(): Promise<Skin> {
-  const store = await cookies();
-
-  return parseSkin(store.get(SKIN_COOKIE)?.value);
-}
 
 /**
  * `metadataBase` for the whole app, which is why this is a function rather than

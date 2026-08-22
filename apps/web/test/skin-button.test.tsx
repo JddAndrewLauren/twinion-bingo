@@ -29,4 +29,21 @@ describe('the skin button', () => {
       '↻ Theme',
     );
   });
+
+  /**
+   * #103: a hit-target expander distinct from the button's own visible box, so
+   * the gate can assert 44×44 on the tappable area without that measurement
+   * forcing the button's *visual* box (27–34px per the handoff) to grow too.
+   */
+  it('carries a hit-target element separate from its visible box', () => {
+    render(<SkinButton initialSkin="pitwall" />);
+
+    const button = screen.getByRole('button', { name: 'Theme' });
+    const hitTarget = button.querySelector('[data-hit-expand]');
+
+    expect(hitTarget).not.toBeNull();
+    // Contributes no text of its own — the accessible name and visible label
+    // stay exactly "↻ Theme".
+    expect(hitTarget?.textContent).toBe('');
+  });
 });

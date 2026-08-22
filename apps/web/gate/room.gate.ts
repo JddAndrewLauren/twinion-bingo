@@ -220,15 +220,33 @@ test.describe('the card', () => {
 });
 
 test.describe('the slim bar and the two surfaces', () => {
+  /**
+   * #103's rewrite of the same claim. The mark count is `n/24` rather than
+   * "n marks" (shorter, to buy back the width the dice slot and the Theme
+   * button now cost), and "· <rung> next" moved into a `hidden lg:inline` span
+   * — present only at `ipad-11-landscape`, the one viewport with room for the
+   * full sentence, per this issue's own acceptance criterion.
+   */
   test('says where you are without covering the card', async ({ page }) => {
     await openRoom(page, 'mid');
 
-    // Mark count, the rung being played for, and who is here — all three on one line
-    // at 375 CSS px, which is the width that decides whether they fit.
+    // Mark count over the card's own 24, and who is here — both on one line at
+    // 375 CSS px, which is the width that decides whether they fit.
     const bar = page.getByRole('banner').or(page.locator('header')).first();
-    await expect(bar).toContainText('marks');
-    await expect(bar).toContainText('next');
+    await expect(bar).toContainText('/24');
     await expect(bar).toContainText('here');
+
+    // The rung being played for is the one part of the sentence that is not
+    // supposed to be on every viewport — asserted as visibility rather than as
+    // text content, since `hidden` is a CSS `display: none` and the node is in
+    // the document either way.
+    const rung = bar.getByText(/next$/);
+    if (twoPane()) {
+      await expect(rung).toBeVisible();
+    } else {
+      await expect(rung).toBeHidden();
+    }
+
     await expectNoRowClipped(bar.locator('p'), 'the slim bar');
     await expectNoHorizontalScroll(page);
 
@@ -240,6 +258,11 @@ test.describe('the slim bar and the two surfaces', () => {
       statistics and taking the bar from 44px to 69px, and every assertion above stayed
       green. Compared against each row's own computed `line-height` rather than a pixel
       constant, so a type-scale change does not have to come back here.
+
+      Still just `h1` and `> p` — the dice slot, the Theme button and Share are all
+      single-line by construction (a `<button>` with no wrapping content), so a line
+      count is not a meaningful thing to ask of them, and they are covered by
+      `expectThumbSized`/`expectNoHorizontalScroll` below instead.
     */
     for (const row of ['h1', '> p']) {
       const lines = await bar.locator(row).first().evaluate((node) => {
@@ -248,6 +271,75 @@ test.describe('the slim bar and the two surfaces', () => {
       });
       expect(lines, `the slim bar's ${row} holds one line`).toBeLessThanOrEqual(1.01);
     }
+  });
+
+  /**
+   * #103's header controls: the dice's reserved slot, whole and clear of any
+   * overlap with its 44px neighbour, and the Theme button's *hit element* —
+   * not its small visible box — meeting the 44px minimum.
+   */
+  test('holds the dice slot and the Theme button beside the room code and Share', async ({
+    page,
+  }) => {
+    await openRoom(page, 'mid');
+
+    const bar = page.getByRole('banner').or(page.locator('header')).first();
+    const dice = bar.getByRole('button', { name: 'Dice' });
+    const theme = bar.getByRole('button', { name: 'Theme' });
+
+    await expect(dice).toBeVisible();
+    await expect(dice).toBeDisabled();
+    await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
+
+    // Two 44px hit targets cannot overlap — the whole reason the stats line had
+    // to come down in the first place.
+    const diceBox = (await dice.boundingBox())!;
+    const themeBox = (await theme.locator('[data-hit-expand]').boundingBox())!;
+    const overlaps =
+      diceBox.x < themeBox.x + themeBox.width &&
+      diceBox.x + diceBox.width > themeBox.x &&
+      diceBox.y < themeBox.y + themeBox.height &&
+      diceBox.y + diceBox.height > themeBox.y;
+    expect(overlaps, 'the dice slot and the Theme button`s hit target overlap').toBe(false);
+
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * The acceptance criterion that a screenshot cannot answer: pressing the
+   * button re-skins the surface *without* tearing down the live game's SSE
+   * connection. Driven at `phone`, four presses in a row (one full turn of the
+   * fixed cycle), and proven by more than "the colour changed" — a frame
+   * pushed down the stream after the presses still has to land as a fresh
+   * timeline entry, which only happens if the same `EventSource` is still open.
+   */
+  test('re-skins across four presses without dropping the stream', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone', 'this criterion names `phone` only');
+
+    const room = await openRoom(page, 'start');
+    const theme = page.getByRole('button', { name: 'Theme' });
+
+    const cycle = ['slipstream', 'confetti', 'scorecard', 'pitwall'];
+    for (const expected of cycle) {
+      await theme.tap();
+      await expect(page.locator('html')).toHaveAttribute('data-skin', expected);
+    }
+
+    // The stream is still the one this page opened at the start — no remount
+    // happened along the way.
+    expect(await room.streams(), 'streams opened across four presses').toBe(1);
+
+    // And it still delivers: a CALL pushed now has to reach the timeline, which
+    // it cannot do over a torn-down connection.
+    await room.emit({
+      seq: 701,
+      kind: 'CALL',
+      actorPlayerId: 'guest-id',
+      squareId: room.square(15).id,
+    });
+    await raceTab(page).tap();
+    await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+    await expect(racePanel(page).locator('li')).not.toHaveCount(0);
   });
 
   /**
