@@ -17,5 +17,14 @@ import { robotoCondensed } from '../../skin-fonts';
  * #102's handoff asks for Roboto Condensed again, at different weights, for Pit
  * Wall's own UI — and one `next/font` call per family is what keeps a skin
  * switch from paying for the same face twice under two different names.
+ *
+ * **The shared instance declares no `weight`, and that is load-bearing here
+ * rather than incidental.** This module's own call never did either, so the
+ * family arrives as its variable `100 900` axis — and a cell asks for
+ * `font-semibold`. Pinning the shared instance to a static 400/700 pair (which
+ * is what naming the handoff's UI weights would do) would resolve that 600 to
+ * the 700 face and widen every marked, inherited and free-centre label, which
+ * is precisely the measurement `card-grid.tsx`'s overflow shrink is tuned
+ * against. Any future change to that instance's `weight` changes the card.
  */
 export const cardFont = robotoCondensed;

@@ -11,6 +11,13 @@ import './globals.css';
  * only the page, has to tell them apart). Pit Wall's value is today's app
  * colour rather than the handoff's real one, matching `globals.css`'s own
  * "today's exact colours" carve-out for this skin in this slice.
+ *
+ * This used to carry a note that the value matched `app/manifest.ts`'s, so an
+ * installed launch and a browser tab tinted the same. That invariant does not
+ * survive four skins — a manifest is one static document and cannot follow a
+ * per-request cookie — so it is retired rather than restated, with the reasoning
+ * recorded at the manifest's own `background_color`. It still holds for Pit
+ * Wall, which is every fresh install.
  */
 const THEME_COLOR: Record<Skin, string> = {
   pitwall: '#0a0a0a',

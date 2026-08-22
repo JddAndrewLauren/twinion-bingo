@@ -389,14 +389,15 @@ export function CardGrid({
           return (
             <li key={square?.id ?? 'free'} className="aspect-square">
               {free ? (
-                // Left literal with `markedStyle`'s marked/inherited pair, for
-                // the same reason: the free centre's real per-skin colour
-                // (README's *Square cell per theme* "Center (free)" column —
-                // an accent wash in every skin, not a neutral) is structure
-                // that lands with each skin's own slice, not this one's tokens.
+                // The free centre is its own element in the handoff (§ *Square
+                // cell per theme*, "Center (free)") rather than a plain surface
+                // plus a plain rule, so it gets its own token pair rather than
+                // borrowing `raised`/`rule` — in Slipstream and Confetti that
+                // fill is a solid accent, which no surface tier could carry.
+                // Pit Wall's pair is today's exact neutrals, so this is inert.
                 <span
                   title={freeCentre}
-                  className={`${CELL} border-neutral-500 bg-neutral-800 font-semibold uppercase`}
+                  className={`${CELL} border-free-rule bg-free-surface font-semibold uppercase`}
                 >
                   {index === CENTRE ? freeCentre : null}
                 </span>

@@ -40,7 +40,7 @@ export function LookingFor({ game }: { game: Game }) {
   const open = openSquares(game);
 
   return (
-    <section className="rounded border border-rule">
+    <section className="rounded border border-rule-soft">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -59,7 +59,7 @@ export function LookingFor({ game }: { game: Game }) {
       {expanded && (
         <ul
           aria-label="Squares still open"
-          className="flex flex-col divide-y divide-rule border-t border-rule"
+          className="flex flex-col divide-y divide-rule-soft border-t border-rule-soft"
         >
           {open.map((square) => (
             <Row key={square.id} square={square} />
@@ -99,7 +99,7 @@ export function LookingForPanel({ game }: { game: Game }) {
           Nothing left to look for — every square on your card is marked.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-rule">
+        <ul className="flex flex-col divide-y divide-rule-soft">
           {open.map((square) => (
             <Row key={square.id} square={square} />
           ))}

@@ -104,7 +104,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
           setCopied('idle');
           trigger.current?.focus();
         }}
-        className="m-auto w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded border border-rule bg-raised p-4 text-ink backdrop:bg-black/70"
+        className="m-auto w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded border border-rule bg-raised p-4 text-ink-strong backdrop:bg-black/70"
       >
         <div className="flex flex-col gap-3">
           {/*
@@ -158,7 +158,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
           <button
             type="button"
             onClick={() => dialog.current?.close()}
-            className="min-h-11 rounded border border-rule font-semibold"
+            className="min-h-11 rounded border border-rule-strong font-semibold"
           >
             Close
           </button>

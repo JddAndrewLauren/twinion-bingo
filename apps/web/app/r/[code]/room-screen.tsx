@@ -753,7 +753,7 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-rule px-2 py-2">
+        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-rule-soft px-2 py-2">
           <h1 className="text-sm font-semibold">Room {code}</h1>
           <p className="min-w-0 text-xs tabular-nums text-muted">
             {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
@@ -805,7 +805,7 @@ export function RoomScreen({
               // prototype whose own switcher was 24px tall and unreachable by
               // thumb, which is the kind of thing only a device finds.
               className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                tab === which ? 'bg-raised text-ink' : 'text-muted'
+                tab === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
               }`}
             >
               {caption}
@@ -949,7 +949,7 @@ export function RoomScreen({
             role="tabpanel"
             id="panel-race"
             aria-labelledby="tab-race"
-            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-rule ${
+            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-rule-soft ${
               tab === 'race' ? 'block' : 'hidden'
             }`}
           >
@@ -982,7 +982,7 @@ export function RoomScreen({
                   aria-controls={`pane-${which}`}
                   onClick={() => setPane(which)}
                   className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                    pane === which ? 'bg-raised text-ink' : 'text-muted'
+                    pane === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
                   }`}
                 >
                   {caption}
@@ -1054,10 +1054,10 @@ export function RoomScreen({
               // panel never renders at all, which would make "a tap is not a peek"
               // true for the wrong reason.
               data-prose
-              className="border-t border-rule bg-raised px-3 py-2 text-sm"
+              className="border-t border-rule bg-elevated px-3 py-2 text-sm"
             >
               <p className="font-semibold">{peek.label}</p>
-              <p className="text-muted">{peek.description}</p>
+              <p className="text-muted-strong">{peek.description}</p>
             </div>
           )}
           {toast !== null && toast.id !== undo?.seq && (
@@ -1123,14 +1123,14 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(confirming)}
-                className="min-h-11 rounded border border-rule font-semibold"
+                className="min-h-11 rounded border border-rule-strong font-semibold"
               >
                 Take it back
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-11 rounded border border-rule font-semibold"
+                className="min-h-11 rounded border border-rule-strong font-semibold"
               >
                 Keep it
               </button>

@@ -37,7 +37,7 @@ export default function Legibility() {
       not give.
     */
     <div className="flex min-h-dvh flex-col lg:h-dvh">
-      <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-rule px-3 py-2">
+      <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-rule-soft px-3 py-2">
         <h1 className="text-sm font-semibold">Legibility</h1>
         <p className="text-xs tabular-nums text-muted">
           the F1 pool&rsquo;s worst 24 labels
@@ -85,7 +85,7 @@ export default function Legibility() {
         {/* The room's right pane, present only for its width. */}
         <div
           aria-hidden
-          className="hidden min-w-0 flex-1 lg:block lg:border-l lg:border-rule"
+          className="hidden min-w-0 flex-1 lg:block lg:border-l lg:border-rule-soft"
         />
       </div>
     </div>

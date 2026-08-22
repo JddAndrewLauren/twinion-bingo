@@ -15,18 +15,30 @@ import {
  * The handoff's *Assets* section asks for every family up front: switching
  * skins must not flash unstyled text, and the only way this app can guarantee
  * that is to have already paid for the request by the time a press can ask for
- * it. Each instance is given a `variable` rather than being applied through its
- * own `className`, so `layout.tsx` can put every family's custom property on
- * `<html>` once and `globals.css`'s per-skin blocks pick the active one with
- * plain `font-family: var(--font-…)` — no re-mounting anything on a skin
- * change.
+ * it. **So all five are downloaded on every page load, and four of them are
+ * read by nothing in this slice** — the tokens land here, and the per-skin
+ * `font-family` rules that will actually select one arrive with each skin's own
+ * slice. Each instance is given a `variable` rather than a `className` so that
+ * when those rules do arrive, `layout.tsx` has already put every family's
+ * custom property on `<html>` and no skin change re-mounts anything.
  *
- * `Roboto_Condensed` is exported here and re-exported by
- * `app/r/[code]/card-font.ts` rather than being loaded twice: #12 already
- * settled that face for the card's square labels, and Pit Wall's own UI face
- * asked for by this handoff is the same family, just at different weights — one
- * module, one `next/font` call, matching the docblock's own "why one place" for
- * `theme-name.ts`.
+ * **Weights: the variable axis where the handoff asks for italic.** `next/font`
+ * crosses `weight` with `style`, so it cannot express "700, plus italic only at
+ * 700" — `weight: ['400','700'], style: ['normal','italic']` would pull a
+ * 400-italic face *Assets* never asked for. The two families with an italic in
+ * the handoff (Roboto Condensed 400/700/700-italic, Archivo 600/900/900-italic)
+ * therefore omit `weight` and take the family's variable `100 900` axis, which
+ * covers every weight either asked for and nothing extra to explain. The three
+ * with no italic name their weights exactly, as *Assets* lists them.
+ *
+ * Omitting `weight` on Roboto Condensed is also what keeps the card face
+ * unchanged: `app/r/[code]/card-font.ts` re-exports this instance rather than
+ * loading the family a second time (#12 settled that face for the card's square
+ * labels, and Pit Wall's own UI face is the same family), and the card's cells
+ * ask for `font-semibold`. A static 400/700 pair would resolve that 600 to the
+ * 700 face and widen every marked label — inside the very measurement #47's
+ * overflow-shrink logic exists for. The variable axis resolves 600 as 600,
+ * exactly as the card's own un-weighted call did before this module existed.
  */
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
@@ -37,7 +49,6 @@ export const jetbrainsMono = JetBrains_Mono({
 
 export const robotoCondensed = Roboto_Condensed({
   subsets: ['latin'],
-  weight: ['400', '700'],
   style: ['normal', 'italic'],
   variable: '--font-roboto-condensed',
   display: 'swap',
@@ -45,7 +56,6 @@ export const robotoCondensed = Roboto_Condensed({
 
 export const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['600', '900'],
   style: ['normal', 'italic'],
   variable: '--font-archivo',
   display: 'swap',

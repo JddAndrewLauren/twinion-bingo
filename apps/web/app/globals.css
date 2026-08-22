@@ -14,48 +14,130 @@
  * block re-resolves it, so no component carries a per-skin class map.
  *
  * `pitwall`'s block is deliberately **today's exact app colours** (Tailwind's
- * own `neutral-950`/`900`/`100`/`400`/`700`/`emerald-400`), not the handoff's
- * real Pit Wall design (`#0a0a0b`, `#ff2e2e`, `#00e0c8`, …) — the handoff and
- * this issue's brief both say Pit Wall's real look ships in its own slice. The
- * other three skins' values ARE the handoff's real numbers (`docs/design/README.md`
- * § *Design tokens*); they are unreachable until the theme button is mounted
- * (a later slice), and landing them here keeps every skin's CSS in one commit.
+ * own `neutral-*`/`emerald-400`), not the handoff's real Pit Wall design
+ * (`#0a0a0b`, `#00e0c8`, …) — the handoff and this issue's brief both say Pit
+ * Wall's real look ships in its own slice. The other three skins' values ARE the
+ * handoff's real numbers (`docs/design/README.md` § *Design tokens*); they are
+ * unreachable until the theme button is mounted (a later slice), and landing
+ * them here keeps every skin's CSS in one commit.
+ *
+ * **Why three surface tiers, three rules, three muted tiers and two inks
+ * rather than one of each.** This slice is a rename, not a repaint: the app it
+ * converts already distinguishes shades inside each role, and a role with one
+ * value per skin would have silently repainted about fifteen elements — a
+ * hairline is `neutral-800` while a field border is `neutral-700`, an inactive
+ * switcher label is `neutral-500` while ordinary secondary text is
+ * `neutral-400` and the peek panel's prose is `neutral-300`. Folding those
+ * together would have weakened the switcher's selected/unselected contrast in
+ * both directions at once, and would have handed slices 3–6 a set of deltas
+ * that look like their skin but are actually this slice's plumbing. So each
+ * role carries the tiers the app really uses, named by how much contrast they
+ * carry against their own surface (`-soft` less, `-strong` more) in every skin,
+ * light or dark. Every Pit Wall value below is the exact Tailwind neutral the
+ * class it replaced resolved to, so the swap renders byte-identically.
+ *
+ * The other three skins do not need that ladder yet: the handoff gives them one
+ * rule and one muted each, sometimes as a range. Where it gives a range the
+ * tiers take its endpoints; where it gives a single value the tiers collapse
+ * onto it, and each skin's own slice differentiates them if its design asks
+ * for it. Nothing is invented here.
  */
 @theme inline {
   --color-surface: var(--skin-surface);
   --color-raised: var(--skin-raised);
+  --color-elevated: var(--skin-elevated);
   --color-ink: var(--skin-ink);
+  --color-ink-strong: var(--skin-ink-strong);
   --color-muted: var(--skin-muted);
+  --color-muted-soft: var(--skin-muted-soft);
+  --color-muted-strong: var(--skin-muted-strong);
   --color-rule: var(--skin-rule);
+  --color-rule-soft: var(--skin-rule-soft);
+  --color-rule-strong: var(--skin-rule-strong);
+  --color-free-surface: var(--skin-free-surface);
+  --color-free-rule: var(--skin-free-rule);
   --color-accent: var(--skin-accent);
   --color-marked: var(--skin-marked);
   --radius-skin: var(--skin-radius);
 }
 
+/*
+ * Every Pit Wall value is copied verbatim from `tailwindcss/theme.css` rather
+ * than transcribed as the hex everyone remembers, and that is not pedantry:
+ * Tailwind v4 authors its palette in oklch, and `#a3a3a3` — v3's `neutral-400`,
+ * and the value this token layer first shipped — is **not** v4's `neutral-400`.
+ * It resolves two levels lighter (163,163,163 against 161,161,161), so writing
+ * the familiar hex quietly repainted every piece of secondary text in the app.
+ * Copying Tailwind's own declarations makes the identity hold by provenance
+ * instead of by arithmetic. The hex in each comment is the shade's v3 spelling,
+ * for readers, not the value in use.
+ */
 :root,
 [data-skin='pitwall'] {
-  --skin-surface: #0a0a0a; /* neutral-950 */
-  --skin-raised: #171717; /* neutral-900 */
-  --skin-ink: #f5f5f5; /* neutral-100 */
-  --skin-muted: #a3a3a3; /* neutral-400 */
-  --skin-rule: #404040; /* neutral-700 */
-  /* Not exercised by any converted class yet — no component names `accent` for
-     Pit Wall until its real look lands (slice 3). Placeholder rather than
-     absent, since `@theme inline` needs a value to bridge. */
-  --skin-accent: #f5f5f5;
+  /* Surfaces, page upward: the page, a panel/field/dialog/unmarked cell, and
+     the one step above that — a selected switcher segment and the peek panel. */
+  --skin-surface: oklch(14.5% 0 none); /* neutral-950, ≈#0a0a0a */
+  --skin-raised: oklch(20.5% 0 none); /* neutral-900, ≈#171717 */
+  --skin-elevated: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
+
+  /* Body text, and the brighter ink the selected switcher segment and the share
+     dialog have always used. */
+  --skin-ink: oklch(97% 0 none); /* neutral-100, ≈#f5f5f5 */
+  --skin-ink-strong: oklch(98.5% 0 none); /* neutral-50, ≈#fafafa */
+
+  /* Secondary text, dimmest (an inactive switcher segment, disabled submit
+     text) to nearly-body (the peek panel's prose — the readable half of "a tap
+     is not a peek", which is why it is not the same grey as a caption). */
+  --skin-muted-soft: oklch(55.6% 0 none); /* neutral-500, ≈#737373 */
+  --skin-muted: oklch(70.8% 0 none); /* neutral-400, ≈#a1a1a1 */
+  --skin-muted-strong: oklch(87% 0 none); /* neutral-300, ≈#d4d4d4 */
+
+  /* Rules: hairlines and row separators, the default control/field border, and
+     a dialog's secondary buttons. */
+  --skin-rule-soft: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
+  --skin-rule: oklch(37.1% 0 none); /* neutral-700, ≈#404040 */
+  --skin-rule-strong: oklch(43.9% 0 none); /* neutral-600, ≈#525252 */
+
+  /* The free centre, which is its own element in the handoff (§ *Square cell
+     per theme*, "Center (free)") rather than a plain surface plus a plain rule —
+     an accent wash in every skin. Pit Wall's real wash is that slice's work;
+     these are today's neutrals so this slice stays inert. */
+  --skin-free-surface: oklch(26.9% 0 none); /* neutral-800, ≈#262626 */
+  --skin-free-rule: oklch(55.6% 0 none); /* neutral-500, ≈#737373 */
+
+  /* Pit Wall's accent, from the handoff (§ *Design tokens*: "Accent `#ff2e2e`").
+     Today's app has no accent at all, so unlike every value above there is no
+     "today's colour" to hold: no component names `accent` yet (its uses arrive
+     with Pit Wall's own slice), which is what makes carrying the handoff's real
+     number here inert rather than a repaint. */
+  --skin-accent: #ff2e2e;
   /* The app's existing "marked" colour (emerald), kept literal on the marked
      cell itself per this issue's "semantic mark colours may stay literal"
      carve-out — mirrored here so the token exists, though nothing reads it yet. */
-  --skin-marked: #34d399; /* emerald-400 */
+  --skin-marked: oklch(76.5% 0.177 163.223); /* emerald-400, ≈#34d399 */
   --skin-radius: 0.25rem; /* Tailwind's default `rounded` */
 }
 
 [data-skin='slipstream'] {
   --skin-surface: #0e0e12;
+  /* Raised is a range in the handoff (`rgba(255,255,255,.06–.07)`); the two
+     tiers take its ends. */
   --skin-raised: rgba(255, 255, 255, 0.065);
+  --skin-elevated: rgba(255, 255, 255, 0.07);
   --skin-ink: #ffffff;
+  --skin-ink-strong: #ffffff;
+  /* Muted is `rgba(255,255,255,.4–.45)`. */
+  --skin-muted-soft: rgba(255, 255, 255, 0.4);
   --skin-muted: rgba(255, 255, 255, 0.425);
+  --skin-muted-strong: rgba(255, 255, 255, 0.45);
+  /* One rule value for this skin (`rgba(255,255,255,.1)`); the pill outline at
+     `.18` belongs to the roster pills, not to rules in general. */
+  --skin-rule-soft: rgba(255, 255, 255, 0.1);
   --skin-rule: rgba(255, 255, 255, 0.1);
+  --skin-rule-strong: rgba(255, 255, 255, 0.1);
+  /* "solid `#ff1f4b`, label white". */
+  --skin-free-surface: #ff1f4b;
+  --skin-free-rule: #ff1f4b;
   --skin-accent: #f2ff00;
   /* Marked squares are a solid fill of the same yellow as the accent. */
   --skin-marked: #f2ff00;
@@ -65,9 +147,20 @@
 [data-skin='confetti'] {
   --skin-surface: #fffbf2;
   --skin-raised: #ffffff;
+  --skin-elevated: #ffffff;
   --skin-ink: #20180f;
+  --skin-ink-strong: #20180f;
+  /* Muted is `rgba(32,24,15,.4–.55)`. */
+  --skin-muted-soft: rgba(32, 24, 15, 0.4);
   --skin-muted: rgba(32, 24, 15, 0.475);
+  --skin-muted-strong: rgba(32, 24, 15, 0.55);
+  /* Borders are `rgba(32,24,15,.08–.14)`. */
+  --skin-rule-soft: rgba(32, 24, 15, 0.08);
   --skin-rule: rgba(32, 24, 15, 0.11);
+  --skin-rule-strong: rgba(32, 24, 15, 0.14);
+  /* "solid `#ffd23f`, label dark". */
+  --skin-free-surface: #ffd23f;
+  --skin-free-rule: #ffd23f;
   --skin-accent: #ff5c39;
   --skin-marked: #16a34a;
   --skin-radius: 1rem;
@@ -76,9 +169,21 @@
 [data-skin='scorecard'] {
   --skin-surface: #f7f1e4;
   --skin-raised: #fffdf7;
+  --skin-elevated: #fffdf7;
   --skin-ink: #2b2118;
+  --skin-ink-strong: #2b2118;
+  /* Muted ink is `rgba(43,33,24,.45–.6)`. */
+  --skin-muted-soft: rgba(43, 33, 24, 0.45);
   --skin-muted: rgba(43, 33, 24, 0.525);
+  --skin-muted-strong: rgba(43, 33, 24, 0.6);
+  /* One rule value for this skin (`rgba(43,33,24,.15)`); the dashed `.3` is for
+     section and column folds, which are structure rather than a rule tier. */
+  --skin-rule-soft: rgba(43, 33, 24, 0.15);
   --skin-rule: rgba(43, 33, 24, 0.15);
+  --skin-rule-strong: rgba(43, 33, 24, 0.15);
+  /* "`rgba(31,122,107,.16)` wash", inside this skin's 2px ink cell border. */
+  --skin-free-surface: rgba(31, 122, 107, 0.16);
+  --skin-free-rule: #2b2118;
   --skin-accent: #e5502a;
   /* The ink ring around a marked square is this same orange, semi-transparent. */
   --skin-marked: rgba(229, 80, 42, 0.72);
