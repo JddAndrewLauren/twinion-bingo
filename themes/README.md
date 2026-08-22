@@ -39,8 +39,13 @@ always `certain` / `medium` / `rare`, because deck composition depends on them.
 real-world odds. Every entity tier in the theme needs a rule; `excluded` drops the entity.
 
 Placeholders expand to entity **names** in `label` and `description`, and to entity **keys** in
-`exclusivityGroup` — groups are identifiers, not prose. A driver template may use `{team}`, since
+`exclusivityGroups` — groups are identifiers, not prose. A driver template may use `{team}`, since
 the pairing resolves it.
+
+`exclusivityGroups` is a set, and a template declares the full **implication closure**, not just its
+own slot: `driver_wins` for a driver also carries the group `driver_podium` yields for that same
+driver, because winning implies a podium implies points. A card deals at most one square from any
+group, so two squares that share a group can never both land on it.
 
 ## Square ids
 
@@ -79,6 +84,6 @@ this measurement itself (`RUN_MAX_CHARS` in `packages/theme`), so a label that b
 
 ## Status
 
-`themes/f1` is authored (#16): 300 squares at poolVersion `v2`, reviewed line by line in #59. It sits
+`themes/f1` is authored (#16): 300 squares at poolVersion `v3`, reviewed line by line in #59. It sits
 at both legibility ceilings with no margin — the longest labels are 30 characters and the longest
 unbreakable runs are 10 — so a new square is as likely to be refused by the cap as accepted.

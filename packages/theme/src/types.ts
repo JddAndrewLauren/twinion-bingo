@@ -36,8 +36,13 @@ export interface Template {
   /** `{driver}` and any pairing of the entity expand to entity names. */
   label: string;
   description: string;
-  /** Same placeholders, but expanded to entity keys — groups are ids, not prose. */
-  exclusivityGroup: string;
+  /**
+   * Same placeholders, but expanded to entity keys — groups are ids, not
+   * prose. A template declares the full implication closure, not just its own
+   * slot: `driver_wins` for Norris also carries the group that
+   * `driver_podium` yields for Norris, because winning implies a podium.
+   */
+  exclusivityGroups: string[];
   /** Entity tier to the tier of the square it yields, or `excluded`. */
   tierByEntityTier: Record<string, TierRule>;
 }
@@ -47,7 +52,15 @@ export interface HandcraftedSquare {
   label: string;
   description: string;
   tier: SquareTier;
-  exclusivityGroup: string;
+  exclusivityGroups: string[];
+  /**
+   * The entities this square names outright, entity type to every key it
+   * names — most hand-crafted squares name none ("Safety Car"), a few name
+   * one driver ("Max Complains About the Car" names VER), and at least one
+   * names two of the same type ("2021 Nostalgia" names both VER and HAM).
+   * Optional; a square that omits it names nothing.
+   */
+  entities?: Record<string, string[]>;
 }
 
 export interface Overrides {
@@ -71,7 +84,19 @@ export interface PoolSquare {
   description: string;
   tier: SquareTier;
   source: SquareSource;
-  exclusivityGroup: string;
+  /** Every group this square belongs to; a card holds at most one square per group. */
+  exclusivityGroups: string[];
+  /**
+   * Every entity this square names, entity type to every key it names. For a
+   * generated square this is the template's own entity plus any pairing it
+   * expands (a driver square also names its team) — cheap to derive at build
+   * time, since it is `expansionsFor`'s key map. For a hand-crafted square it
+   * is whatever `HandcraftedSquare.entities` authored, which is most often
+   * nothing: of the F1 pool's 70 hand-crafted squares, 64 name no entity at
+   * all. Almost always one key per type, but not guaranteed to be — a
+   * hand-crafted square can name two of the same type.
+   */
+  entities: Record<string, string[]>;
   /** The template that produced it; `null` for hand-crafted squares. */
   templateId: string | null;
 }

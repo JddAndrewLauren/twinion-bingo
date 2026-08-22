@@ -57,6 +57,16 @@ export const MIN_CERTAIN_PER_CARD = 6;
  */
 const DRAW_ATTEMPTS = 200;
 
+/**
+ * How many reshuffles `dealCard` tries before declaring a deck undealable (#122).
+ * A square holding several exclusivity groups can make one of the three passes
+ * spend more than one group's worth of budget on a single square — order-
+ * dependent, not a property of the deck — so a shuffle that comes up short is
+ * retried against a fresh order rather than trusted as proof the deck cannot
+ * deal. See docs/adr/0007-dealcard-retries-a-short-shuffle.md.
+ */
+const DEAL_ATTEMPTS = 200;
+
 export class DeckCompositionError extends Error {
   constructor(themeId: string, reasons: string[]) {
     super(
@@ -112,8 +122,20 @@ export function composeDeck(pool: Pool, seed: string): Deck {
     const deck = attemptDraw(pool.squares, random);
 
     // A deck no card can be dealt from is not a deck, so the composer is where
-    // that is caught — not the deal, mid-game, for one unlucky player.
-    if (deck !== undefined && cardBoundsShortfalls(deck).length === 0) return deck;
+    // that is caught — not the deal, mid-game, for one unlucky player. The
+    // shortfall counts are only necessary: they union group names, so a draw
+    // whose squares all share one group passes them and still deals nothing,
+    // and they do not read `entities` at all, so the driver cap is invisible to
+    // them. Dealing one card proves what counting cannot, at the price of one
+    // shuffle per candidate draw. A draw that is merely order-unlucky is
+    // rejected here too — harmless, since there are DRAW_ATTEMPTS of them.
+    if (
+      deck !== undefined &&
+      cardBoundsShortfalls(deck).length === 0 &&
+      attemptDeal(deck, `${seed}:probe:${attempt}`) !== undefined
+    ) {
+      return deck;
+    }
   }
 
   throw new DeckCompositionError(pool.themeId, [
@@ -127,11 +149,24 @@ export function composeDeck(pool: Pool, seed: string): Deck {
 }
 
 /**
- * Deals one player's 24 squares from the deck. At most one square per exclusivity
- * group, so a card never carries both "Norris wins" and "Norris on the podium" —
- * one event would mark two cells. At most MAX_RARE_PER_CARD rare and at least
- * MIN_CERTAIN_PER_CARD certain, so no player spends a race staring at a grid
- * that cannot fill.
+ * Deals one player's 24 squares from the deck. A square can belong to several
+ * exclusivity groups — a template declares the implication closure, not just its
+ * own slot — and the deal takes a square only if it shares no group with
+ * anything already taken. So a card never carries both "Norris wins" and
+ * "Norris on the podium": winning implies a podium, so both squares carry
+ * Norris's `finish` group and one event would otherwise mark two cells. At most
+ * MAX_RARE_PER_CARD rare and at least MIN_CERTAIN_PER_CARD certain, so no player
+ * spends a race staring at a grid that cannot fill.
+ *
+ * Exclusivity groups stop contradictions, not crowding: "Norris fastest lap",
+ * "Norris leads a lap" and "Norris on the podium" contradict nothing, so
+ * nothing above stops all three landing on one card and quietly handing a
+ * third of the grid to one driver. So the deal also takes a square only if
+ * none of the drivers it names (`entities.driver`, `CROWDING_ENTITY_TYPE`
+ * below — almost always at most one, but a hand-crafted square can name two)
+ * has already been taken — at most one square per driver per card (#123),
+ * generated and hand-crafted squares alike. Teams get no cap of their own:
+ * see docs/adr/0008-no-team-crowding-cap.md.
  *
  * Three passes over one shuffle, in bound order: the certain floor first, then
  * the non-rare squares up to the rare cap's complement, then anything left. Each
@@ -142,7 +177,9 @@ export function composeDeck(pool: Pool, seed: string): Deck {
  * then find the leftover groups were rare-only and the card short.
  *
  * Seeded by the game's seed and the player's id, so the same game with the same
- * roster deals the same cards however many times it is replayed.
+ * roster deals the same cards however many times it is replayed. A shuffle that
+ * comes up short is retried against a fresh order derived from the same seed
+ * (#122), so the replay stays deterministic across attempts too.
  */
 export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   const shortfalls = cardBoundsShortfalls(deck);
@@ -153,19 +190,56 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
     );
   }
 
-  const random = createRandom(`${seed}:${playerId}`);
+  for (let attempt = 0; attempt < DEAL_ATTEMPTS; attempt += 1) {
+    const attemptSeed = attempt === 0 ? `${seed}:${playerId}` : `${seed}:${playerId}:${attempt}`;
+    const squareIds = attemptDeal(deck, attemptSeed);
+
+    if (squareIds !== undefined) return squareIds;
+  }
+
+  // A real failure path, not an assumption: the shortfall check above is
+  // necessary but not sufficient once a square can hold several exclusivity
+  // groups, so a deck can pass it and still have no shuffle order that fills
+  // all 24 slots. DEAL_ATTEMPTS reshuffles rule that out for every deck the
+  // committed pools draw in practice (see the seeded-deal regression suite),
+  // but the deck itself does not prove it, so this stays a loud, named error
+  // rather than an "Unreachable" assertion (#122).
+  throw new Error(
+    `could not deal a ${CARD_SQUARES}-square card from a deck of ${deck.length} in ` +
+      `${distinctGroups(deck)} distinct exclusivity groups after ${DEAL_ATTEMPTS} reshuffles`,
+  );
+}
+
+/**
+ * The `entities` key the driver cap (#123) reads. Hardcoded rather than
+ * derived: it names a vocabulary word every theme's `entities.json` happens
+ * to spell `driver`, not a structural property `Pool` enforces. IndyCar also
+ * declares `indy500Driver` (unused by any template today); a square naming
+ * only that type would silently escape this cap. If a theme ever needs the
+ * cap to reach a second driver-shaped entity type, this is the one place to
+ * widen.
+ */
+const CROWDING_ENTITY_TYPE = 'driver';
+
+/** One shuffle's worth of the three-pass deal, or undefined if it fell short. */
+function attemptDeal(deck: Deck, seed: string): string[] | undefined {
+  const random = createRandom(seed);
   const order = shuffled(deck, random);
   const groups = new Set<string>();
+  const drivers = new Set<string>();
   const squareIds: string[] = [];
 
   /** Fills up to `upTo` squares, taking only squares this pass will accept. */
   const fill = (upTo: number, accepts: (square: PoolSquare) => boolean): void => {
     for (const square of order) {
       if (squareIds.length === upTo) return;
-      if (groups.has(square.exclusivityGroup)) continue;
+      if (square.exclusivityGroups.some((group) => groups.has(group))) continue;
+      const namedDrivers = square.entities[CROWDING_ENTITY_TYPE] ?? [];
+      if (namedDrivers.some((driver) => drivers.has(driver))) continue;
       if (!accepts(square)) continue;
 
-      groups.add(square.exclusivityGroup);
+      for (const group of square.exclusivityGroups) groups.add(group);
+      for (const driver of namedDrivers) drivers.add(driver);
       squareIds.push(square.id);
     }
   };
@@ -174,30 +248,27 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   fill(CARD_SQUARES - MAX_RARE_PER_CARD, (square) => square.tier !== 'rare');
   fill(CARD_SQUARES, () => true);
 
-  // Unreachable: the shortfall check above is exactly the condition under which
-  // these three passes fill all 24 slots. Asserted rather than assumed because
-  // a card short of 24 squares would be a silently unplayable game.
-  if (squareIds.length !== CARD_SQUARES) {
-    throw new Error(
-      `dealt ${squareIds.length} squares, not ${CARD_SQUARES}, from a deck of ` +
-        `${deck.length} in ${distinctGroups(deck)} distinct exclusivity groups`,
-    );
-  }
-
-  return squareIds;
+  return squareIds.length === CARD_SQUARES ? squareIds : undefined;
 }
 
 /**
  * Why a deck cannot be dealt within the card bounds, or nothing if it can. The
- * three counts are necessary and sufficient together, which is what lets the
- * deal above be three flat passes rather than a search: a card is 24 groups of
- * which at least MIN_CERTAIN_PER_CARD must offer a certain square and at least
+ * three counts are necessary and sufficient together when every square holds
+ * exactly one exclusivity group, which is what lets the deal above be three flat
+ * passes rather than a search: a card is 24 groups of which at least
+ * MIN_CERTAIN_PER_CARD must offer a certain square and at least
  * CARD_SQUARES - MAX_RARE_PER_CARD must offer a non-rare one, and the passes
  * claim those groups in that order, so each pass has what the count promised.
+ *
+ * A square that spans several groups can claim more than one pass's budget at
+ * once, so the counts here stay necessary but stop being provably sufficient
+ * on their own — used as a cheap early refusal for decks that are short on
+ * their face, with `dealCard`'s reshuffle-and-retry (#122) covering the gap
+ * a single flat pass can no longer close by itself.
  */
 function cardBoundsShortfalls(deck: Deck): string[] {
   const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
-    new Set(deck.filter(accepts).map((square) => square.exclusivityGroup)).size;
+    new Set(deck.filter(accepts).flatMap((square) => square.exclusivityGroups)).size;
 
   const nonRareNeeded = CARD_SQUARES - MAX_RARE_PER_CARD;
   const total = distinctGroups(deck);
@@ -340,5 +411,5 @@ function selectableCount(squares: readonly PoolSquare[]): number {
 }
 
 function distinctGroups(deck: Deck): number {
-  return new Set(deck.map((square) => square.exclusivityGroup)).size;
+  return new Set(deck.flatMap((square) => square.exclusivityGroups)).size;
 }

@@ -192,7 +192,7 @@ themes/f1/
   overrides.json    prune list + reworded lines
       |  pnpm pool:build
       v
-  pool.generated.json   <- COMMITTED and reviewed, 300 squares at v2
+  pool.generated.json   <- COMMITTED and reviewed, 300 squares at v3
 ```
 
 Templates carry **per-entity tier rules**, because one template × 22 drivers yields 22 squares with
