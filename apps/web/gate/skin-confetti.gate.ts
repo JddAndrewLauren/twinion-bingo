@@ -200,9 +200,10 @@ function contrastRatio(
 
 /**
  * The handoff's own value for the header's run status is white at `.85` (phone,
- * HTML:664) / `.9` (iPad, HTML:317), which composites to 3.83:1 / 4.06:1 on
+ * HTML:664) / `.9` (iPad, HTML:317), which composites to 3.69:1 / 3.95:1 on
  * `#2f6bff`. The floor is set just under the phone number so both viewports
- * clear it and the light skin's `--skin-muted` (2.04:1 on blue) does not.
+ * clear it and the light skin's `--skin-muted` (2.04:1 on blue) does not — this
+ * assertion was run against that shipped value and failed at 2.0376:1.
  */
 const MIN_HEADER_TEXT_CONTRAST = 3.5;
 
@@ -517,7 +518,10 @@ test.describe('the blue card header', () => {
     await expect(header).toHaveCSS('background-color', 'rgb(47, 107, 255)');
     const ground = await paintedFill(header);
 
-    const status = header.locator('p');
+    // The run status specifically — the header also holds the room code and the
+    // live-region `p`, so it is picked by its own copy ("… · N here").
+    const status = header.locator('p').filter({ hasText: /\d+ here$/ });
+    await expect(status).toHaveCount(1);
     const statusColour = await status.evaluate(
       (node) => getComputedStyle(node).color,
     );

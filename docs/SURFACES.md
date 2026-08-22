@@ -954,19 +954,29 @@ app's first light surface, plus the blue `#2f6bff` card-screen header the die-su
 - **The card's own cell/font table is a new row, not the old one carried over.** Fredoka is a wider
   face than Pit Wall's Roboto Condensed, and this issue's own `.skin-card-grid` token
   (`globals.css`) is a reduced `2.6cqw` rather than the shared `3cqw` — both named in this issue's
-  own "Traps" section as expected. Cell width is unchanged (it is grid-driven, not font-driven), but
-  the font is smaller at every viewport:
+  own "Traps" section as expected. The font is smaller at every viewport, and the cell is now a
+  little narrower too, because this skin also carries the handoff's own 5px/7px grid gap (below):
 
-  | Viewport | Cell | Font |
-  | --- | --- | --- |
-  | `phone-small` | 70px | 9.5px |
-  | `phone` | 73px | 9.9px |
-  | `ipad-11-portrait` | 162px | 21.5px |
-  | `ipad-11-landscape` | 108px | 14.5px |
+  | Viewport | Cell | Font | Container | font ÷ container |
+  | --- | --- | --- | --- | --- |
+  | `phone-small` | 69px | 9.5px | 367px | 0.0260 |
+  | `phone` | 72px | 9.9px | 382px | 0.0260 |
+  | `ipad-11-portrait` | 160px | 21.5px | 826px | 0.0260 |
+  | `ipad-11-landscape` | 106px | 14.5px | 557px | 0.0260 |
 
   `expectNoCellClipped` passes at all four with this reduced size (`skin-confetti.gate.ts`), and
   `/legibility` at `confetti` carries the pool's own worst 24 unclipped too — both mixed-case
   Fredoka's own metrics rather than an assumption carried over from #104's table.
+
+  **The claim asserted is the container-query invariant, not the per-viewport pixels.** The table is
+  reported; what the gate holds is `font ÷ container` inside `(0.0255, 0.0265)`, this skin's own
+  `2.6cqw` — the same shape of assertion `room.gate.ts`'s `sizes its type against the card` makes for
+  the shared `3cqw` at `(0.028, 0.032)`, and a real one rather than the `toBeGreaterThan(0)` this
+  test first shipped with. Verified by regression: the token reverted to the shared `3cqw` fails at
+  **0.0270** — and note *why* it is 0.0270 rather than 0.0300, which is the second thing this band
+  now catches: at `3cqw` `card-grid.tsx`'s shrink-to-fit backstop starts compensating (font 9.909px
+  where the token asks for 11.01px), i.e. exactly the "fix it with this skin's label size token,
+  never `SHRINK_FLOOR`" instruction in this issue's own Traps. Restored and re-green after.
 
 - **Earned, inherited and unmarked render three distinguishable fills against a *white* cell**,
   measured the same way #104's gate measures Pit Wall's — `paintedFill`/`deltaE`, copied rather than
@@ -987,23 +997,76 @@ app's first light surface, plus the blue `#2f6bff` card-screen header the die-su
   plausible-looking "faint wash" — fails at `rgb(242,237,228)` against `rgb(255,255,255)`, **ΔE
   7.85**, under the floor. Restored and re-green after.
 
-- **The earned fill is `background-color` on the cell itself, not a `::before` pseudo-element —
-  found by the gate's own instrument, not by review.** The first version of the "bleed past the
-  border" effect (README's "marked solid `#16a34a` bleeding 2px past the border") used a
-  `::before` layer so `overflow: hidden` could stay off everywhere except the earned state; that
-  rendered correctly on screen but `paintedFill` reads `getComputedStyle(node).backgroundColor` on
-  the node it is given, which cannot see a pseudo-element's declaration at all — the gate measured
-  the *ancestor* chain's colour instead of the green and failed the earned-vs-unmarked pair at
-  ΔE 5.06. The fill is a plain `background-color` now; the bleed is a zero-blur `box-shadow`
-  instead, which achieves the same visual spill without hiding the colour from `getComputedStyle`.
+- **The grid gap is the handoff's own 5px phone / 7px iPad, and it is skin-scoped.**
+  `docs/design/README.md`:85 and the HTML at line 669 (phone artboard, `gap:5px`) and line 337
+  (desktop artboard, `gap:7px`) agree, so there was no precedence question and no deviation to argue
+  — the first version of this slice simply left `card-grid.tsx`'s shared `gap-1` (4px) in place and
+  did not say so, which is the omission that then justified halving the bleed.
 
-- **The bleed is 1px, not the handoff's literal 2px — a disclosed deviation.** `card-grid.tsx`'s
-  grid gap is `gap-1` (4px), shared by every skin and untouched by this issue, narrower than the 5px
-  the mocks draw this skin's grid at. A full 2px bleed on each of two neighbouring earned cells would
-  leave exactly 0px between their fills — indistinguishable from a merged block, precisely this
-  issue's own "Traps" warning. 1px each side leaves 2px clear at the actual gap, checked
-  geometrically at `phone-small` (`does not merge two adjacent bled marked cells`) rather than by
-  eye.
+  The rule is `[data-skin='confetti'] .skin-card-grid { gap: 5px }` plus `7px` at the 834px
+  breakpoint. **`card-grid.tsx`'s `gap-1` is deliberately untouched**: the skin selector is
+  `[data-skin] .class` (specificity 0,2,0) and beats the utility's single class (0,1,0), so Pit Wall,
+  Slipstream and Scorecard keep the 4px their own slices are measured against. Changing the utility
+  itself would have moved available cell width under every skin at once — including #105's
+  Slipstream label token, which its own review proved is tuned against today's 4px. Confirmed in the
+  compiled CSS (`[data-skin=confetti] .skin-card-grid{…gap:5px…}`, with `gap-1` still on the `<ul>`),
+  and `skin-pitwall.gate.ts` plus `legibility.gate.ts` (which runs on the default skin) still pass
+  `expectNoCellClipped` at all four viewports in the same run.
+
+  **The gap is per skin in the handoff, so the per-skin rule is the right mechanism rather than a
+  workaround.** `docs/design/README.md`:85 gives four different values in one breath — "gap 2px
+  (`pitwall`) / 3px (`slipstream`) / 5px (`confetti`) / 4px (`scorecard`)" — so a global replacement
+  of `gap-1` would be wrong on the spec's own terms and not merely risky for the other slices. This
+  rule is therefore also **the seam the other three skins' values can be set at**: #105 shipped
+  Slipstream on the inherited 4px where its own artboard
+  (`docs/design/Bingo Screens.dc.html`:594) says 3px, which its review let stand as an ungated 1px
+  fidelity gap. Deliberately **not** fixed here — another slice's value is another issue's territory
+  and would be undisclosed cross-slice scope — but the follow-up is now a one-line rule under
+  `[data-skin='slipstream']` rather than a mechanism to design.
+
+- **The earned fill is the handoff's overlay layer at `inset: -2px`, and the *instrument* was taught
+  to read it — not the other way round.** The handoff renders a marked cell as an absolutely
+  positioned span, `position:absolute; inset:-2px; background:#16a34a; border-radius:14px/20px`,
+  behind a re-drawn white label (HTML:674 phone, HTML:341 iPad). An earlier version of this slice
+  replaced that with `background-color` plus a zero-blur `box-shadow` because `paintedFill` reads
+  `getComputedStyle(node).backgroundColor` and cannot see a pseudo-element — i.e. the design was
+  changed to suit the test. That is backwards twice over: it cost the handoff's mark motion (below),
+  and it left the instrument blind to any layer-painted state, which is what Scorecard's stamped ink
+  ring and Slipstream's wipe-in fill both are.
+
+  `getComputedStyle` takes a pseudo-element argument, so the fix is in the gate: `paintedFill` now
+  reads `::before` as the topmost entry of the same compositing stack, with its alpha scaled by its
+  own `opacity` — which is also what makes an unmarked cell's overlay (present at `opacity: 0`)
+  correctly contribute nothing. The rendering is a `::before` rather than a second element per cell,
+  so `card-grid.tsx` keeps its shape. **`paintedFill` is deliberately not lifted into
+  `gate/measure.ts`**: it is duplicated across `skin-pitwall.gate.ts`, `skin-slipstream.gate.ts`
+  (#105, in review concurrently) and this file, so consolidating it is a FINAL-GATE job, not a change
+  to make from inside one slice.
+
+- **The bleed is the handoff's full 2px, and the clearance is measured rather than asserted away.**
+  At this skin's own 5px gap, 2px of bleed on each of two neighbours leaves 1px clear — the mocks'
+  geometry is self-consistent, so the earlier 1px deviation was self-inflicted by the skipped gap and
+  is gone. `does not merge two adjacent bled marked cells at phone-small` reads the bleed out of the
+  overlay's own computed `inset` rather than hardcoding it, and asserts **positive clearance** (≥
+  0.5px, `measure.ts`'s fractional-layout tolerance) between every pair of painted boxes. The
+  assertion it replaced (`expect(overlapX > 0.5 && overlapY > 0.5).toBe(false)`) passed at exactly
+  0px clearance — the merged-block state the whole trap is about. Verified by regression: with the
+  2px bleed and the gap put back to 4px, the new assertion fails at a measured clearance of **0**.
+  Restored and re-green after.
+
+- **The handoff's mark motion is implemented, which is the other reason the overlay is a layer.**
+  README:142: "scales the fill from 0.85 to 1 with a slight overshoot
+  (`cubic-bezier(.34,1.56,.64,1)`, 220ms) … Unmarking reverses without the overshoot." A
+  `background-color` cannot be scaled, which is exactly how this animation went silently missing in
+  the earlier version. The overlay carries `transform: scale(0.85)`/`opacity: 0` in the base state
+  and `scale(1)`/`opacity: 1` in the earned state; the overshoot curve lives on the earned rule and a
+  plain `ease-out` on the base rule, which is what "reverses without the overshoot" means, since a
+  transition takes its curve from the state it is going *to*. Gated
+  (`scales the earned overlay in with the handoff's overshoot, and out without it`) on the computed
+  `::before` duration, timing function, transform and opacity in both states, so it cannot go missing
+  a second time. The earned cell also keeps its own white fill under the overlay, as the HTML does —
+  which additionally neutralises `card-grid.tsx`'s `bg-emerald-800` fallback class that would
+  otherwise be the colour showing around the overlay's edge for the 220ms it scales up.
 
 - **The die is visible on both of Confetti's surfaces**, the reason this issue exists per
   `globals.css`'s own comment: `rgba(32,24,15,.55)` on the cream join/lobby bar (unchanged) and the
@@ -1037,6 +1100,51 @@ app's first light surface, plus the blue `#2f6bff` card-screen header the die-su
   amber against a white card was already a large ΔE before this issue and is asserted as one now
   (`reads as distinct from the host's own white card`, ΔE well over the floor against `rgb(255,255,255)`).
 
+- **The blue card header owns the legibility of everything standing on it.** Painting this ground
+  `#2f6bff` is what makes that this slice's job, and `background-color` + `color: #fff` on the
+  header alone did not do it: each of the header's children re-sets its own colour from the *light*
+  skin's tokens, so a `color` on the parent is overridden three times over. The header now re-points
+  the skin's own roles inside its own scope — one declaration per role rather than one selector per
+  child, which also reaches every later control mounted there. Measured, composited, on the blue:
+
+  | Thing on the header | Before | After |
+  | --- | --- | --- |
+  | run status (`text-muted`) | `rgba(32,24,15,.475)` → **2.04:1** | white `.85` phone / `.9` iPad → **3.69:1** / **3.95:1** |
+  | Theme button ink | `#20180f` on blue → **3.89:1** | `#20180f` on its `#ffd23f` pill → **12.13:1** |
+  | Theme button border | `rgba(32,24,15,.11)` → **1.17:1** (invisible) | `rgba(255,255,255,.35)` → **1.75:1**, or the pill's own edge |
+  | focus ring | `--skin-accent` `#ff5c39` → **1.47:1** | `#fff` → **4.50:1** |
+  | die (`svg[data-die-surface='card']`) | `rgba(255,255,255,.85)` → **3.69:1** | unchanged |
+
+  The white-at-`.85`/`.9` muted values are the HTML's own (line 664 phone, line 317 iPad), and the
+  yellow pill is the handoff's own value for this control in *every* Confetti surface
+  (`docs/design/README.md` § *Theme button per theme*, and the HTML draws it in both card headers) —
+  not a colour invented to patch a contrast number. It also fixes the same control on the cream join
+  bar. **The pill's `padding: 7px 15px` is a disclosed omission**: the incumbent `px-2 py-1` is kept
+  so this rule changes colour and radius and not one pixel of layout, because the card header is the
+  tightest row in the app (#103's arithmetic, quoted in `room-screen.tsx`, is what forced the stats
+  line under ~110px to fit this button at `phone-small`) and #108 sizes the die off this button's
+  rendered height. +14px wide and +6px tall here would relitigate two earlier slices' geometry from
+  inside a skin slice; the legibility defect is carried entirely by the fill and the ink.
+
+  **A rebase note.** This work is based on `8dd7b53`, before #105 merged into `batch/skins`. #105
+  introduced `.skin-theme-fill`, a per-skin size hook for this same Theme button, so on the rebase
+  the pill rule here should be routed through that hook rather than kept on its own
+  `button[aria-label='Theme']` selector — and the padding omission above stops needing its
+  justification, because a per-skin theme-button size mechanism will already exist. Flagged rather
+  than pre-empted: the hook is not on this base to write against.
+
+  **New gate coverage, because nothing could see any of this.** The die test asserted the header's
+  `background-color` and the die's `color` and stopped, so all four rows above passed unnoticed.
+  `keeps its run status, Theme button and focus ring legible on the blue ground` asserts the
+  *composited* contrast of the header's text and of its focus ring against the surface `paintedFill`
+  reports underneath them, at all four viewports (the muted token is per-breakpoint, so a rule
+  landing on only one of the two is a real failure). Verified by regression: run against the
+  shipped-today colours it fails at **2.0376:1** on the run status, against a floor of 3.5.
+
+  One consequence worth recording: the die-surface comment's rationale in `globals.css` — the die
+  "matching the muted label beside it in that same bar" — is true again. The label beside it is now
+  white at `.85`, the same value the die carries.
+
 - **Focus rings are visible on the cream surface, and the accent's contrast ratio is disclosed
   rather than claimed to pass.** `#ff5c39` (the accent, `rgb(255,92,57)`) against `#fffbf2`
   (`rgb(255,251,242)`) measures **2.97:1** — under WCAG's 3:1 minimum for a non-text UI component
@@ -1047,6 +1155,31 @@ app's first light surface, plus the blue `#2f6bff` card-screen header the die-su
   raised here rather than silently repainted. `expectAccentRing`-equivalent asserts the ring is
   `2px solid rgb(255, 92, 57)` under `:focus-visible` on both the primary action and a card cell.
 
+  For completeness: the ring is **2.97:1** on the cream page surface and **3.07:1** against the white
+  cell the card-cell ring actually sits on. The accent is the token, so no spec-conformant value
+  clears 3:1 on cream; Confetti's own `#c93c1e` ledge colour would, at **4.90:1**, if an operator
+  wants the guideline met — that is a handoff question, not a change this slice makes silently. The
+  one ring that *was* this slice's own defect is the same rule on the blue header it invented
+  (1.47:1), now white at 4.50:1 and gated — see the header bullet above.
+
+- **"Enter room", not the handoff's "Let's play" — a disclosed deviation, and the earlier
+  justification for it was wrong.** This slice originally cited #104's copy change (the row above,
+  `Join` → `Enter room`) as precedent. It is not: that was a rename *toward* #104's own brief copy,
+  which is the opposite of keeping a name the handoff contradicts. `docs/design/README.md`:69 and the
+  HTML (line 645 phone, line 292 desktop) both say "Let's play", and this issue's *Regions* section
+  names it explicitly.
+
+  The accurate justification is a deliberate **cross-skin accessible-name contract**: the primary
+  action is one `ACTION_BUTTON` with one accessible name across all four skins, and per-skin copy
+  would make that name skin-dependent. The cost of changing it is concrete and cross-slice — #104
+  already retargeted five gate/test references from "Join" to "Enter room", this issue's own focus
+  test queries `{ name: 'Enter room' }`, and #105 is in review concurrently against the same name —
+  so a third rename of the same control, from inside the fourth slice, would retarget assertions in
+  three slices at once while two of them are still being reviewed. Recorded here as an open FINAL-GATE
+  question: either every skin's visible primary-action copy becomes per-skin (with the accessible name
+  decoupled from it), or the handoff's per-theme copy is formally superseded by the contract. Not a
+  call for one skin slice to make unilaterally, and not one to make silently either way.
+
 - **The roster's "+N" row and the standings' rank circle are both new, unconditional markup.**
   Confetti's own "Roster per theme" truncates the join screen's pill row to four names plus a `+N`
   chip at phone widths (all nine at iPad), and its "Standings" gives each rank a 20px filled circle
@@ -1056,7 +1189,19 @@ app's first light surface, plus the blue `#2f6bff` card-screen header the die-su
   `[data-skin='confetti']`; `test/game-screen.test.tsx`'s two standings assertions were updated for
   the rank prefix now in the DOM text (a disclosed, genuine addition, not a loosened assertion).
 
-- **A note on this run's own instability.** A `next start` production server on this machine
+- **The review round's own run, at full concurrency, green.** After the five findings above were
+  fixed, `pnpm exec playwright test` (no `--workers` override, all eight gate files, all four
+  matrix viewports) ran **311 passed / 41 skipped, 352 listed, in 31.0s** — no `next start` crash
+  this time, which lines up with CI's own full-concurrency pass and further supports the
+  resource-ceiling reading in the note below rather than a defect. `pnpm build`, `pnpm typecheck`,
+  `pnpm lint` and `pnpm test` (166 web + 154 api passed) are green in the same state.
+
+  Arithmetic, since two tests were added in this round: 352 = the previous head's 344 + the header
+  legibility test + the mark-motion test, × 4 viewports. Skips are 41 = the previous 38 + the 3 the
+  `phone-small`-only merge test carries on the other three projects, unchanged. Nothing was removed,
+  loosened or viewport-narrowed, and `playwright.config.ts` is still untouched.
+
+- **A note on the first round's instability.** A `next start` production server on this machine
   repeatedly crashed (`SIGKILL`) partway through a full `pnpm --filter @twinion-bingo/web run gate`
   at `fullyParallel` concurrency — reproduced twice, unrelated to any one test file (it took down
   already-passing `share.gate.ts`/`skin-pitwall.gate.ts` runs alongside this issue's own). Every
