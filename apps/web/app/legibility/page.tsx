@@ -37,9 +37,9 @@ export default function Legibility() {
       not give.
     */
     <div className="flex min-h-dvh flex-col lg:h-dvh">
-      <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-neutral-800 px-3 py-2">
+      <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-rule px-3 py-2">
         <h1 className="text-sm font-semibold">Legibility</h1>
-        <p className="text-xs tabular-nums text-neutral-400">
+        <p className="text-xs tabular-nums text-muted">
           the F1 pool&rsquo;s worst 24 labels
         </p>
       </header>
@@ -69,10 +69,10 @@ export default function Legibility() {
               row that pushed the page sideways would be a defect of this page
               rather than of the card it exists to show.
             */}
-            <ol className="flex flex-col gap-1 text-xs text-neutral-400">
+            <ol className="flex flex-col gap-1 text-xs text-muted">
               {WORST_24.map((square) => (
                 <li key={square.id} className="break-words">
-                  <span className="text-neutral-100">{square.label}</span> —{' '}
+                  <span className="text-ink">{square.label}</span> —{' '}
                   <span className="tabular-nums">{square.chars}</span> chars, run{' '}
                   <span className="tabular-nums">{square.run}</span> (&ldquo;
                   {square.runWord}&rdquo;) — {square.id}
@@ -85,7 +85,7 @@ export default function Legibility() {
         {/* The room's right pane, present only for its width. */}
         <div
           aria-hidden
-          className="hidden min-w-0 flex-1 lg:block lg:border-l lg:border-neutral-800"
+          className="hidden min-w-0 flex-1 lg:block lg:border-l lg:border-rule"
         />
       </div>
     </div>

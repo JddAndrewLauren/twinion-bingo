@@ -9,4 +9,4 @@
  * style a submit button one way rather than two.
  */
 export const ACTION_BUTTON =
-  'min-h-11 rounded border border-neutral-700 px-3 font-semibold disabled:text-neutral-500';
+  'min-h-11 rounded border border-rule px-3 font-semibold disabled:text-muted';

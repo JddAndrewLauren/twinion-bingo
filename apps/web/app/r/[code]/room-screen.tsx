@@ -641,7 +641,7 @@ export function RoomScreen({
             onChange={(event) => setName(event.target.value)}
             maxLength={24}
             required
-            className="rounded border border-neutral-700 bg-neutral-900 p-2"
+            className="rounded border border-rule bg-raised p-2"
           />
         </label>
         <button
@@ -753,9 +753,9 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-neutral-800 px-2 py-2">
+        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-rule px-2 py-2">
           <h1 className="text-sm font-semibold">Room {code}</h1>
-          <p className="min-w-0 text-xs tabular-nums text-neutral-400">
+          <p className="min-w-0 text-xs tabular-nums text-muted">
             {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
             {nextPrize !== undefined && ` · ${nextPrize} next`} ·{' '}
             {roster.players.length} here
@@ -805,9 +805,7 @@ export function RoomScreen({
               // prototype whose own switcher was 24px tall and unreachable by
               // thumb, which is the kind of thing only a device finds.
               className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                tab === which
-                  ? 'bg-neutral-800 text-neutral-50'
-                  : 'text-neutral-500'
+                tab === which ? 'bg-raised text-ink' : 'text-muted'
               }`}
             >
               {caption}
@@ -908,7 +906,7 @@ export function RoomScreen({
                       promise is "a different 24", not 24 different squares. And it is
                       only the calls that land on the *new* card that arrive grey.
                     */
-                    <p id="reroll-consequence" className="text-sm text-neutral-400">
+                    <p id="reroll-consequence" className="text-sm text-muted">
                       A different 24 from the same deck. Any square already called
                       that lands on the new card arrives grey: it still counts in the
                       standings, but it can never win you a prize.
@@ -925,6 +923,9 @@ export function RoomScreen({
                 </>
               )}
               {deck !== null && (
+                // The amber chrome is the host-only affordance's own colour
+                // (matches `deck-sheet.tsx`'s "amber-chromed" sheet), left
+                // literal per #102's carve-out for semantic host colours.
                 <button
                   type="button"
                   onClick={() => setSheetOpen(!sheetOpen)}
@@ -948,7 +949,7 @@ export function RoomScreen({
             role="tabpanel"
             id="panel-race"
             aria-labelledby="tab-race"
-            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-neutral-800 ${
+            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-rule ${
               tab === 'race' ? 'block' : 'hidden'
             }`}
           >
@@ -981,9 +982,7 @@ export function RoomScreen({
                   aria-controls={`pane-${which}`}
                   onClick={() => setPane(which)}
                   className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                    pane === which
-                      ? 'bg-neutral-800 text-neutral-50'
-                      : 'text-neutral-500'
+                    pane === which ? 'bg-raised text-ink' : 'text-muted'
                   }`}
                 >
                   {caption}
@@ -1055,16 +1054,22 @@ export function RoomScreen({
               // panel never renders at all, which would make "a tap is not a peek"
               // true for the wrong reason.
               data-prose
-              className="border-t border-neutral-700 bg-neutral-800 px-3 py-2 text-sm"
+              className="border-t border-rule bg-raised px-3 py-2 text-sm"
             >
               <p className="font-semibold">{peek.label}</p>
-              <p className="text-neutral-300">{peek.description}</p>
+              <p className="text-muted">{peek.description}</p>
             </div>
           )}
           {toast !== null && toast.id !== undo?.seq && (
             /**
              * `status` rather than `alert`: a call is news, not a problem, and an
              * assertive live region would interrupt a screen reader mid-square.
+             *
+             * The emerald chrome here and on the undo row below is left literal
+             * (#102's "semantic mark/host colours may stay literal" carve-out):
+             * it is the same "a call landed" green as a marked cell, and its
+             * real per-skin colour is structure for a later slice, not this
+             * one's surface/rule/body-text tokens.
              */
             <p
               role="status"
@@ -1103,7 +1108,7 @@ export function RoomScreen({
             aria-label="Take back this call"
             className="fixed inset-0 flex items-center justify-center bg-black/70 p-4"
           >
-            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-neutral-700 bg-neutral-900 p-4">
+            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-rule bg-raised p-4">
               <p>
                 Take back {labelFor(game, confirming.squareId)}? It unmarks for
                 everyone holding it.
@@ -1118,14 +1123,14 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(confirming)}
-                className="min-h-11 rounded border border-neutral-600 font-semibold"
+                className="min-h-11 rounded border border-rule font-semibold"
               >
                 Take it back
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-11 rounded border border-neutral-600 font-semibold"
+                className="min-h-11 rounded border border-rule font-semibold"
               >
                 Keep it
               </button>

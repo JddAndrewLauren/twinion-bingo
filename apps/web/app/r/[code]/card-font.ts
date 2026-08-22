@@ -1,4 +1,4 @@
-import { Roboto_Condensed } from 'next/font/google';
+import { robotoCondensed } from '../../skin-fonts';
 
 /**
  * The cell face, and the reason it is not the system one.
@@ -12,10 +12,10 @@ import { Roboto_Condensed } from 'next/font/google';
  * on the iPad.
  *
  * Settled on real hardware, not in a desktop browser — see #12's closing comment.
- * Loaded here rather than in `layout.tsx` because it is the card's face and not
- * the app's: everything else on screen is prose in the system font.
+ *
+ * Re-exported from `app/skin-fonts.ts` rather than loaded here a second time:
+ * #102's handoff asks for Roboto Condensed again, at different weights, for Pit
+ * Wall's own UI — and one `next/font` call per family is what keeps a skin
+ * switch from paying for the same face twice under two different names.
  */
-export const cardFont = Roboto_Condensed({
-  subsets: ['latin'],
-  display: 'swap',
-});
+export const cardFont = robotoCondensed;

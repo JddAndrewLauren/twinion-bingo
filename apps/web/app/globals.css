@@ -1,1 +1,119 @@
 @import 'tailwindcss';
+
+/*
+ * The token layer #102 builds. Every skin-aware surface names a *role*
+ * (`--skin-surface`, `--skin-raised`, …) rather than a colour, and each of the
+ * four blocks below is the one place that role resolves to a real value for
+ * that skin — selected purely by `[data-skin]` on `<html>`, which
+ * `app/layout.tsx` server-renders from the `twinion_bingo_skin` cookie so the
+ * right block is already active on the very first paint.
+ *
+ * `@theme inline` bridges the roles into Tailwind v4 utilities, which is what
+ * makes `bg-surface`, `border-rule`, `text-muted` and `rounded-skin` exist as
+ * classes at all: a component names the role once in its JSX and every skin's
+ * block re-resolves it, so no component carries a per-skin class map.
+ *
+ * `pitwall`'s block is deliberately **today's exact app colours** (Tailwind's
+ * own `neutral-950`/`900`/`100`/`400`/`700`/`emerald-400`), not the handoff's
+ * real Pit Wall design (`#0a0a0b`, `#ff2e2e`, `#00e0c8`, …) — the handoff and
+ * this issue's brief both say Pit Wall's real look ships in its own slice. The
+ * other three skins' values ARE the handoff's real numbers (`docs/design/README.md`
+ * § *Design tokens*); they are unreachable until the theme button is mounted
+ * (a later slice), and landing them here keeps every skin's CSS in one commit.
+ */
+@theme inline {
+  --color-surface: var(--skin-surface);
+  --color-raised: var(--skin-raised);
+  --color-ink: var(--skin-ink);
+  --color-muted: var(--skin-muted);
+  --color-rule: var(--skin-rule);
+  --color-accent: var(--skin-accent);
+  --color-marked: var(--skin-marked);
+  --radius-skin: var(--skin-radius);
+}
+
+:root,
+[data-skin='pitwall'] {
+  --skin-surface: #0a0a0a; /* neutral-950 */
+  --skin-raised: #171717; /* neutral-900 */
+  --skin-ink: #f5f5f5; /* neutral-100 */
+  --skin-muted: #a3a3a3; /* neutral-400 */
+  --skin-rule: #404040; /* neutral-700 */
+  /* Not exercised by any converted class yet — no component names `accent` for
+     Pit Wall until its real look lands (slice 3). Placeholder rather than
+     absent, since `@theme inline` needs a value to bridge. */
+  --skin-accent: #f5f5f5;
+  /* The app's existing "marked" colour (emerald), kept literal on the marked
+     cell itself per this issue's "semantic mark colours may stay literal"
+     carve-out — mirrored here so the token exists, though nothing reads it yet. */
+  --skin-marked: #34d399; /* emerald-400 */
+  --skin-radius: 0.25rem; /* Tailwind's default `rounded` */
+}
+
+[data-skin='slipstream'] {
+  --skin-surface: #0e0e12;
+  --skin-raised: rgba(255, 255, 255, 0.065);
+  --skin-ink: #ffffff;
+  --skin-muted: rgba(255, 255, 255, 0.425);
+  --skin-rule: rgba(255, 255, 255, 0.1);
+  --skin-accent: #f2ff00;
+  /* Marked squares are a solid fill of the same yellow as the accent. */
+  --skin-marked: #f2ff00;
+  --skin-radius: 0;
+}
+
+[data-skin='confetti'] {
+  --skin-surface: #fffbf2;
+  --skin-raised: #ffffff;
+  --skin-ink: #20180f;
+  --skin-muted: rgba(32, 24, 15, 0.475);
+  --skin-rule: rgba(32, 24, 15, 0.11);
+  --skin-accent: #ff5c39;
+  --skin-marked: #16a34a;
+  --skin-radius: 1rem;
+}
+
+[data-skin='scorecard'] {
+  --skin-surface: #f7f1e4;
+  --skin-raised: #fffdf7;
+  --skin-ink: #2b2118;
+  --skin-muted: rgba(43, 33, 24, 0.525);
+  --skin-rule: rgba(43, 33, 24, 0.15);
+  --skin-accent: #e5502a;
+  /* The ink ring around a marked square is this same orange, semi-transparent. */
+  --skin-marked: rgba(229, 80, 42, 0.72);
+  --skin-radius: 0.75rem;
+}
+
+/*
+ * The skin-change cross-fade (README's *Theme change*: "Cross-fade the surface
+ * 180ms ease"). Declared once, on `body`, rather than per skin — a skin switch
+ * is a `[data-skin]` attribute swap, and the surface/ink colours it repaints
+ * are exactly `body`'s own `bg-surface`/`text-ink`, so a plain transition on
+ * both is the cross-fade without animating anything per-skin.
+ */
+body {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+/*
+ * The theme button's `↻` glyph rotating 360° over the same 180ms, on press
+ * (README's *Theme change*). Skin-agnostic — every skin's button reuses this
+ * one keyframe — so it lives here rather than in any per-skin block; the four
+ * skins' own borders, fills and shapes for the button are a later slice's
+ * component CSS, not this one's tokens.
+ */
+@keyframes skin-glyph-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skin-glyph-spin {
+  animation: skin-glyph-rotate 180ms linear;
+}

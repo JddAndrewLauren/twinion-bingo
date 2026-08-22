@@ -87,7 +87,11 @@ export function DeckSheet({
                 className={`${ROW} ${
                   mark !== undefined
                     ? 'border-emerald-400 bg-emerald-800 font-semibold text-emerald-50'
-                    : 'border-amber-700 bg-neutral-900'
+                    // The amber border is the sheet's own host chrome (left
+                    // literal, same carve-out as `card-grid.tsx`'s marked
+                    // states); the row surface underneath it is the plain
+                    // `raised` role this issue's tokens cover.
+                    : 'border-amber-700 bg-raised'
                 }`}
               >
                 <span>{square.label}</span>
