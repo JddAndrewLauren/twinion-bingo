@@ -127,11 +127,14 @@ export function composeDeck(pool: Pool, seed: string): Deck {
 }
 
 /**
- * Deals one player's 24 squares from the deck. At most one square per exclusivity
- * group, so a card never carries both "Norris wins" and "Norris on the podium" —
- * one event would mark two cells. At most MAX_RARE_PER_CARD rare and at least
- * MIN_CERTAIN_PER_CARD certain, so no player spends a race staring at a grid
- * that cannot fill.
+ * Deals one player's 24 squares from the deck. A square can belong to several
+ * exclusivity groups — a template declares the implication closure, not just its
+ * own slot — and the deal takes a square only if it shares no group with
+ * anything already taken. So a card never carries both "Norris wins" and
+ * "Norris on the podium": winning implies a podium, so both squares carry
+ * Norris's `finish` group and one event would otherwise mark two cells. At most
+ * MAX_RARE_PER_CARD rare and at least MIN_CERTAIN_PER_CARD certain, so no player
+ * spends a race staring at a grid that cannot fill.
  *
  * Three passes over one shuffle, in bound order: the certain floor first, then
  * the non-rare squares up to the rare cap's complement, then anything left. Each
@@ -162,10 +165,10 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   const fill = (upTo: number, accepts: (square: PoolSquare) => boolean): void => {
     for (const square of order) {
       if (squareIds.length === upTo) return;
-      if (groups.has(square.exclusivityGroup)) continue;
+      if (square.exclusivityGroups.some((group) => groups.has(group))) continue;
       if (!accepts(square)) continue;
 
-      groups.add(square.exclusivityGroup);
+      for (const group of square.exclusivityGroups) groups.add(group);
       squareIds.push(square.id);
     }
   };
@@ -174,9 +177,11 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   fill(CARD_SQUARES - MAX_RARE_PER_CARD, (square) => square.tier !== 'rare');
   fill(CARD_SQUARES, () => true);
 
-  // Unreachable: the shortfall check above is exactly the condition under which
-  // these three passes fill all 24 slots. Asserted rather than assumed because
-  // a card short of 24 squares would be a silently unplayable game.
+  // Meant to be unreachable: the shortfall check above is exactly the condition
+  // under which these three passes fill all 24 slots — true when every square
+  // holds one exclusivity group. A square spanning several groups can make this
+  // reachable (#122). Asserted rather than assumed because a card short of 24
+  // squares would be a silently unplayable game.
   if (squareIds.length !== CARD_SQUARES) {
     throw new Error(
       `dealt ${squareIds.length} squares, not ${CARD_SQUARES}, from a deck of ` +
@@ -189,15 +194,20 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
 
 /**
  * Why a deck cannot be dealt within the card bounds, or nothing if it can. The
- * three counts are necessary and sufficient together, which is what lets the
- * deal above be three flat passes rather than a search: a card is 24 groups of
- * which at least MIN_CERTAIN_PER_CARD must offer a certain square and at least
+ * three counts are necessary and sufficient together when every square holds
+ * exactly one exclusivity group, which is what lets the deal above be three flat
+ * passes rather than a search: a card is 24 groups of which at least
+ * MIN_CERTAIN_PER_CARD must offer a certain square and at least
  * CARD_SQUARES - MAX_RARE_PER_CARD must offer a non-rare one, and the passes
  * claim those groups in that order, so each pass has what the count promised.
+ *
+ * A square that spans several groups can claim more than one pass's budget at
+ * once, so the counts here are no longer provably sufficient on their own —
+ * that gap is #122's to close.
  */
 function cardBoundsShortfalls(deck: Deck): string[] {
   const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
-    new Set(deck.filter(accepts).map((square) => square.exclusivityGroup)).size;
+    new Set(deck.filter(accepts).flatMap((square) => square.exclusivityGroups)).size;
 
   const nonRareNeeded = CARD_SQUARES - MAX_RARE_PER_CARD;
   const total = distinctGroups(deck);
@@ -340,5 +350,5 @@ function selectableCount(squares: readonly PoolSquare[]): number {
 }
 
 function distinctGroups(deck: Deck): number {
-  return new Set(deck.map((square) => square.exclusivityGroup)).size;
+  return new Set(deck.flatMap((square) => square.exclusivityGroups)).size;
 }

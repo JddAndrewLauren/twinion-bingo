@@ -1,2706 +1,3365 @@
 {
   "themeId": "f1",
-  "poolVersion": "v2",
+  "poolVersion": "v3",
   "freeCentre": "LIGHTS OUT",
   "squares": [
     {
-      "id": "f1.v2:driver_battery_moan:ALB",
+      "id": "f1.v3:driver_battery_moan:ALB",
       "label": "Albon moans: no battery",
       "description": "Albon complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ALB",
+      "exclusivityGroups": [
+        "radio_moan:ALB"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:ALO",
+      "id": "f1.v3:driver_battery_moan:ALO",
       "label": "Alonso moans: no battery",
       "description": "Alonso complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ALO",
+      "exclusivityGroups": [
+        "radio_moan:ALO"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:ANT",
+      "id": "f1.v3:driver_battery_moan:ANT",
       "label": "Antonelli moans: no battery",
       "description": "Antonelli complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ANT",
+      "exclusivityGroups": [
+        "radio_moan:ANT"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:BEA",
+      "id": "f1.v3:driver_battery_moan:BEA",
       "label": "Bearman moans: no battery",
       "description": "Bearman complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BEA",
+      "exclusivityGroups": [
+        "radio_moan:BEA"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:BOR",
+      "id": "f1.v3:driver_battery_moan:BOR",
       "label": "Bortoleto moans: no battery",
       "description": "Bortoleto complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BOR",
+      "exclusivityGroups": [
+        "radio_moan:BOR"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:BOT",
+      "id": "f1.v3:driver_battery_moan:BOT",
       "label": "Bottas moans: no battery",
       "description": "Bottas complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BOT",
+      "exclusivityGroups": [
+        "radio_moan:BOT"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:COL",
+      "id": "f1.v3:driver_battery_moan:COL",
       "label": "Colapinto moans: no battery",
       "description": "Colapinto complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:COL",
+      "exclusivityGroups": [
+        "radio_moan:COL"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:GAS",
+      "id": "f1.v3:driver_battery_moan:GAS",
       "label": "Gasly moans: no battery",
       "description": "Gasly complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:GAS",
+      "exclusivityGroups": [
+        "radio_moan:GAS"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:HAD",
+      "id": "f1.v3:driver_battery_moan:HAD",
       "label": "Hadjar moans: no battery",
       "description": "Hadjar complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HAD",
+      "exclusivityGroups": [
+        "radio_moan:HAD"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:HAM",
+      "id": "f1.v3:driver_battery_moan:HAM",
       "label": "Hamilton moans: no battery",
       "description": "Hamilton complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HAM",
+      "exclusivityGroups": [
+        "radio_moan:HAM"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:HUL",
+      "id": "f1.v3:driver_battery_moan:HUL",
       "label": "Hulkenberg moans: no battery",
       "description": "Hulkenberg complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HUL",
+      "exclusivityGroups": [
+        "radio_moan:HUL"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:LAW",
+      "id": "f1.v3:driver_battery_moan:LAW",
       "label": "Lawson moans: no battery",
       "description": "Lawson complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LAW",
+      "exclusivityGroups": [
+        "radio_moan:LAW"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:LEC",
+      "id": "f1.v3:driver_battery_moan:LEC",
       "label": "Leclerc moans: no battery",
       "description": "Leclerc complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LEC",
+      "exclusivityGroups": [
+        "radio_moan:LEC"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:LIN",
+      "id": "f1.v3:driver_battery_moan:LIN",
       "label": "Lindblad moans: no battery",
       "description": "Lindblad complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LIN",
+      "exclusivityGroups": [
+        "radio_moan:LIN"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:NOR",
+      "id": "f1.v3:driver_battery_moan:NOR",
       "label": "Norris moans: no battery",
       "description": "Norris complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:NOR",
+      "exclusivityGroups": [
+        "radio_moan:NOR"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:OCO",
+      "id": "f1.v3:driver_battery_moan:OCO",
       "label": "Ocon moans: no battery",
       "description": "Ocon complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:OCO",
+      "exclusivityGroups": [
+        "radio_moan:OCO"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:PER",
+      "id": "f1.v3:driver_battery_moan:PER",
       "label": "Pérez moans: no battery",
       "description": "Pérez complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:PER",
+      "exclusivityGroups": [
+        "radio_moan:PER"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:PIA",
+      "id": "f1.v3:driver_battery_moan:PIA",
       "label": "Piastri moans: no battery",
       "description": "Piastri complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:PIA",
+      "exclusivityGroups": [
+        "radio_moan:PIA"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:RUS",
+      "id": "f1.v3:driver_battery_moan:RUS",
       "label": "Russell moans: no battery",
       "description": "Russell complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:RUS",
+      "exclusivityGroups": [
+        "radio_moan:RUS"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:SAI",
+      "id": "f1.v3:driver_battery_moan:SAI",
       "label": "Sainz moans: no battery",
       "description": "Sainz complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:SAI",
+      "exclusivityGroups": [
+        "radio_moan:SAI"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:STR",
+      "id": "f1.v3:driver_battery_moan:STR",
       "label": "Stroll moans: no battery",
       "description": "Stroll complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:STR",
+      "exclusivityGroups": [
+        "radio_moan:STR"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_battery_moan:VER",
+      "id": "f1.v3:driver_battery_moan:VER",
       "label": "Verstappen moans: no battery",
       "description": "Verstappen complains on radio about having no battery or no deployment left.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:VER",
+      "exclusivityGroups": [
+        "radio_moan:VER"
+      ],
       "templateId": "driver_battery_moan"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:ALB",
+      "id": "f1.v3:driver_beats_teammate:ALB",
       "label": "Albon beats teammate",
       "description": "Albon finishes ahead of the other Williams car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:WIL",
+      "exclusivityGroups": [
+        "teammate:WIL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:ALO",
+      "id": "f1.v3:driver_beats_teammate:ALO",
       "label": "Alonso beats teammate",
       "description": "Alonso finishes ahead of the other Aston Martin car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:AMR",
+      "exclusivityGroups": [
+        "teammate:AMR"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:ANT",
+      "id": "f1.v3:driver_beats_teammate:ANT",
       "label": "Antonelli beats teammate",
       "description": "Antonelli finishes ahead of the other Mercedes car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:MER",
+      "exclusivityGroups": [
+        "teammate:MER"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:BEA",
+      "id": "f1.v3:driver_beats_teammate:BEA",
       "label": "Bearman beats teammate",
       "description": "Bearman finishes ahead of the other Haas car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:HAA",
+      "exclusivityGroups": [
+        "teammate:HAA"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:BOR",
+      "id": "f1.v3:driver_beats_teammate:BOR",
       "label": "Bortoleto beats teammate",
       "description": "Bortoleto finishes ahead of the other Audi car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:AUD",
+      "exclusivityGroups": [
+        "teammate:AUD"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:BOT",
+      "id": "f1.v3:driver_beats_teammate:BOT",
       "label": "Bottas beats teammate",
       "description": "Bottas finishes ahead of the other Cadillac car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:CAD",
+      "exclusivityGroups": [
+        "teammate:CAD"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:COL",
+      "id": "f1.v3:driver_beats_teammate:COL",
       "label": "Colapinto beats teammate",
       "description": "Colapinto finishes ahead of the other Alpine car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:ALP",
+      "exclusivityGroups": [
+        "teammate:ALP"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:GAS",
+      "id": "f1.v3:driver_beats_teammate:GAS",
       "label": "Gasly beats teammate",
       "description": "Gasly finishes ahead of the other Alpine car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:ALP",
+      "exclusivityGroups": [
+        "teammate:ALP"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:HAD",
+      "id": "f1.v3:driver_beats_teammate:HAD",
       "label": "Hadjar beats teammate",
       "description": "Hadjar finishes ahead of the other Red Bull car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:RBR",
+      "exclusivityGroups": [
+        "teammate:RBR"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:HAM",
+      "id": "f1.v3:driver_beats_teammate:HAM",
       "label": "Hamilton beats teammate",
       "description": "Hamilton finishes ahead of the other Ferrari car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:FER",
+      "exclusivityGroups": [
+        "teammate:FER"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:HUL",
+      "id": "f1.v3:driver_beats_teammate:HUL",
       "label": "Hulkenberg beats teammate",
       "description": "Hulkenberg finishes ahead of the other Audi car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:AUD",
+      "exclusivityGroups": [
+        "teammate:AUD"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:LAW",
+      "id": "f1.v3:driver_beats_teammate:LAW",
       "label": "Lawson beats teammate",
       "description": "Lawson finishes ahead of the other Racing Bulls car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:RBL",
+      "exclusivityGroups": [
+        "teammate:RBL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:LEC",
+      "id": "f1.v3:driver_beats_teammate:LEC",
       "label": "Leclerc beats teammate",
       "description": "Leclerc finishes ahead of the other Ferrari car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:FER",
+      "exclusivityGroups": [
+        "teammate:FER"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:LIN",
+      "id": "f1.v3:driver_beats_teammate:LIN",
       "label": "Lindblad beats teammate",
       "description": "Lindblad finishes ahead of the other Racing Bulls car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:RBL",
+      "exclusivityGroups": [
+        "teammate:RBL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:NOR",
+      "id": "f1.v3:driver_beats_teammate:NOR",
       "label": "Norris beats teammate",
       "description": "Norris finishes ahead of the other McLaren car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:MCL",
+      "exclusivityGroups": [
+        "teammate:MCL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:OCO",
+      "id": "f1.v3:driver_beats_teammate:OCO",
       "label": "Ocon beats teammate",
       "description": "Ocon finishes ahead of the other Haas car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:HAA",
+      "exclusivityGroups": [
+        "teammate:HAA"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:PER",
+      "id": "f1.v3:driver_beats_teammate:PER",
       "label": "Pérez beats teammate",
       "description": "Pérez finishes ahead of the other Cadillac car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:CAD",
+      "exclusivityGroups": [
+        "teammate:CAD"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:PIA",
+      "id": "f1.v3:driver_beats_teammate:PIA",
       "label": "Piastri beats teammate",
       "description": "Piastri finishes ahead of the other McLaren car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:MCL",
+      "exclusivityGroups": [
+        "teammate:MCL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:RUS",
+      "id": "f1.v3:driver_beats_teammate:RUS",
       "label": "Russell beats teammate",
       "description": "Russell finishes ahead of the other Mercedes car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:MER",
+      "exclusivityGroups": [
+        "teammate:MER"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:SAI",
+      "id": "f1.v3:driver_beats_teammate:SAI",
       "label": "Sainz beats teammate",
       "description": "Sainz finishes ahead of the other Williams car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:WIL",
+      "exclusivityGroups": [
+        "teammate:WIL"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:STR",
+      "id": "f1.v3:driver_beats_teammate:STR",
       "label": "Stroll beats teammate",
       "description": "Stroll finishes ahead of the other Aston Martin car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:AMR",
+      "exclusivityGroups": [
+        "teammate:AMR"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_beats_teammate:VER",
+      "id": "f1.v3:driver_beats_teammate:VER",
       "label": "Verstappen beats teammate",
       "description": "Verstappen finishes ahead of the other Red Bull car.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "teammate:RBR",
+      "exclusivityGroups": [
+        "teammate:RBR"
+      ],
       "templateId": "driver_beats_teammate"
     },
     {
-      "id": "f1.v2:driver_dnf:ALB",
+      "id": "f1.v3:driver_dnf:ALB",
       "label": "Albon DNFs",
       "description": "Albon fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:ALO",
+      "id": "f1.v3:driver_dnf:ALO",
       "label": "Alonso DNFs",
       "description": "Alonso fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:ANT",
+      "id": "f1.v3:driver_dnf:ANT",
       "label": "Antonelli DNFs",
       "description": "Antonelli fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:BEA",
+      "id": "f1.v3:driver_dnf:BEA",
       "label": "Bearman DNFs",
       "description": "Bearman fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:BOR",
+      "id": "f1.v3:driver_dnf:BOR",
       "label": "Bortoleto DNFs",
       "description": "Bortoleto fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:BOT",
+      "id": "f1.v3:driver_dnf:BOT",
       "label": "Bottas DNFs",
       "description": "Bottas fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:COL",
+      "id": "f1.v3:driver_dnf:COL",
       "label": "Colapinto DNFs",
       "description": "Colapinto fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:GAS",
+      "id": "f1.v3:driver_dnf:GAS",
       "label": "Gasly DNFs",
       "description": "Gasly fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:HAD",
+      "id": "f1.v3:driver_dnf:HAD",
       "label": "Hadjar DNFs",
       "description": "Hadjar fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:HAM",
+      "id": "f1.v3:driver_dnf:HAM",
       "label": "Hamilton DNFs",
       "description": "Hamilton fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:HUL",
+      "id": "f1.v3:driver_dnf:HUL",
       "label": "Hulkenberg DNFs",
       "description": "Hulkenberg fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:LAW",
+      "id": "f1.v3:driver_dnf:LAW",
       "label": "Lawson DNFs",
       "description": "Lawson fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:LEC",
+      "id": "f1.v3:driver_dnf:LEC",
       "label": "Leclerc DNFs",
       "description": "Leclerc fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:LIN",
+      "id": "f1.v3:driver_dnf:LIN",
       "label": "Lindblad DNFs",
       "description": "Lindblad fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:NOR",
+      "id": "f1.v3:driver_dnf:NOR",
       "label": "Norris DNFs",
       "description": "Norris fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:OCO",
+      "id": "f1.v3:driver_dnf:OCO",
       "label": "Ocon DNFs",
       "description": "Ocon fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:PER",
+      "id": "f1.v3:driver_dnf:PER",
       "label": "Pérez DNFs",
       "description": "Pérez fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:PIA",
+      "id": "f1.v3:driver_dnf:PIA",
       "label": "Piastri DNFs",
       "description": "Piastri fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:RUS",
+      "id": "f1.v3:driver_dnf:RUS",
       "label": "Russell DNFs",
       "description": "Russell fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:SAI",
+      "id": "f1.v3:driver_dnf:SAI",
       "label": "Sainz DNFs",
       "description": "Sainz fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:STR",
+      "id": "f1.v3:driver_dnf:STR",
       "label": "Stroll DNFs",
       "description": "Stroll fails to finish the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_dnf:VER",
+      "id": "f1.v3:driver_dnf:VER",
       "label": "Verstappen DNFs",
       "description": "Verstappen fails to finish the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": "driver_dnf"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:ANT",
+      "id": "f1.v3:driver_fastest_lap:ANT",
       "label": "Antonelli fastest lap",
       "description": "Antonelli sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:GAS",
+      "id": "f1.v3:driver_fastest_lap:GAS",
       "label": "Gasly fastest lap",
       "description": "Gasly sets the fastest lap of the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:HAD",
+      "id": "f1.v3:driver_fastest_lap:HAD",
       "label": "Hadjar fastest lap",
       "description": "Hadjar sets the fastest lap of the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:HAM",
+      "id": "f1.v3:driver_fastest_lap:HAM",
       "label": "Hamilton fastest lap",
       "description": "Hamilton sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:LAW",
+      "id": "f1.v3:driver_fastest_lap:LAW",
       "label": "Lawson fastest lap",
       "description": "Lawson sets the fastest lap of the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:LEC",
+      "id": "f1.v3:driver_fastest_lap:LEC",
       "label": "Leclerc fastest lap",
       "description": "Leclerc sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:LIN",
+      "id": "f1.v3:driver_fastest_lap:LIN",
       "label": "Lindblad fastest lap",
       "description": "Lindblad sets the fastest lap of the race.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:NOR",
+      "id": "f1.v3:driver_fastest_lap:NOR",
       "label": "Norris fastest lap",
       "description": "Norris sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:PIA",
+      "id": "f1.v3:driver_fastest_lap:PIA",
       "label": "Piastri fastest lap",
       "description": "Piastri sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:RUS",
+      "id": "f1.v3:driver_fastest_lap:RUS",
       "label": "Russell fastest lap",
       "description": "Russell sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_fastest_lap:VER",
+      "id": "f1.v3:driver_fastest_lap:VER",
       "label": "Verstappen fastest lap",
       "description": "Verstappen sets the fastest lap of the race.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fastest_lap",
+      "exclusivityGroups": [
+        "fastest_lap"
+      ],
       "templateId": "driver_fastest_lap"
     },
     {
-      "id": "f1.v2:driver_in_gravel:ALB",
+      "id": "f1.v3:driver_in_gravel:ALB",
       "label": "Albon in the gravel",
       "description": "Albon runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:ALB",
+      "exclusivityGroups": [
+        "gravel:ALB",
+        "finish:ALB"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:ALO",
+      "id": "f1.v3:driver_in_gravel:ALO",
       "label": "Alonso in the gravel",
       "description": "Alonso runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:ALO",
+      "exclusivityGroups": [
+        "gravel:ALO",
+        "finish:ALO"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:ANT",
+      "id": "f1.v3:driver_in_gravel:ANT",
       "label": "Antonelli in the gravel",
       "description": "Antonelli runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:ANT",
+      "exclusivityGroups": [
+        "gravel:ANT",
+        "finish:ANT"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:BEA",
+      "id": "f1.v3:driver_in_gravel:BEA",
       "label": "Bearman in the gravel",
       "description": "Bearman runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:BEA",
+      "exclusivityGroups": [
+        "gravel:BEA",
+        "finish:BEA"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:BOR",
+      "id": "f1.v3:driver_in_gravel:BOR",
       "label": "Bortoleto in the gravel",
       "description": "Bortoleto runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:BOR",
+      "exclusivityGroups": [
+        "gravel:BOR",
+        "finish:BOR"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:BOT",
+      "id": "f1.v3:driver_in_gravel:BOT",
       "label": "Bottas in the gravel",
       "description": "Bottas runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:BOT",
+      "exclusivityGroups": [
+        "gravel:BOT",
+        "finish:BOT"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:COL",
+      "id": "f1.v3:driver_in_gravel:COL",
       "label": "Colapinto in the gravel",
       "description": "Colapinto runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:COL",
+      "exclusivityGroups": [
+        "gravel:COL",
+        "finish:COL"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:GAS",
+      "id": "f1.v3:driver_in_gravel:GAS",
       "label": "Gasly in the gravel",
       "description": "Gasly runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:GAS",
+      "exclusivityGroups": [
+        "gravel:GAS",
+        "finish:GAS"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:HAD",
+      "id": "f1.v3:driver_in_gravel:HAD",
       "label": "Hadjar in the gravel",
       "description": "Hadjar runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:HAD",
+      "exclusivityGroups": [
+        "gravel:HAD",
+        "finish:HAD"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:HAM",
+      "id": "f1.v3:driver_in_gravel:HAM",
       "label": "Hamilton in the gravel",
       "description": "Hamilton runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:HAM",
+      "exclusivityGroups": [
+        "gravel:HAM",
+        "finish:HAM"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:HUL",
+      "id": "f1.v3:driver_in_gravel:HUL",
       "label": "Hulkenberg in the gravel",
       "description": "Hulkenberg runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:HUL",
+      "exclusivityGroups": [
+        "gravel:HUL",
+        "finish:HUL"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:LAW",
+      "id": "f1.v3:driver_in_gravel:LAW",
       "label": "Lawson in the gravel",
       "description": "Lawson runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:LAW",
+      "exclusivityGroups": [
+        "gravel:LAW",
+        "finish:LAW"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:LEC",
+      "id": "f1.v3:driver_in_gravel:LEC",
       "label": "Leclerc in the gravel",
       "description": "Leclerc runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:LEC",
+      "exclusivityGroups": [
+        "gravel:LEC",
+        "finish:LEC"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:LIN",
+      "id": "f1.v3:driver_in_gravel:LIN",
       "label": "Lindblad in the gravel",
       "description": "Lindblad runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:LIN",
+      "exclusivityGroups": [
+        "gravel:LIN",
+        "finish:LIN"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:NOR",
+      "id": "f1.v3:driver_in_gravel:NOR",
       "label": "Norris in the gravel",
       "description": "Norris runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:NOR",
+      "exclusivityGroups": [
+        "gravel:NOR",
+        "finish:NOR"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:OCO",
+      "id": "f1.v3:driver_in_gravel:OCO",
       "label": "Ocon in the gravel",
       "description": "Ocon runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:OCO",
+      "exclusivityGroups": [
+        "gravel:OCO",
+        "finish:OCO"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:PER",
+      "id": "f1.v3:driver_in_gravel:PER",
       "label": "Pérez in the gravel",
       "description": "Pérez runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:PER",
+      "exclusivityGroups": [
+        "gravel:PER",
+        "finish:PER"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:PIA",
+      "id": "f1.v3:driver_in_gravel:PIA",
       "label": "Piastri in the gravel",
       "description": "Piastri runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:PIA",
+      "exclusivityGroups": [
+        "gravel:PIA",
+        "finish:PIA"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:RUS",
+      "id": "f1.v3:driver_in_gravel:RUS",
       "label": "Russell in the gravel",
       "description": "Russell runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:RUS",
+      "exclusivityGroups": [
+        "gravel:RUS",
+        "finish:RUS"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:SAI",
+      "id": "f1.v3:driver_in_gravel:SAI",
       "label": "Sainz in the gravel",
       "description": "Sainz runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:SAI",
+      "exclusivityGroups": [
+        "gravel:SAI",
+        "finish:SAI"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:STR",
+      "id": "f1.v3:driver_in_gravel:STR",
       "label": "Stroll in the gravel",
       "description": "Stroll runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:STR",
+      "exclusivityGroups": [
+        "gravel:STR",
+        "finish:STR"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_gravel:VER",
+      "id": "f1.v3:driver_in_gravel:VER",
       "label": "Verstappen in the gravel",
       "description": "Verstappen runs off into the gravel or the run-off, race over or not.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "gravel:VER",
+      "exclusivityGroups": [
+        "gravel:VER",
+        "finish:VER"
+      ],
       "templateId": "driver_in_gravel"
     },
     {
-      "id": "f1.v2:driver_in_points:ALB",
+      "id": "f1.v3:driver_in_points:ALB",
       "label": "Albon in the points",
       "description": "Albon finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:ALB",
+      "exclusivityGroups": [
+        "in_points:ALB",
+        "finish:ALB"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:ALO",
+      "id": "f1.v3:driver_in_points:ALO",
       "label": "Alonso in the points",
       "description": "Alonso finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:ALO",
+      "exclusivityGroups": [
+        "in_points:ALO",
+        "finish:ALO"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:BEA",
+      "id": "f1.v3:driver_in_points:BEA",
       "label": "Bearman in the points",
       "description": "Bearman finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:BEA",
+      "exclusivityGroups": [
+        "in_points:BEA",
+        "finish:BEA"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:BOR",
+      "id": "f1.v3:driver_in_points:BOR",
       "label": "Bortoleto in the points",
       "description": "Bortoleto finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:BOR",
+      "exclusivityGroups": [
+        "in_points:BOR",
+        "finish:BOR"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:BOT",
+      "id": "f1.v3:driver_in_points:BOT",
       "label": "Bottas in the points",
       "description": "Bottas finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:BOT",
+      "exclusivityGroups": [
+        "in_points:BOT",
+        "finish:BOT"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:COL",
+      "id": "f1.v3:driver_in_points:COL",
       "label": "Colapinto in the points",
       "description": "Colapinto finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:COL",
+      "exclusivityGroups": [
+        "in_points:COL",
+        "finish:COL"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:GAS",
+      "id": "f1.v3:driver_in_points:GAS",
       "label": "Gasly in the points",
       "description": "Gasly finishes tenth or better.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "in_points:GAS",
+      "exclusivityGroups": [
+        "in_points:GAS",
+        "finish:GAS"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:HAD",
+      "id": "f1.v3:driver_in_points:HAD",
       "label": "Hadjar in the points",
       "description": "Hadjar finishes tenth or better.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "in_points:HAD",
+      "exclusivityGroups": [
+        "in_points:HAD",
+        "finish:HAD"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:HUL",
+      "id": "f1.v3:driver_in_points:HUL",
       "label": "Hulkenberg in the points",
       "description": "Hulkenberg finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:HUL",
+      "exclusivityGroups": [
+        "in_points:HUL",
+        "finish:HUL"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:LAW",
+      "id": "f1.v3:driver_in_points:LAW",
       "label": "Lawson in the points",
       "description": "Lawson finishes tenth or better.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "in_points:LAW",
+      "exclusivityGroups": [
+        "in_points:LAW",
+        "finish:LAW"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:LIN",
+      "id": "f1.v3:driver_in_points:LIN",
       "label": "Lindblad in the points",
       "description": "Lindblad finishes tenth or better.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "in_points:LIN",
+      "exclusivityGroups": [
+        "in_points:LIN",
+        "finish:LIN"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:OCO",
+      "id": "f1.v3:driver_in_points:OCO",
       "label": "Ocon in the points",
       "description": "Ocon finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:OCO",
+      "exclusivityGroups": [
+        "in_points:OCO",
+        "finish:OCO"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:PER",
+      "id": "f1.v3:driver_in_points:PER",
       "label": "Pérez in the points",
       "description": "Pérez finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:PER",
+      "exclusivityGroups": [
+        "in_points:PER",
+        "finish:PER"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:SAI",
+      "id": "f1.v3:driver_in_points:SAI",
       "label": "Sainz in the points",
       "description": "Sainz finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:SAI",
+      "exclusivityGroups": [
+        "in_points:SAI",
+        "finish:SAI"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_in_points:STR",
+      "id": "f1.v3:driver_in_points:STR",
       "label": "Stroll in the points",
       "description": "Stroll finishes tenth or better.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "in_points:STR",
+      "exclusivityGroups": [
+        "in_points:STR",
+        "finish:STR"
+      ],
       "templateId": "driver_in_points"
     },
     {
-      "id": "f1.v2:driver_leads_lap:ANT",
+      "id": "f1.v3:driver_leads_lap:ANT",
       "label": "Antonelli leads a lap",
       "description": "Antonelli is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:ANT",
+      "exclusivityGroups": [
+        "leads_lap:ANT"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:GAS",
+      "id": "f1.v3:driver_leads_lap:GAS",
       "label": "Gasly leads a lap",
       "description": "Gasly is the race leader at the end of any lap.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:GAS",
+      "exclusivityGroups": [
+        "leads_lap:GAS"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:HAD",
+      "id": "f1.v3:driver_leads_lap:HAD",
       "label": "Hadjar leads a lap",
       "description": "Hadjar is the race leader at the end of any lap.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:HAD",
+      "exclusivityGroups": [
+        "leads_lap:HAD"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:HAM",
+      "id": "f1.v3:driver_leads_lap:HAM",
       "label": "Hamilton leads a lap",
       "description": "Hamilton is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:HAM",
+      "exclusivityGroups": [
+        "leads_lap:HAM"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:LAW",
+      "id": "f1.v3:driver_leads_lap:LAW",
       "label": "Lawson leads a lap",
       "description": "Lawson is the race leader at the end of any lap.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:LAW",
+      "exclusivityGroups": [
+        "leads_lap:LAW"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:LEC",
+      "id": "f1.v3:driver_leads_lap:LEC",
       "label": "Leclerc leads a lap",
       "description": "Leclerc is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:LEC",
+      "exclusivityGroups": [
+        "leads_lap:LEC"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:LIN",
+      "id": "f1.v3:driver_leads_lap:LIN",
       "label": "Lindblad leads a lap",
       "description": "Lindblad is the race leader at the end of any lap.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:LIN",
+      "exclusivityGroups": [
+        "leads_lap:LIN"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:NOR",
+      "id": "f1.v3:driver_leads_lap:NOR",
       "label": "Norris leads a lap",
       "description": "Norris is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:NOR",
+      "exclusivityGroups": [
+        "leads_lap:NOR"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:PIA",
+      "id": "f1.v3:driver_leads_lap:PIA",
       "label": "Piastri leads a lap",
       "description": "Piastri is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:PIA",
+      "exclusivityGroups": [
+        "leads_lap:PIA"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:RUS",
+      "id": "f1.v3:driver_leads_lap:RUS",
       "label": "Russell leads a lap",
       "description": "Russell is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:RUS",
+      "exclusivityGroups": [
+        "leads_lap:RUS"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_leads_lap:VER",
+      "id": "f1.v3:driver_leads_lap:VER",
       "label": "Verstappen leads a lap",
       "description": "Verstappen is the race leader at the end of any lap.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "leads_lap:VER",
+      "exclusivityGroups": [
+        "leads_lap:VER"
+      ],
       "templateId": "driver_leads_lap"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:ALB",
+      "id": "f1.v3:driver_moans_at_team:ALB",
       "label": "Albon moans at Williams",
       "description": "Albon complains about the car over Williams team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ALB",
+      "exclusivityGroups": [
+        "radio_moan:ALB"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:ALO",
+      "id": "f1.v3:driver_moans_at_team:ALO",
       "label": "Alonso moans at Aston Martin",
       "description": "Alonso complains about the car over Aston Martin team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ALO",
+      "exclusivityGroups": [
+        "radio_moan:ALO"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:ANT",
+      "id": "f1.v3:driver_moans_at_team:ANT",
       "label": "Antonelli moans at Mercedes",
       "description": "Antonelli complains about the car over Mercedes team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:ANT",
+      "exclusivityGroups": [
+        "radio_moan:ANT"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:BEA",
+      "id": "f1.v3:driver_moans_at_team:BEA",
       "label": "Bearman moans at Haas",
       "description": "Bearman complains about the car over Haas team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BEA",
+      "exclusivityGroups": [
+        "radio_moan:BEA"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:BOR",
+      "id": "f1.v3:driver_moans_at_team:BOR",
       "label": "Bortoleto moans at Audi",
       "description": "Bortoleto complains about the car over Audi team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BOR",
+      "exclusivityGroups": [
+        "radio_moan:BOR"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:BOT",
+      "id": "f1.v3:driver_moans_at_team:BOT",
       "label": "Bottas moans at Cadillac",
       "description": "Bottas complains about the car over Cadillac team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:BOT",
+      "exclusivityGroups": [
+        "radio_moan:BOT"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:COL",
+      "id": "f1.v3:driver_moans_at_team:COL",
       "label": "Colapinto moans at Alpine",
       "description": "Colapinto complains about the car over Alpine team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:COL",
+      "exclusivityGroups": [
+        "radio_moan:COL"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:GAS",
+      "id": "f1.v3:driver_moans_at_team:GAS",
       "label": "Gasly moans at Alpine",
       "description": "Gasly complains about the car over Alpine team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:GAS",
+      "exclusivityGroups": [
+        "radio_moan:GAS"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:HAD",
+      "id": "f1.v3:driver_moans_at_team:HAD",
       "label": "Hadjar moans at Red Bull",
       "description": "Hadjar complains about the car over Red Bull team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HAD",
+      "exclusivityGroups": [
+        "radio_moan:HAD"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:HAM",
+      "id": "f1.v3:driver_moans_at_team:HAM",
       "label": "Hamilton moans at Ferrari",
       "description": "Hamilton complains about the car over Ferrari team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HAM",
+      "exclusivityGroups": [
+        "radio_moan:HAM"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:HUL",
+      "id": "f1.v3:driver_moans_at_team:HUL",
       "label": "Hulkenberg moans at Audi",
       "description": "Hulkenberg complains about the car over Audi team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:HUL",
+      "exclusivityGroups": [
+        "radio_moan:HUL"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:LAW",
+      "id": "f1.v3:driver_moans_at_team:LAW",
       "label": "Lawson moans at Racing Bulls",
       "description": "Lawson complains about the car over Racing Bulls team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LAW",
+      "exclusivityGroups": [
+        "radio_moan:LAW"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:LEC",
+      "id": "f1.v3:driver_moans_at_team:LEC",
       "label": "Leclerc moans at Ferrari",
       "description": "Leclerc complains about the car over Ferrari team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LEC",
+      "exclusivityGroups": [
+        "radio_moan:LEC"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:LIN",
+      "id": "f1.v3:driver_moans_at_team:LIN",
       "label": "Lindblad moans at Racing Bulls",
       "description": "Lindblad complains about the car over Racing Bulls team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:LIN",
+      "exclusivityGroups": [
+        "radio_moan:LIN"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:NOR",
+      "id": "f1.v3:driver_moans_at_team:NOR",
       "label": "Norris moans at McLaren",
       "description": "Norris complains about the car over McLaren team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:NOR",
+      "exclusivityGroups": [
+        "radio_moan:NOR"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:OCO",
+      "id": "f1.v3:driver_moans_at_team:OCO",
       "label": "Ocon moans at Haas",
       "description": "Ocon complains about the car over Haas team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:OCO",
+      "exclusivityGroups": [
+        "radio_moan:OCO"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:PER",
+      "id": "f1.v3:driver_moans_at_team:PER",
       "label": "Pérez moans at Cadillac",
       "description": "Pérez complains about the car over Cadillac team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:PER",
+      "exclusivityGroups": [
+        "radio_moan:PER"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:PIA",
+      "id": "f1.v3:driver_moans_at_team:PIA",
       "label": "Piastri moans at McLaren",
       "description": "Piastri complains about the car over McLaren team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:PIA",
+      "exclusivityGroups": [
+        "radio_moan:PIA"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:RUS",
+      "id": "f1.v3:driver_moans_at_team:RUS",
       "label": "Russell moans at Mercedes",
       "description": "Russell complains about the car over Mercedes team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:RUS",
+      "exclusivityGroups": [
+        "radio_moan:RUS"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:SAI",
+      "id": "f1.v3:driver_moans_at_team:SAI",
       "label": "Sainz moans at Williams",
       "description": "Sainz complains about the car over Williams team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:SAI",
+      "exclusivityGroups": [
+        "radio_moan:SAI"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:STR",
+      "id": "f1.v3:driver_moans_at_team:STR",
       "label": "Stroll moans at Aston Martin",
       "description": "Stroll complains about the car over Aston Martin team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:STR",
+      "exclusivityGroups": [
+        "radio_moan:STR"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_moans_at_team:VER",
+      "id": "f1.v3:driver_moans_at_team:VER",
       "label": "Verstappen moans at Red Bull",
       "description": "Verstappen complains about the car over Red Bull team radio.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "radio_moan:VER",
+      "exclusivityGroups": [
+        "radio_moan:VER"
+      ],
       "templateId": "driver_moans_at_team"
     },
     {
-      "id": "f1.v2:driver_penalty:ALB",
+      "id": "f1.v3:driver_penalty:ALB",
       "label": "Albon penalised",
       "description": "Albon is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:ALB",
+      "exclusivityGroups": [
+        "penalty:ALB"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:ALO",
+      "id": "f1.v3:driver_penalty:ALO",
       "label": "Alonso penalised",
       "description": "Alonso is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:ALO",
+      "exclusivityGroups": [
+        "penalty:ALO"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:ANT",
+      "id": "f1.v3:driver_penalty:ANT",
       "label": "Antonelli penalised",
       "description": "Antonelli is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:ANT",
+      "exclusivityGroups": [
+        "penalty:ANT"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:BEA",
+      "id": "f1.v3:driver_penalty:BEA",
       "label": "Bearman penalised",
       "description": "Bearman is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:BEA",
+      "exclusivityGroups": [
+        "penalty:BEA"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:BOR",
+      "id": "f1.v3:driver_penalty:BOR",
       "label": "Bortoleto penalised",
       "description": "Bortoleto is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:BOR",
+      "exclusivityGroups": [
+        "penalty:BOR"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:BOT",
+      "id": "f1.v3:driver_penalty:BOT",
       "label": "Bottas penalised",
       "description": "Bottas is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:BOT",
+      "exclusivityGroups": [
+        "penalty:BOT"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:COL",
+      "id": "f1.v3:driver_penalty:COL",
       "label": "Colapinto penalised",
       "description": "Colapinto is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:COL",
+      "exclusivityGroups": [
+        "penalty:COL"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:GAS",
+      "id": "f1.v3:driver_penalty:GAS",
       "label": "Gasly penalised",
       "description": "Gasly is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:GAS",
+      "exclusivityGroups": [
+        "penalty:GAS"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:HAD",
+      "id": "f1.v3:driver_penalty:HAD",
       "label": "Hadjar penalised",
       "description": "Hadjar is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:HAD",
+      "exclusivityGroups": [
+        "penalty:HAD"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:HAM",
+      "id": "f1.v3:driver_penalty:HAM",
       "label": "Hamilton penalised",
       "description": "Hamilton is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:HAM",
+      "exclusivityGroups": [
+        "penalty:HAM"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:HUL",
+      "id": "f1.v3:driver_penalty:HUL",
       "label": "Hulkenberg penalised",
       "description": "Hulkenberg is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:HUL",
+      "exclusivityGroups": [
+        "penalty:HUL"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:LAW",
+      "id": "f1.v3:driver_penalty:LAW",
       "label": "Lawson penalised",
       "description": "Lawson is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:LAW",
+      "exclusivityGroups": [
+        "penalty:LAW"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:LEC",
+      "id": "f1.v3:driver_penalty:LEC",
       "label": "Leclerc penalised",
       "description": "Leclerc is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:LEC",
+      "exclusivityGroups": [
+        "penalty:LEC"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:LIN",
+      "id": "f1.v3:driver_penalty:LIN",
       "label": "Lindblad penalised",
       "description": "Lindblad is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:LIN",
+      "exclusivityGroups": [
+        "penalty:LIN"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:NOR",
+      "id": "f1.v3:driver_penalty:NOR",
       "label": "Norris penalised",
       "description": "Norris is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:NOR",
+      "exclusivityGroups": [
+        "penalty:NOR"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:OCO",
+      "id": "f1.v3:driver_penalty:OCO",
       "label": "Ocon penalised",
       "description": "Ocon is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:OCO",
+      "exclusivityGroups": [
+        "penalty:OCO"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:PER",
+      "id": "f1.v3:driver_penalty:PER",
       "label": "Pérez penalised",
       "description": "Pérez is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:PER",
+      "exclusivityGroups": [
+        "penalty:PER"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:PIA",
+      "id": "f1.v3:driver_penalty:PIA",
       "label": "Piastri penalised",
       "description": "Piastri is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:PIA",
+      "exclusivityGroups": [
+        "penalty:PIA"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:RUS",
+      "id": "f1.v3:driver_penalty:RUS",
       "label": "Russell penalised",
       "description": "Russell is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:RUS",
+      "exclusivityGroups": [
+        "penalty:RUS"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:SAI",
+      "id": "f1.v3:driver_penalty:SAI",
       "label": "Sainz penalised",
       "description": "Sainz is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:SAI",
+      "exclusivityGroups": [
+        "penalty:SAI"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:STR",
+      "id": "f1.v3:driver_penalty:STR",
       "label": "Stroll penalised",
       "description": "Stroll is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:STR",
+      "exclusivityGroups": [
+        "penalty:STR"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_penalty:VER",
+      "id": "f1.v3:driver_penalty:VER",
       "label": "Verstappen penalised",
       "description": "Verstappen is given a time or grid penalty by the stewards.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "penalty:VER",
+      "exclusivityGroups": [
+        "penalty:VER"
+      ],
       "templateId": "driver_penalty"
     },
     {
-      "id": "f1.v2:driver_podium:ANT",
+      "id": "f1.v3:driver_podium:ANT",
       "label": "Antonelli on the podium",
       "description": "Antonelli finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:ANT",
+      "exclusivityGroups": [
+        "podium:ANT",
+        "finish:ANT"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:GAS",
+      "id": "f1.v3:driver_podium:GAS",
       "label": "Gasly on the podium",
       "description": "Gasly finishes in the top three.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "podium:GAS",
+      "exclusivityGroups": [
+        "podium:GAS",
+        "finish:GAS"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:HAD",
+      "id": "f1.v3:driver_podium:HAD",
       "label": "Hadjar on the podium",
       "description": "Hadjar finishes in the top three.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "podium:HAD",
+      "exclusivityGroups": [
+        "podium:HAD",
+        "finish:HAD"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:HAM",
+      "id": "f1.v3:driver_podium:HAM",
       "label": "Hamilton on the podium",
       "description": "Hamilton finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:HAM",
+      "exclusivityGroups": [
+        "podium:HAM",
+        "finish:HAM"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:LAW",
+      "id": "f1.v3:driver_podium:LAW",
       "label": "Lawson on the podium",
       "description": "Lawson finishes in the top three.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "podium:LAW",
+      "exclusivityGroups": [
+        "podium:LAW",
+        "finish:LAW"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:LEC",
+      "id": "f1.v3:driver_podium:LEC",
       "label": "Leclerc on the podium",
       "description": "Leclerc finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:LEC",
+      "exclusivityGroups": [
+        "podium:LEC",
+        "finish:LEC"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:LIN",
+      "id": "f1.v3:driver_podium:LIN",
       "label": "Lindblad on the podium",
       "description": "Lindblad finishes in the top three.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "podium:LIN",
+      "exclusivityGroups": [
+        "podium:LIN",
+        "finish:LIN"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:NOR",
+      "id": "f1.v3:driver_podium:NOR",
       "label": "Norris on the podium",
       "description": "Norris finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:NOR",
+      "exclusivityGroups": [
+        "podium:NOR",
+        "finish:NOR"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:PIA",
+      "id": "f1.v3:driver_podium:PIA",
       "label": "Piastri on the podium",
       "description": "Piastri finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:PIA",
+      "exclusivityGroups": [
+        "podium:PIA",
+        "finish:PIA"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:RUS",
+      "id": "f1.v3:driver_podium:RUS",
       "label": "Russell on the podium",
       "description": "Russell finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:RUS",
+      "exclusivityGroups": [
+        "podium:RUS",
+        "finish:RUS"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_podium:VER",
+      "id": "f1.v3:driver_podium:VER",
       "label": "Verstappen on the podium",
       "description": "Verstappen finishes in the top three.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "podium:VER",
+      "exclusivityGroups": [
+        "podium:VER",
+        "finish:VER"
+      ],
       "templateId": "driver_podium"
     },
     {
-      "id": "f1.v2:driver_swears:ALB",
+      "id": "f1.v3:driver_swears:ALB",
       "label": "Albon swears on radio",
       "description": "Albon swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:ALB",
+      "exclusivityGroups": [
+        "swears:ALB"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:ALO",
+      "id": "f1.v3:driver_swears:ALO",
       "label": "Alonso swears on radio",
       "description": "Alonso swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:ALO",
+      "exclusivityGroups": [
+        "swears:ALO"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:ANT",
+      "id": "f1.v3:driver_swears:ANT",
       "label": "Antonelli swears on radio",
       "description": "Antonelli swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:ANT",
+      "exclusivityGroups": [
+        "swears:ANT"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:BEA",
+      "id": "f1.v3:driver_swears:BEA",
       "label": "Bearman swears on radio",
       "description": "Bearman swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:BEA",
+      "exclusivityGroups": [
+        "swears:BEA"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:BOR",
+      "id": "f1.v3:driver_swears:BOR",
       "label": "Bortoleto swears on radio",
       "description": "Bortoleto swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:BOR",
+      "exclusivityGroups": [
+        "swears:BOR"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:BOT",
+      "id": "f1.v3:driver_swears:BOT",
       "label": "Bottas swears on radio",
       "description": "Bottas swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:BOT",
+      "exclusivityGroups": [
+        "swears:BOT"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:COL",
+      "id": "f1.v3:driver_swears:COL",
       "label": "Colapinto swears on radio",
       "description": "Colapinto swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:COL",
+      "exclusivityGroups": [
+        "swears:COL"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:GAS",
+      "id": "f1.v3:driver_swears:GAS",
       "label": "Gasly swears on radio",
       "description": "Gasly swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:GAS",
+      "exclusivityGroups": [
+        "swears:GAS"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:HAD",
+      "id": "f1.v3:driver_swears:HAD",
       "label": "Hadjar swears on radio",
       "description": "Hadjar swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:HAD",
+      "exclusivityGroups": [
+        "swears:HAD"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:HAM",
+      "id": "f1.v3:driver_swears:HAM",
       "label": "Hamilton swears on radio",
       "description": "Hamilton swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:HAM",
+      "exclusivityGroups": [
+        "swears:HAM"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:HUL",
+      "id": "f1.v3:driver_swears:HUL",
       "label": "Hulkenberg swears on radio",
       "description": "Hulkenberg swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:HUL",
+      "exclusivityGroups": [
+        "swears:HUL"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:LAW",
+      "id": "f1.v3:driver_swears:LAW",
       "label": "Lawson swears on radio",
       "description": "Lawson swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:LAW",
+      "exclusivityGroups": [
+        "swears:LAW"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:LEC",
+      "id": "f1.v3:driver_swears:LEC",
       "label": "Leclerc swears on radio",
       "description": "Leclerc swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:LEC",
+      "exclusivityGroups": [
+        "swears:LEC"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:LIN",
+      "id": "f1.v3:driver_swears:LIN",
       "label": "Lindblad swears on radio",
       "description": "Lindblad swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:LIN",
+      "exclusivityGroups": [
+        "swears:LIN"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:NOR",
+      "id": "f1.v3:driver_swears:NOR",
       "label": "Norris swears on radio",
       "description": "Norris swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:NOR",
+      "exclusivityGroups": [
+        "swears:NOR"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:OCO",
+      "id": "f1.v3:driver_swears:OCO",
       "label": "Ocon swears on radio",
       "description": "Ocon swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:OCO",
+      "exclusivityGroups": [
+        "swears:OCO"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:PER",
+      "id": "f1.v3:driver_swears:PER",
       "label": "Pérez swears on radio",
       "description": "Pérez swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:PER",
+      "exclusivityGroups": [
+        "swears:PER"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:PIA",
+      "id": "f1.v3:driver_swears:PIA",
       "label": "Piastri swears on radio",
       "description": "Piastri swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:PIA",
+      "exclusivityGroups": [
+        "swears:PIA"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:RUS",
+      "id": "f1.v3:driver_swears:RUS",
       "label": "Russell swears on radio",
       "description": "Russell swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:RUS",
+      "exclusivityGroups": [
+        "swears:RUS"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:SAI",
+      "id": "f1.v3:driver_swears:SAI",
       "label": "Sainz swears on radio",
       "description": "Sainz swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:SAI",
+      "exclusivityGroups": [
+        "swears:SAI"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:STR",
+      "id": "f1.v3:driver_swears:STR",
       "label": "Stroll swears on radio",
       "description": "Stroll swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:STR",
+      "exclusivityGroups": [
+        "swears:STR"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_swears:VER",
+      "id": "f1.v3:driver_swears:VER",
       "label": "Verstappen swears on radio",
       "description": "Verstappen swears over team radio, bleeped or not.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "swears:VER",
+      "exclusivityGroups": [
+        "swears:VER"
+      ],
       "templateId": "driver_swears"
     },
     {
-      "id": "f1.v2:driver_wins:ANT",
+      "id": "f1.v3:driver_wins:ANT",
       "label": "Antonelli wins",
       "description": "Antonelli takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:ANT"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:GAS",
+      "id": "f1.v3:driver_wins:GAS",
       "label": "Gasly wins",
       "description": "Gasly takes the chequered flag in first place.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:GAS"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:HAD",
+      "id": "f1.v3:driver_wins:HAD",
       "label": "Hadjar wins",
       "description": "Hadjar takes the chequered flag in first place.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:HAD"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:HAM",
+      "id": "f1.v3:driver_wins:HAM",
       "label": "Hamilton wins",
       "description": "Hamilton takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:HAM"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:LAW",
+      "id": "f1.v3:driver_wins:LAW",
       "label": "Lawson wins",
       "description": "Lawson takes the chequered flag in first place.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:LAW"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:LEC",
+      "id": "f1.v3:driver_wins:LEC",
       "label": "Leclerc wins",
       "description": "Leclerc takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:LEC"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:LIN",
+      "id": "f1.v3:driver_wins:LIN",
       "label": "Lindblad wins",
       "description": "Lindblad takes the chequered flag in first place.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:LIN"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:NOR",
+      "id": "f1.v3:driver_wins:NOR",
       "label": "Norris wins",
       "description": "Norris takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:NOR"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:PIA",
+      "id": "f1.v3:driver_wins:PIA",
       "label": "Piastri wins",
       "description": "Piastri takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:PIA"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:RUS",
+      "id": "f1.v3:driver_wins:RUS",
       "label": "Russell wins",
       "description": "Russell takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:RUS"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:driver_wins:VER",
+      "id": "f1.v3:driver_wins:VER",
       "label": "Verstappen wins",
       "description": "Verstappen takes the chequered flag in first place.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:VER"
+      ],
       "templateId": "driver_wins"
     },
     {
-      "id": "f1.v2:hand:alonso_age_stat",
+      "id": "f1.v3:hand:alonso_age_stat",
       "label": "Alonso Age Stat",
       "description": "A statistic about Alonso's age or career length airs.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:silly_stat",
+      "exclusivityGroups": [
+        "broadcast:silly_stat"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:blue_flags_ignored",
+      "id": "f1.v3:hand:blue_flags_ignored",
       "label": "Blue Flags Ignored",
       "description": "A driver being lapped is slow to move aside and the booth notices.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "stewards:blue_flags",
+      "exclusivityGroups": [
+        "stewards:blue_flags"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:cadillac_double_points",
+      "id": "f1.v3:hand:cadillac_double_points",
       "label": "Both Cadillacs in the Points",
       "description": "Cadillac finishes the race with both cars in the top ten.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "team:cadillac_overperforms",
+      "exclusivityGroups": [
+        "team:cadillac_overperforms"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:cadillac_not_last",
+      "id": "f1.v3:hand:cadillac_not_last",
       "label": "Cadillac Not Last",
       "description": "Either Cadillac finishes ahead of a pre-2026 team's car.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "team:cadillac_overperforms",
+      "exclusivityGroups": [
+        "team:cadillac_overperforms"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:celeb_in_garage",
+      "id": "f1.v3:hand:celeb_in_garage",
       "label": "A-List Celeb in the Garage",
       "description": "A genuinely famous person shown in a team's garage.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "garage:celeb",
+      "exclusivityGroups": [
+        "garage:celeb"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:copy_and_nothing_else",
+      "id": "f1.v3:hand:copy_and_nothing_else",
       "label": "\"Copy\" and Nothing Else",
       "description": "A driver's entire response to bad news is \"copy\".",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:copy_only",
+      "exclusivityGroups": [
+        "radio:copy_only"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:croftys_silly_stat",
+      "id": "f1.v3:hand:croftys_silly_stat",
       "label": "Crofty's Silly Stat",
       "description": "Crofty delivers a statistic nobody needed.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:silly_stat",
+      "exclusivityGroups": [
+        "broadcast:silly_stat"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:cuts_away_from_battle",
+      "id": "f1.v3:hand:cuts_away_from_battle",
       "label": "TV Cuts Away From Battle",
       "description": "The director cuts away from a live on-track fight to show something else.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:cut_away",
+      "exclusivityGroups": [
+        "broadcast:cut_away"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:dad_looks_nervous",
+      "id": "f1.v3:hand:dad_looks_nervous",
       "label": "Driver's Dad Looks Nervous",
       "description": "A driver's parent shown mid-anxiety.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "garage:parent",
+      "exclusivityGroups": [
+        "garage:parent"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:debris_yellow",
+      "id": "f1.v3:hand:debris_yellow",
       "label": "Debris Yellow",
       "description": "A local yellow or VSC specifically for debris on track.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:debris",
+      "exclusivityGroups": [
+        "neutralisation:debris"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:double_dnf",
+      "id": "f1.v3:hand:double_dnf",
       "label": "Double DNF for One Team",
       "description": "Both cars from the same team fail to finish.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:double_stack",
+      "id": "f1.v3:hand:double_stack",
       "label": "Double Stack Pit Stop",
       "description": "A team pits both cars on the same lap, one behind the other.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "pitlane:double_stack",
+      "exclusivityGroups": [
+        "pitlane:double_stack"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:early_retirement",
+      "id": "f1.v3:hand:early_retirement",
       "label": "Retirement Before Lap 10",
       "description": "Any car is out of the race within the first ten laps.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:empty_seats_shown",
+      "id": "f1.v3:hand:empty_seats_shown",
       "label": "Empty Grandstand Shown",
       "description": "The camera lingers on visibly empty seats.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "crowd:empty_seats",
+      "exclusivityGroups": [
+        "crowd:empty_seats"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:engineer_were_looking",
+      "id": "f1.v3:hand:engineer_were_looking",
       "label": "Engineer Says \"We're Looking\"",
       "description": "The classic stalling answer: \"we're looking into it\", \"we'll come back to you\".",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:stalling",
+      "exclusivityGroups": [
+        "radio:stalling"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:five_second_penalty",
+      "id": "f1.v3:hand:five_second_penalty",
       "label": "5-Second Penalty",
       "description": "Any driver receives a 5-second time penalty.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "stewards:time_penalty",
+      "exclusivityGroups": [
+        "stewards:time_penalty"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:front_wing_change",
+      "id": "f1.v3:hand:front_wing_change",
       "label": "Front Wing Change",
       "description": "A car pits for a new nose after damage.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "damage:front_wing",
+      "exclusivityGroups": [
+        "damage:front_wing"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:full_beans",
+      "id": "f1.v3:hand:full_beans",
       "label": "Full Beans",
       "description": "Any driver or engineer says \"full beans\".",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:full_beans",
+      "exclusivityGroups": [
+        "radio:full_beans"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:grazie_ragazzi",
+      "id": "f1.v3:hand:grazie_ragazzi",
       "label": "\"Grazie Ragazzi\"",
       "description": "Ferrari radio victory/celebration in Italian on the world feed.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:grazie_ragazzi",
+      "exclusivityGroups": [
+        "radio:grazie_ragazzi"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:hammertime",
+      "id": "f1.v3:hand:hammertime",
       "label": "Hammertime",
       "description": "Hamilton gets (or references) the \"Hammertime\" call.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:hammertime",
+      "exclusivityGroups": [
+        "radio:hammertime"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:home_hero_hyped",
+      "id": "f1.v3:hand:home_hero_hyped",
       "label": "Home Hero Hyped",
       "description": "The local driver's every move gets outsized coverage.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:home_hero",
+      "exclusivityGroups": [
+        "broadcast:home_hero"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:investigation_postponed",
+      "id": "f1.v3:hand:investigation_postponed",
       "label": "Verdict After the Race",
       "description": "Penalty investigation is postponed until after the race.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "stewards:postponed",
+      "exclusivityGroups": [
+        "stewards:postponed"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:kid_ear_defenders",
+      "id": "f1.v3:hand:kid_ear_defenders",
       "label": "Kid With Ear Defenders",
       "description": "A child in ear defenders shown in the garage or grandstand.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "garage:kid",
+      "exclusivityGroups": [
+        "garage:kid"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:lap_one_contact",
+      "id": "f1.v3:hand:lap_one_contact",
       "label": "Lap 1 Contact",
       "description": "Any contact between cars on the opening lap.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "contact:lap_one",
+      "exclusivityGroups": [
+        "contact:lap_one"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:lead_change_on_track",
+      "id": "f1.v3:hand:lead_change_on_track",
       "label": "Lead Changes Hands on Track",
       "description": "The race lead changes hands on track rather than through the pit stops.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "race:lead_change",
+      "exclusivityGroups": [
+        "race:lead_change"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:marshal_sprints",
+      "id": "f1.v3:hand:marshal_sprints",
       "label": "Marshal Sprints Across Track",
       "description": "Marshals dash out to clear debris.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:debris",
+      "exclusivityGroups": [
+        "neutralisation:debris"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:max_complains",
+      "id": "f1.v3:hand:max_complains",
       "label": "Max Complains About the Car",
       "description": "Verstappen critiques balance, energy, or strategy on the radio.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio_moan:VER",
+      "exclusivityGroups": [
+        "radio_moan:VER"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:mexican_wave",
+      "id": "f1.v3:hand:mexican_wave",
       "label": "Mexican Wave in the Stands",
       "description": "The crowd starts a wave and the director cuts to it.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "crowd:wave",
+      "exclusivityGroups": [
+        "crowd:wave"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:nobody_retires",
+      "id": "f1.v3:hand:nobody_retires",
       "label": "Nobody Retires",
       "description": "Every car that started the race is still running at the chequered flag.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:nostalgia_2021",
+      "id": "f1.v3:hand:nostalgia_2021",
       "label": "2021 Nostalgia",
       "description": "Max and Lewis battle it out.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "storyline:2021",
+      "exclusivityGroups": [
+        "storyline:2021"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:onboard_bouncing",
+      "id": "f1.v3:hand:onboard_bouncing",
       "label": "Onboard Shows Bouncing",
       "description": "An onboard camera makes the car's porpoising or bouncing obvious.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:bouncing",
+      "exclusivityGroups": [
+        "broadcast:bouncing"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:orange_smoke",
+      "id": "f1.v3:hand:orange_smoke",
       "label": "Orange Smoke in Grandstand",
       "description": "Verstappen fans light flares/smoke.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "crowd:orange_smoke",
+      "exclusivityGroups": [
+        "crowd:orange_smoke"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:override_explained",
+      "id": "f1.v3:hand:override_explained",
       "label": "Manual Override Explained",
       "description": "Commentary explains the 2026 manual override boost as somebody uses it.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:regs_explainer",
+      "exclusivityGroups": [
+        "broadcast:regs_explainer"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:padel_or_golf",
+      "id": "f1.v3:hand:padel_or_golf",
       "label": "Padel or Golf Mention",
       "description": "Somebody mentions drivers' padel/golf hobbies on air.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:hobbies",
+      "exclusivityGroups": [
+        "broadcast:hobbies"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:papaya_rules",
+      "id": "f1.v3:hand:papaya_rules",
       "label": "Papaya Rules",
       "description": "Broadcasters bring up \"Papaya Rules\".",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "paddock:papaya_rules",
+      "exclusivityGroups": [
+        "paddock:papaya_rules"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:partner_in_garage",
+      "id": "f1.v3:hand:partner_in_garage",
       "label": "Driver Girlfriend in Garage",
       "description": "Camera cuts to a driver's partner reacting in the garage.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "garage:partner",
+      "exclusivityGroups": [
+        "garage:partner"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:photo_finish",
+      "id": "f1.v3:hand:photo_finish",
       "label": "Photo Finish Under 0.5s",
       "description": "The top two are separated by less than half a second at the line.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "finish:photo_finish",
+      "exclusivityGroups": [
+        "finish:photo_finish"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:pit_fire",
+      "id": "f1.v3:hand:pit_fire",
       "label": "Fire in the Pit Box",
       "description": "Flames or a fire extinguisher in a pit box during a stop.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "pitlane:fire",
+      "exclusivityGroups": [
+        "pitlane:fire"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:pit_window_talk",
+      "id": "f1.v3:hand:pit_window_talk",
       "label": "Pit Window Mentioned",
       "description": "Commentary talks about a driver's pit window opening or closing.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:pit_window",
+      "exclusivityGroups": [
+        "broadcast:pit_window"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:podium_boos",
+      "id": "f1.v3:hand:podium_boos",
       "label": "Crowd Boos on the Podium",
       "description": "Audible booing during the podium ceremony.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "crowd:boos",
+      "exclusivityGroups": [
+        "crowd:boos"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:power_unit_failure",
+      "id": "f1.v3:hand:power_unit_failure",
       "label": "Power Unit Failure",
       "description": "A retirement attributed on air to the new power unit (ICE, battery, or electrics).",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:race_ends_behind_sc",
+      "id": "f1.v3:hand:race_ends_behind_sc",
       "label": "Race Ends Behind Safety Car",
       "description": "The chequered flag falls with the safety car still leading the field.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:car",
+      "exclusivityGroups": [
+        "neutralisation:car"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:rain_arrives",
+      "id": "f1.v3:hand:rain_arrives",
       "label": "Rain Starts Falling",
       "description": "Rain reaches the circuit during the race, wherever on the track.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "weather:rain",
+      "exclusivityGroups": [
+        "weather:rain"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:rain_never_arrives",
+      "id": "f1.v3:hand:rain_never_arrives",
       "label": "Rain Never Arrives",
       "description": "Rain is forecast or radar-watched on air, but the race stays dry.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "weather:rain",
+      "exclusivityGroups": [
+        "weather:rain"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:red_flag",
+      "id": "f1.v3:hand:red_flag",
       "label": "Red Flag",
       "description": "The race is red-flagged and stopped.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:red_flag",
+      "exclusivityGroups": [
+        "neutralisation:red_flag"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:refuses_team_order",
+      "id": "f1.v3:hand:refuses_team_order",
       "label": "Driver Refuses Team Order",
       "description": "A driver is told to hold position or swap places, and audibly does not comply.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:refuses_order",
+      "exclusivityGroups": [
+        "radio:refuses_order"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:regs_re_explained",
+      "id": "f1.v3:hand:regs_re_explained",
       "label": "2026 Regs Re-Explained",
       "description": "The booth stops to re-explain a 2026 rule the audience is assumed to have missed.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:regs_explainer",
+      "exclusivityGroups": [
+        "broadcast:regs_explainer"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:replay_three_times",
+      "id": "f1.v3:hand:replay_three_times",
       "label": "Replay Shown 3+ Times",
       "description": "The same incident replayed at least three times.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:replay",
+      "exclusivityGroups": [
+        "broadcast:replay"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:rookie_podium",
+      "id": "f1.v3:hand:rookie_podium",
       "label": "Rookie on the Podium",
       "description": "A driver in their first full season finishes in the top three.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "podium:rookie",
+      "exclusivityGroups": [
+        "podium:rookie"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:russell_bad_luck",
+      "id": "f1.v3:hand:russell_bad_luck",
       "label": "George Russell Bad Luck",
       "description": "Russell loses a result to something outside his control — reliability, strategy, or someone else's mess.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "storyline:russell_luck",
+      "exclusivityGroups": [
+        "storyline:russell_luck"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:safety_car",
+      "id": "f1.v3:hand:safety_car",
       "label": "Safety Car",
       "description": "A full safety car is deployed at any point in the race.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:car",
+      "exclusivityGroups": [
+        "neutralisation:car"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:sarcastic_radio",
+      "id": "f1.v3:hand:sarcastic_radio",
       "label": "Sarcastic Radio Reply",
       "description": "A driver answers the pit wall with pure sarcasm.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:sarcasm",
+      "exclusivityGroups": [
+        "radio:sarcasm"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:sparks_under_braking",
+      "id": "f1.v3:hand:sparks_under_braking",
       "label": "Sparks From the Skid Block",
       "description": "Showers of sparks off a car's skid block, in a replay or on an onboard.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:sparks",
+      "exclusivityGroups": [
+        "broadcast:sparks"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:standing_restart",
+      "id": "f1.v3:hand:standing_restart",
       "label": "Standing Restart",
       "description": "The race is restarted from a standing grid after a stoppage.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:red_flag",
+      "exclusivityGroups": [
+        "neutralisation:red_flag"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:stewards_baffle_booth",
+      "id": "f1.v3:hand:stewards_baffle_booth",
       "label": "Steward Decision Baffles Booth",
       "description": "Commentary is openly confused by a stewards' ruling.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:steward_confusion",
+      "exclusivityGroups": [
+        "broadcast:steward_confusion"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:strategist_head_in_hands",
+      "id": "f1.v3:hand:strategist_head_in_hands",
       "label": "Strategist Head in Hands",
       "description": "A pit wall strategist shown with head in hands.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "paddock:head_in_hands",
+      "exclusivityGroups": [
+        "paddock:head_in_hands"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:ten_second_penalty",
+      "id": "f1.v3:hand:ten_second_penalty",
       "label": "10-Second Penalty",
       "description": "Any driver receives a 10-second penalty or worse (drive-through, stop-go).",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "stewards:time_penalty",
+      "exclusivityGroups": [
+        "stewards:time_penalty"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:that_was_dangerous",
+      "id": "f1.v3:hand:that_was_dangerous",
       "label": "\"That Was Dangerous\"",
       "description": "A driver complains that a rival's move was dangerous.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:dangerous",
+      "exclusivityGroups": [
+        "radio:dangerous"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:track_limits",
+      "id": "f1.v3:hand:track_limits",
       "label": "Track Limits Lap Deleted",
       "description": "A lap time is deleted for track limits during the race.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "stewards:track_limits",
+      "exclusivityGroups": [
+        "stewards:track_limits"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:trophy_handled_badly",
+      "id": "f1.v3:hand:trophy_handled_badly",
       "label": "Trophy Handled Badly",
       "description": "A trophy is dropped, broken, or awkwardly juggled on the podium.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "podium:trophy_mishap",
+      "exclusivityGroups": [
+        "podium:trophy_mishap"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:two_secs_ted",
+      "id": "f1.v3:hand:two_secs_ted",
       "label": "2 Secs Ted",
       "description": "Ted Kravitz gets interrupted mid-sentence by driver comms or the director.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:ted",
+      "exclusivityGroups": [
+        "broadcast:ted"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:typical_ferrari",
+      "id": "f1.v3:hand:typical_ferrari",
       "label": "Typical Ferrari",
       "description": "Ferrari makes a questionable strategy call.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "paddock:typical_ferrari",
+      "exclusivityGroups": [
+        "paddock:typical_ferrari"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:tyre_closeup",
+      "id": "f1.v3:hand:tyre_closeup",
       "label": "Tyre Blistering Close-Up",
       "description": "The broadcast shows a close-up of a blistered or grained tyre surface.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "broadcast:tyre_closeup",
+      "exclusivityGroups": [
+        "broadcast:tyre_closeup"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:tyres_are_dead",
+      "id": "f1.v3:hand:tyres_are_dead",
       "label": "\"Tyres Are Dead\"",
       "description": "A driver declares their tyres gone/dead/finished.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:tyres_dead",
+      "exclusivityGroups": [
+        "radio:tyres_dead"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:unsafe_release",
+      "id": "f1.v3:hand:unsafe_release",
       "label": "Unsafe Release",
       "description": "A car is released into the path of another in the pit lane (penalty or investigation).",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "pitlane:unsafe_release",
+      "exclusivityGroups": [
+        "pitlane:unsafe_release"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:vasseur_laughs_it_off",
+      "id": "f1.v3:hand:vasseur_laughs_it_off",
       "label": "Fred Vasseur Laughs It Off",
       "description": "Ferrari's boss deflects a crisis question with a chuckle.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "paddock:vasseur_laughs",
+      "exclusivityGroups": [
+        "paddock:vasseur_laughs"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:vsc",
+      "id": "f1.v3:hand:vsc",
       "label": "VSC",
       "description": "A Virtual Safety Car period is called.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "neutralisation:car",
+      "exclusivityGroups": [
+        "neutralisation:car"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:wet_tyres",
+      "id": "f1.v3:hand:wet_tyres",
       "label": "Rain Tyres Fitted",
       "description": "At least one car fits intermediate or full wet tyres during the race.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "weather:rain",
+      "exclusivityGroups": [
+        "weather:rain"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:whos_behind_me",
+      "id": "f1.v3:hand:whos_behind_me",
       "label": "\"Who's Behind Me?\"",
       "description": "A driver has to ask who they're racing.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "radio:whos_behind",
+      "exclusivityGroups": [
+        "radio:whos_behind"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:hand:win_from_outside_top3",
+      "id": "f1.v3:hand:win_from_outside_top3",
       "label": "Winner Started Outside Top 3",
       "description": "The race winner started from fourth on the grid or further back.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner"
+      ],
       "templateId": null
     },
     {
-      "id": "f1.v2:team_double_points:ALP",
+      "id": "f1.v3:team_double_points:ALP",
       "label": "Alpine double points",
       "description": "Both Alpine cars finish in the points.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "double_points:ALP",
+      "exclusivityGroups": [
+        "double_points:ALP"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_double_points:FER",
+      "id": "f1.v3:team_double_points:FER",
       "label": "Ferrari double points",
       "description": "Both Ferrari cars finish in the points.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "double_points:FER",
+      "exclusivityGroups": [
+        "double_points:FER"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_double_points:MCL",
+      "id": "f1.v3:team_double_points:MCL",
       "label": "McLaren double points",
       "description": "Both McLaren cars finish in the points.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "double_points:MCL",
+      "exclusivityGroups": [
+        "double_points:MCL"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_double_points:MER",
+      "id": "f1.v3:team_double_points:MER",
       "label": "Mercedes double points",
       "description": "Both Mercedes cars finish in the points.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "double_points:MER",
+      "exclusivityGroups": [
+        "double_points:MER"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_double_points:RBL",
+      "id": "f1.v3:team_double_points:RBL",
       "label": "Racing Bulls double points",
       "description": "Both Racing Bulls cars finish in the points.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "double_points:RBL",
+      "exclusivityGroups": [
+        "double_points:RBL"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_double_points:RBR",
+      "id": "f1.v3:team_double_points:RBR",
       "label": "Red Bull double points",
       "description": "Both Red Bull cars finish in the points.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "double_points:RBR",
+      "exclusivityGroups": [
+        "double_points:RBR"
+      ],
       "templateId": "team_double_points"
     },
     {
-      "id": "f1.v2:team_slow_stop:ALP",
+      "id": "f1.v3:team_slow_stop:ALP",
       "label": "Alpine slow pit stop",
       "description": "A pit stop for Alpine goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:ALP",
+      "exclusivityGroups": [
+        "slow_stop:ALP"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:AMR",
+      "id": "f1.v3:team_slow_stop:AMR",
       "label": "Aston Martin slow pit stop",
       "description": "A pit stop for Aston Martin goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:AMR",
+      "exclusivityGroups": [
+        "slow_stop:AMR"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:AUD",
+      "id": "f1.v3:team_slow_stop:AUD",
       "label": "Audi slow pit stop",
       "description": "A pit stop for Audi goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:AUD",
+      "exclusivityGroups": [
+        "slow_stop:AUD"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:CAD",
+      "id": "f1.v3:team_slow_stop:CAD",
       "label": "Cadillac slow pit stop",
       "description": "A pit stop for Cadillac goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:CAD",
+      "exclusivityGroups": [
+        "slow_stop:CAD"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:FER",
+      "id": "f1.v3:team_slow_stop:FER",
       "label": "Ferrari slow pit stop",
       "description": "A pit stop for Ferrari goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:FER",
+      "exclusivityGroups": [
+        "slow_stop:FER"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:HAA",
+      "id": "f1.v3:team_slow_stop:HAA",
       "label": "Haas slow pit stop",
       "description": "A pit stop for Haas goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:HAA",
+      "exclusivityGroups": [
+        "slow_stop:HAA"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:MCL",
+      "id": "f1.v3:team_slow_stop:MCL",
       "label": "McLaren slow pit stop",
       "description": "A pit stop for McLaren goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:MCL",
+      "exclusivityGroups": [
+        "slow_stop:MCL"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:MER",
+      "id": "f1.v3:team_slow_stop:MER",
       "label": "Mercedes slow pit stop",
       "description": "A pit stop for Mercedes goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:MER",
+      "exclusivityGroups": [
+        "slow_stop:MER"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:RBL",
+      "id": "f1.v3:team_slow_stop:RBL",
       "label": "Racing Bulls slow pit stop",
       "description": "A pit stop for Racing Bulls goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:RBL",
+      "exclusivityGroups": [
+        "slow_stop:RBL"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:RBR",
+      "id": "f1.v3:team_slow_stop:RBR",
       "label": "Red Bull slow pit stop",
       "description": "A pit stop for Red Bull goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:RBR",
+      "exclusivityGroups": [
+        "slow_stop:RBR"
+      ],
       "templateId": "team_slow_stop"
     },
     {
-      "id": "f1.v2:team_slow_stop:WIL",
+      "id": "f1.v3:team_slow_stop:WIL",
       "label": "Williams slow pit stop",
       "description": "A pit stop for Williams goes wrong — slow, unsafe or a wheel not on.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "slow_stop:WIL",
+      "exclusivityGroups": [
+        "slow_stop:WIL"
+      ],
       "templateId": "team_slow_stop"
     }
   ]

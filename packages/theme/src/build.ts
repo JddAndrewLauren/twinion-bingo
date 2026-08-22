@@ -140,7 +140,9 @@ function expandTemplate(
     description: expand(template.description, expansions.names, where, errors),
     tier: rule,
     source: 'generated',
-    exclusivityGroup: expand(template.exclusivityGroup, expansions.keys, where, errors),
+    exclusivityGroups: template.exclusivityGroups.map((group) =>
+      expand(group, expansions.keys, where, errors),
+    ),
     templateId: template.id,
   };
 }
@@ -152,7 +154,7 @@ function handcraftedSquare(square: HandcraftedSquare, meta: ThemeMeta): PoolSqua
     description: square.description,
     tier: square.tier,
     source: 'handcrafted',
-    exclusivityGroup: square.exclusivityGroup,
+    exclusivityGroups: square.exclusivityGroups,
     templateId: null,
   };
 }

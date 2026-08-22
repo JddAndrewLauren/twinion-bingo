@@ -83,16 +83,22 @@ describe('contradiction families in the committed pool', () => {
    * is the check that would have caught the defect at pool-build time rather than
    * after a card was dealt.
    */
-  it.each(FAMILIES)('files every $name square under one exclusivity group', (family) => {
+  it.each(FAMILIES)('files every $name square under one shared exclusivity group', (family) => {
     const members = membersOf(family);
     const first = members[0]!;
 
     for (const square of members) {
+      const shared = square.exclusivityGroups.some((group) =>
+        first.exclusivityGroups.includes(group),
+      );
+
       expect(
-        square.exclusivityGroup,
+        shared,
         `"${square.id}" and "${first.id}" contradict each other (${family.why}), ` +
-          'so they have to share one exclusivity group',
-      ).toBe(first.exclusivityGroup);
+          `so they have to share a group — "${first.id}" carries ` +
+          `[${first.exclusivityGroups.join(', ')}], "${square.id}" carries ` +
+          `[${square.exclusivityGroups.join(', ')}]`,
+      ).toBe(true);
     }
   });
 });
@@ -134,5 +140,59 @@ describe('cards dealt from the committed pool', () => {
     }
 
     expect(dealt).toBe(SEEDS * PLAYERS.length);
+  });
+});
+
+/**
+ * #121's own acceptance criteria: the general regression the fix makes
+ * possible, and the named defect it was written against, both checked directly
+ * off `exclusivityGroups` rather than off a hand-picked `FAMILIES` list.
+ */
+describe('#121 — exclusivity groups become a set', () => {
+  const byId = new Map(pool.squares.map((square) => [square.id, square]));
+  const SEEDS = 40;
+  const PLAYERS = ['a', 'b', 'c', 'd', 'e', 'f'];
+
+  it('never deals a card holding two squares that share any exclusivity group', () => {
+    let dealt = 0;
+
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const deck = composeDeck(pool, `groups-seed-${seed}`);
+
+      for (const player of PLAYERS) {
+        const card = dealCard(deck, `groups-seed-${seed}`, player);
+        const groups = card.flatMap((id) => byId.get(id)!.exclusivityGroups);
+
+        expect(
+          new Set(groups).size,
+          `seed ${seed}, player ${player}: two of the dealt squares share a group`,
+        ).toBe(groups.length);
+
+        dealt += 1;
+      }
+    }
+
+    expect(dealt).toBe(SEEDS * PLAYERS.length);
+  });
+
+  it('never carries "Norris wins" and "Norris on the podium" on the same card', () => {
+    const winsId = `${pool.themeId}.${pool.poolVersion}:driver_wins:NOR`;
+    const podiumId = `${pool.themeId}.${pool.poolVersion}:driver_podium:NOR`;
+
+    expect(byId.has(winsId), winsId).toBe(true);
+    expect(byId.has(podiumId), podiumId).toBe(true);
+
+    for (let seed = 0; seed < SEEDS; seed += 1) {
+      const deck = composeDeck(pool, `norris-seed-${seed}`);
+
+      for (const player of PLAYERS) {
+        const card = dealCard(deck, `norris-seed-${seed}`, player);
+
+        expect(
+          card.includes(winsId) && card.includes(podiumId),
+          `seed ${seed}, player ${player}: card holds both "${winsId}" and "${podiumId}"`,
+        ).toBe(false);
+      }
+    }
   });
 });

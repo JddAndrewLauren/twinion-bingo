@@ -5,7 +5,10 @@
       "entityType": "driver",
       "label": "{driver} wins",
       "description": "{driver} takes the checkered flag in first place.",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "rare",
@@ -17,7 +20,10 @@
       "entityType": "driver",
       "label": "{driver} on the podium",
       "description": "{driver} finishes in the top three.",
-      "exclusivityGroup": "podium:{driver}",
+      "exclusivityGroups": [
+        "podium:{driver}",
+        "finish:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "rare",
@@ -29,7 +35,9 @@
       "entityType": "driver",
       "label": "{driver} leads a lap",
       "description": "{driver} is the race leader at the end of any lap.",
-      "exclusivityGroup": "leads_lap:{driver}",
+      "exclusivityGroups": [
+        "leads_lap:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "certain",
         "midfield": "rare",
@@ -41,7 +49,10 @@
       "entityType": "driver",
       "label": "{driver} in the top ten",
       "description": "{driver} finishes tenth or better.",
-      "exclusivityGroup": "top_ten:{driver}",
+      "exclusivityGroups": [
+        "top_ten:{driver}",
+        "finish:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "excluded",
         "midfield": "certain",
@@ -53,7 +64,9 @@
       "entityType": "driver",
       "label": "{driver} DNFs",
       "description": "{driver} fails to finish the race.",
-      "exclusivityGroup": "retirement:any",
+      "exclusivityGroups": [
+        "retirement:any"
+      ],
       "tierByEntityTier": {
         "contender": "rare",
         "midfield": "medium",
@@ -65,7 +78,9 @@
       "entityType": "driver",
       "label": "{driver} blend line penalty",
       "description": "{driver} is penalised for crossing the blend line on the way out of the pits, before the merge point.",
-      "exclusivityGroup": "blend_line:{driver}",
+      "exclusivityGroups": [
+        "blend_line:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -77,7 +92,10 @@
       "entityType": "driver",
       "label": "{driver} into the wall",
       "description": "{driver} makes contact with the wall on an oval, race over or not.",
-      "exclusivityGroup": "wall:{driver}",
+      "exclusivityGroups": [
+        "wall:{driver}",
+        "finish:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "rare",
         "midfield": "rare",
@@ -89,7 +107,9 @@
       "entityType": "driver",
       "label": "{driver} swears on radio",
       "description": "{driver} swears over team radio, bleeped or not.",
-      "exclusivityGroup": "swears:{driver}",
+      "exclusivityGroups": [
+        "swears:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -101,7 +121,9 @@
       "entityType": "driver",
       "label": "{driver} out of push-to-pass",
       "description": "{driver} complains on the radio about running out of push-to-pass.",
-      "exclusivityGroup": "radio_moan:{driver}",
+      "exclusivityGroups": [
+        "radio_moan:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -113,7 +135,9 @@
       "entityType": "driver",
       "label": "{driver} moans at the wall",
       "description": "{driver} complains about the car over {team} team radio.",
-      "exclusivityGroup": "radio_moan:{driver}",
+      "exclusivityGroups": [
+        "radio_moan:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -125,7 +149,9 @@
       "entityType": "driver",
       "label": "{driver} beats teammate",
       "description": "{driver} finishes ahead of the other {team} car.",
-      "exclusivityGroup": "teammate:{team}",
+      "exclusivityGroups": [
+        "teammate:{team}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -137,7 +163,9 @@
       "entityType": "driver",
       "label": "{driver} gets a wave-around",
       "description": "{driver} unlaps themselves under a full-course caution using the wave-around.",
-      "exclusivityGroup": "wave_around:{driver}",
+      "exclusivityGroups": [
+        "wave_around:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -149,7 +177,10 @@
       "entityType": "driver",
       "label": "{driver} wins the shootout",
       "description": "{driver} leads the field to the checkered flag on a two-lap shootout restart.",
-      "exclusivityGroup": "race_winner",
+      "exclusivityGroups": [
+        "race_winner",
+        "finish:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "rare",
         "midfield": "rare",
@@ -161,7 +192,9 @@
       "entityType": "driver",
       "label": "{driver} avoidable contact",
       "description": "{driver} is handed an avoidable-contact penalty in the tight confines of a street circuit.",
-      "exclusivityGroup": "avoidable_contact:{driver}",
+      "exclusivityGroups": [
+        "avoidable_contact:{driver}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",
@@ -173,7 +206,9 @@
       "entityType": "team",
       "label": "{team} podium",
       "description": "A {team} car finishes on the podium.",
-      "exclusivityGroup": "team_podium:{team}",
+      "exclusivityGroups": [
+        "team_podium:{team}"
+      ],
       "tierByEntityTier": {
         "contender": "certain",
         "midfield": "medium",
@@ -186,7 +221,9 @@
       "entityType": "team",
       "label": "{team} fumble",
       "description": "A pit stop for {team} goes wrong — slow, unsafe or a wheel not on.",
-      "exclusivityGroup": "fumble:{team}",
+      "exclusivityGroups": [
+        "fumble:{team}"
+      ],
       "tierByEntityTier": {
         "contender": "medium",
         "midfield": "medium",

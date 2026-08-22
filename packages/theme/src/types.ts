@@ -36,8 +36,13 @@ export interface Template {
   /** `{driver}` and any pairing of the entity expand to entity names. */
   label: string;
   description: string;
-  /** Same placeholders, but expanded to entity keys — groups are ids, not prose. */
-  exclusivityGroup: string;
+  /**
+   * Same placeholders, but expanded to entity keys — groups are ids, not
+   * prose. A template declares the full implication closure, not just its own
+   * slot: `driver_wins` for Norris also carries the group that
+   * `driver_podium` yields for Norris, because winning implies a podium.
+   */
+  exclusivityGroups: string[];
   /** Entity tier to the tier of the square it yields, or `excluded`. */
   tierByEntityTier: Record<string, TierRule>;
 }
@@ -47,7 +52,7 @@ export interface HandcraftedSquare {
   label: string;
   description: string;
   tier: SquareTier;
-  exclusivityGroup: string;
+  exclusivityGroups: string[];
 }
 
 export interface Overrides {
@@ -71,7 +76,8 @@ export interface PoolSquare {
   description: string;
   tier: SquareTier;
   source: SquareSource;
-  exclusivityGroup: string;
+  /** Every group this square belongs to; a card holds at most one square per group. */
+  exclusivityGroups: string[];
   /** The template that produced it; `null` for hand-crafted squares. */
   templateId: string | null;
 }

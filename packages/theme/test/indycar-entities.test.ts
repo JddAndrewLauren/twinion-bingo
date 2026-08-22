@@ -31,7 +31,7 @@ function synthesizeTemplates(entities: Entities): Template[] {
       entityType,
       label: 'Entry check',
       description: `{${entityType}}`,
-      exclusivityGroup: `check:{${entityType}}`,
+      exclusivityGroups: [`check:{${entityType}}`],
       tierByEntityTier: Object.fromEntries([...tiers].map((tier) => [tier, 'medium' as const])),
     };
   });
