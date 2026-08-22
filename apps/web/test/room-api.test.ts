@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, callSquare, joinRoom, retractCall, startGame } from '../app/room-api';
+import {
+  ApiError,
+  callSquare,
+  joinRoom,
+  rerollCard,
+  retractCall,
+  startGame,
+} from '../app/room-api';
 
 const apiUrl = 'https://api.example';
 
@@ -9,7 +16,7 @@ afterEach(() => {
 
 /**
  * The API answers a refusal with `{ error: string }` — see `apps/api/src/games/routes.ts`.
- * These four are the callers `room-screen.tsx` catches (#76); each should throw the
+ * These five are the callers `room-screen.tsx` catches (#76); each should throw the
  * same `ApiError`, carrying the status and that body's `error` string verbatim.
  */
 describe('a failing request', () => {
@@ -81,6 +88,23 @@ describe('a failing request', () => {
     expect((failure as ApiError).body).toBe('no room with that code');
   });
 
+  it('carries the status and the parsed error body, for rerollCard', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({ error: 'this card has a mark' }, { status: 409 }),
+      ),
+    );
+
+    const failure = await rerollCard(apiUrl, 'game-id', 'a-token').catch(
+      (error: unknown) => error,
+    );
+
+    expect(failure).toBeInstanceOf(ApiError);
+    expect((failure as ApiError).status).toBe(409);
+    expect((failure as ApiError).body).toBe('this card has a mark');
+  });
+
   it('falls back to the raw body when the response is not JSON', async () => {
     vi.stubGlobal(
       'fetch',
@@ -109,5 +133,26 @@ describe('a failing request', () => {
     expect(failure).toBeInstanceOf(ApiError);
     expect((failure as ApiError).status).toBe(403);
     expect((failure as ApiError).body).toBe('');
+  });
+});
+
+/**
+ * `rerollCard` is the one caller whose whole point is the body it returns — the
+ * replacement view the screen applies straight from the 200 (#87) — so its success
+ * path is worth an assertion the refusal cases cannot make.
+ */
+describe('rerollCard', () => {
+  it('posts to the game\'s reroll endpoint with the bearer token, and returns the view', async () => {
+    const replacement = { id: 'game-id', state: 'live', marks: [] };
+    const fetched = vi.fn(async () => Response.json(replacement));
+    vi.stubGlobal('fetch', fetched);
+
+    const game = await rerollCard(apiUrl, 'game id/1', 'a-token');
+
+    expect(fetched).toHaveBeenCalledWith(
+      `${apiUrl}/games/game%20id%2F1/card/reroll`,
+      { method: 'POST', headers: { authorization: 'Bearer a-token' } },
+    );
+    expect(game).toEqual(replacement);
   });
 });

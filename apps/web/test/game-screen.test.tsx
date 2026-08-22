@@ -47,6 +47,12 @@ const deckSquares = [
 ];
 
 /**
+ * The 24 a re-roll deals instead: a different membership set, drawn from the same
+ * 40-square deck so the host's sheet stays the deck it was.
+ */
+const rerolledCard = deckSquares.slice(16, 40);
+
+/**
  * A room whose game only exists once it has been started — the same two states
  * the API has, so the screen is exercised across the transition rather than only
  * in its end state.
@@ -86,13 +92,15 @@ function stubRoom({
    */
   closesOnCall?: boolean;
 }) {
-  const state = { live: liveFromTheStart, marks: [...marks], done: false };
+  // The card is state rather than a constant since #87: a re-roll replaces it, and
+  // a `view()` reading the module constant would go on describing the old one.
+  const state = { live: liveFromTheStart, marks: [...marks], done: false, card };
 
   const view = () => ({
     id: 'game-id',
     state: state.done ? 'done' : gameState,
     freeCentre: 'LIGHTS OUT',
-    card,
+    card: state.card,
     deck: deck
       ? {
           squares: deckSquares,
@@ -106,7 +114,13 @@ function stubRoom({
             .filter((mark): mark is Mark => mark !== undefined),
         }
       : null,
-    marks: [...state.marks],
+    // What the API means by `marks`: which of *this card's* squares are marked.
+    // The host's log holds calls for the ~16 deck squares no card of theirs has,
+    // and those are not marks on it — which is what leaves a host's card clean
+    // enough to re-roll after calling one from the sheet.
+    marks: state.marks.filter((mark) =>
+      state.card.some((square) => square.id === mark.squareId),
+    ),
     inheritedMarks,
     prizes,
     // Raw mark count, which is what the API derives; the stub keeps it in step.
@@ -147,6 +161,14 @@ function stubRoom({
         { targetSeq: body.seq, appended: true },
         { status: 201 },
       );
+    }
+
+    // Before `/games` and `/game`: neither `endsWith` matches this path today, but
+    // tail-matching is exactly where a new route slips past the branch that owns it.
+    if (url.endsWith('/card/reroll')) {
+      state.card = rerolledCard;
+
+      return Response.json(view());
     }
 
     if (url.endsWith('/games')) {
@@ -1555,6 +1577,346 @@ const markOf = (index: number, seq: number, by = guest.id) => ({
   squareId: `f1.v1:t:${index}`,
   seq,
   actorPlayerId: by,
+});
+
+
+/**
+ * #87's re-roll, from the player's side. The server's rule is that a mark of
+ * either kind ends the offer (ADR-0006), so most of what is worth pinning here is
+ * *when the button is not there* — and that the tap that is there deals straight
+ * away, with no confirmation between it and the card (#87).
+ */
+describe('re-rolling a clean card', () => {
+  const rerollButton = () =>
+    screen.queryByRole('button', { name: 'Re-roll card' });
+
+  /** The `/card/reroll` request this browser posted, or undefined if it posted none. */
+  const rerollPost = (fetchMock: ReturnType<typeof vi.fn>) =>
+    fetchMock.mock.calls.find(([url]) =>
+      (url as string).endsWith('/card/reroll'),
+    );
+
+  it('offers a clean card a re-roll, and states the consequence beside it', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    // ADR-0006's one-way door is on screen rather than in a gate the tap has to
+    // pass, and the button points at it.
+    const consequence = document.getElementById('reroll-consequence');
+    expect(consequence).not.toBeNull();
+    expect(consequence!.textContent).toContain('grey');
+    expect(consequence!.textContent).toContain('standings');
+    expect(rerollButton()!.getAttribute('aria-describedby')).toBe(
+      'reroll-consequence',
+    );
+  });
+
+  /** #87: immediate. One tap, and nothing in between it and the deal. */
+  it('deals on the tap itself, with nothing to confirm', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(rerollButton()!);
+
+    await waitFor(() => expect(rerollPost(room.fetchMock)).toBeDefined());
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('posts the re-roll and swaps the 24 squares', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    expect(screen.getByRole('button', { name: 'Square 0' })).toBeDefined();
+
+    fireEvent.click(rerollButton()!);
+
+    await waitFor(() => expect(rerollPost(room.fetchMock)).toBeDefined());
+    const [url, init] = rerollPost(room.fetchMock)! as [string, RequestInit];
+    expect(url).toBe(`${apiUrl}/games/game-id/card/reroll`);
+    expect(init.method).toBe('POST');
+    expect((init.headers as Record<string, string>).authorization).toBe(
+      'Bearer a-token',
+    );
+    // No body, so no `content-type` either — the game is named by the path.
+    expect(init.body).toBeUndefined();
+
+    // The replacement view is applied from the 200 itself rather than waited for.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Square 39' })).toBeDefined(),
+    );
+    expect(screen.queryByRole('button', { name: 'Square 0' })).toBeNull();
+  });
+
+  /**
+   * The label the issue names, while the request is out. Worth pinning because the
+   * screen's other in-flight label is the host's `Dealing…` on Start, and a card
+   * being re-rolled is not a game being dealt.
+   */
+  it('says it is re-rolling while the request is out', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    let deal = () => {};
+    const held = new Promise<void>((resolve) => {
+      deal = resolve;
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (!url.endsWith('/card/reroll')) return passthrough(url, init);
+        await held;
+
+        return passthrough(url, init);
+      }),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(rerollButton()!);
+
+    const pending = await screen.findByRole('button', { name: 'Re-rolling…' });
+    // Not idempotent: a second tap deals a second card (ADR-0006).
+    expect((pending as HTMLButtonElement).disabled).toBe(true);
+    expect(rerollButton()).toBeNull();
+
+    await act(async () => {
+      deal();
+      await held;
+    });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Square 39' })).toBeDefined(),
+    );
+  });
+
+  /** 24 cell labels change with nothing said, so the swap is announced. */
+  it('announces the replacement card', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    expect(screen.queryByRole('status')).toBeNull();
+
+    fireEvent.click(rerollButton()!);
+
+    const announced = await screen.findByRole('status');
+    expect(announced.textContent).toBe('New card dealt.');
+  });
+
+  /** Not a refusal — no response at all. The generic sentence, and the offer intact. */
+  it('reads an unreachable API as a re-roll that could not be made', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/card/reroll')
+          ? Promise.reject(new TypeError('Failed to fetch'))
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(rerollButton()!);
+
+    expect(
+      await screen.findByText('Could not re-roll your card.'),
+    ).toBeDefined();
+    // Retry is one tap: the card is unchanged, so the offer still stands.
+    expect(rerollButton()).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Square 0' })).toBeDefined();
+  });
+
+  /** No game, no card, nothing to re-roll — the lobby half of `canReroll`. */
+  it('offers no re-roll in the lobby', async () => {
+    stubRoom({ you: guest });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    // The lobby: a roster and no card at all.
+    await screen.findByText('Players');
+    expect(screen.queryByLabelText('Your card')).toBeNull();
+
+    expect(rerollButton()).toBeNull();
+  });
+
+  it('withdraws the offer once a call has marked the card', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [markOf(5, 100)],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(rerollButton()).toBeNull();
+  });
+
+  /**
+   * An inherited mark ends the offer too. The server's check counts marks of
+   * either kind, so a predicate written against the claim boundary would put a
+   * button on screen that the API answers 409 to.
+   */
+  it('withdraws the offer for an inherited mark as well as an earned one', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      marks: [markOf(5, 100, host.id)],
+      inheritedMarks: ['f1.v1:t:5'],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(rerollButton()).toBeNull();
+  });
+
+  /** Derived per render, not captured once: the offer goes as the call lands. */
+  it('stops offering it the moment a call lands on the card', async () => {
+    const room = stubRoom({ you: guest, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    expect(rerollButton()).not.toBeNull();
+
+    room.calledElsewhere('f1.v1:t:7');
+    const live = await stream();
+    act(() =>
+      live.emit({
+        seq: 12,
+        kind: 'CALL',
+        actorPlayerId: host.id,
+        squareId: 'f1.v1:t:7',
+      }),
+    );
+
+    await waitFor(() => expect(rerollButton()).toBeNull());
+  });
+
+  /** D5's one-way door: a done game is a scoreboard, and there is nothing to deal. */
+  it('offers no re-roll once the game is done', async () => {
+    stubRoom({
+      you: guest,
+      liveFromTheStart: true,
+      gameState: 'done',
+      marks: [],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(rerollButton()).toBeNull();
+  });
+
+  /** There is no card on screen behind the sheet, so there is nothing to re-roll. */
+  it('offers no re-roll while the host deck sheet is up', async () => {
+    stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+    expect(rerollButton()).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Host deck sheet' }));
+    await screen.findByLabelText('Host deck sheet');
+    expect(rerollButton()).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to your card' }));
+    await screen.findByLabelText('Your card');
+    expect(rerollButton()).not.toBeNull();
+  });
+
+  it('reads a refused re-roll as a card that cannot be re-rolled now', async () => {
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/card/reroll')
+          ? Response.json(
+              { error: 'your card has a live mark' },
+              { status: 409 },
+            )
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(rerollButton()!);
+
+    expect(
+      await screen.findByText('This card cannot be re-rolled now.'),
+    ).toBeDefined();
+    expect(screen.queryByText('Could not re-roll your card.')).toBeNull();
+  });
+
+  it("logs the server's error body to the console, verbatim, on a refused re-roll", async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    stubRoom({ you: guest, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/card/reroll')
+          ? Response.json(
+              { error: 'no different card could be dealt' },
+              { status: 409 },
+            )
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(rerollButton()!);
+    await screen.findByRole('alert');
+
+    expect(
+      spy.mock.calls.some(
+        (call) =>
+          call.some((arg) => String(arg).includes('409')) &&
+          call.some((arg) =>
+            String(arg).includes('no different card could be dealt'),
+          ),
+      ),
+    ).toBe(true);
+
+    spy.mockRestore();
+  });
+
+  /**
+   * A host can call a deck square that is on no card of theirs — which leaves
+   * their card clean and their undo window open at once. The re-roll is about
+   * which card they hold and takes nothing away from that correction.
+   */
+  it("leaves a host's undo window standing across a re-roll", async () => {
+    stubRoom({ you: host, liveFromTheStart: true, deck: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Host deck sheet' }));
+    const sheet = await screen.findByLabelText('Host deck sheet');
+    fireEvent.click(within(sheet).getByText('Square 30').closest('button')!);
+    await screen.findByRole('button', { name: 'Undo' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to your card' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Re-roll card' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Square 39' })).toBeDefined(),
+    );
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined();
+  });
 });
 
 /**

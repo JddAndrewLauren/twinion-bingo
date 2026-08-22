@@ -67,6 +67,8 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling, and both **thumb-sized (44px)** — they were 24px until #46 measured them |
 | Game — retract dialog over the sheet | `/r/:code`, the host tapping a **called** row of the deck sheet | The same confirmation over the 40-row sheet rather than the card — so nothing here can be said as "clear of the card", and the panel has to be **whole inside the viewport** while the scroller behind it is three screens tall. The prose **names the square**, which only works because the host holds the deck's prose; and the row it was opened from goes back to uncalled once **Take it back** is tapped. This is the only surface that reaches a call on one of the ~16 deck squares that are on no card of the host's |
+| Game — card re-roll   | `/r/:code`, a live game whose card has no mark of either kind | The **Re-roll card** button **directly beneath the grid**, thumb-sized (44px) and whole on screen at `phone-small`; present only while the card is **clean and the game is live**, hidden for an **inherited** mark exactly as for an earned one, and absent while the host deck sheet is up. The tap is **immediate** — no confirmation between it and the deal (#87) — reading **Re-rolling…** while the request is out and announcing **New card dealt.** when it lands. **The slot is reserved whether or not the offer stands**, so nothing below it jumps when the first call withdraws the button, and the grid above it never moves at all — "does not shift the grid when a call lands" stays green untouched |
+| Game — re-roll consequence | `/r/:code`, the same clean live card | ADR-0006's one-way door stated **beside the button rather than gating it**: an already-called square landing on the new card arrives **grey**, counting in the **standings** and never winning a prize. Prose in flow, so the claim is that **no line of it is clipped** and it is whole on screen at every viewport; the button carries `aria-describedby` to it. **No cell clipped on the replacement card** once it is dealt |
 | Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code **and beside the Share room control (#88, whose trigger reads "Share" for exactly this reason)**, and the rung dropping out rather than reading "full house next" once the ladder is spent |
 | Game — the two surfaces | `/r/:code`, tapping `Card` and `Race` — the **phone layout**, so `phone-small`, `phone` and `ipad-11-portrait` | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
 | Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
@@ -619,6 +621,38 @@ skipped — the layout-specific skips — with `gate/share.gate.ts` contributing
   `p[role="status"]`, and the dialog carries a live region of its own for the copy feedback. The two
   are never painted together — a closed `<dialog>` is `display: none` — but both are in the
   document, so the credit is located as `p[role="status"]:not(dialog p)` now.
+
+**#87's gate run** (WebKit with `hasTouch`, all four matrix viewports, 234 tests green and 30
+skipped — the layout-specific skips — with `re-rolling a clean card` contributing 7 tests per
+viewport, 1 of them two-pane only. There is no re-roll dialog to measure: #87 asks for the action to
+be immediate, so the consequence is prose in flow and the tap deals straight away):
+
+- **The button is one size everywhere, and it is beneath the card.** The **Re-roll card** button
+  measures **115x44** at all four viewports, always below the grid it re-rolls: (4,504) at
+  `phone-small`, (4,519) at `phone`, (4,963) at `ipad-11-portrait` and (20,650) at
+  `ipad-11-landscape`, where the column is inset by the two-pane padding. The consequence prose
+  beneath it is column-wide and wraps to two lines on a phone (367x60 and 382x60) and one on an iPad
+  (826x40, 557x40) — no line of it clipped at any of the four.
+
+- **The card never moves, measured rather than reasoned about.** With the control beneath the grid,
+  the card's box is **identical** in the clean and the marked stage — 367x367@(4,125) at
+  `phone-small`, 382x382@(4,125) at `phone`, 826x826@(4,125) at `ipad-11-portrait` and
+  557x557@(20,81) at `ipad-11-landscape`, both stages. The `min-h-11` wrapper is still reserved, so
+  what sits *below* the button does not jump 56px (44 plus the `gap-3`) on the first call of every
+  game either. `does not shift the grid when a call lands` was not touched and stayed green.
+
+- **The `dvh` cap went from `8rem` to `12rem` and it is a no-op on the matrix.** The reserved row is
+  permanent chrome, so the budget had to grow with it. Width binds at every matrix viewport — the
+  worst case is `ipad-11-landscape`, where the cap allows 642px and the card measures 557 — so the
+  change only does work on a rotated phone (~844x390), which is the short viewport the cap exists
+  for and which the matrix does not name.
+
+- **The replacement card is 24 labels no earlier run had graded.** The fixture deals
+  `[...CARD.slice(8), ...DECK_EXTRA.slice(0, 8)]` rather than the same set back, keeping
+  `Investigation` (13) as the longest word — word length is what a cell breaks on (#47) — and
+  `expectNoCellClipped` is re-run against it after the deal. The card's box is unchanged across the
+  swap, and `streams()` still counts 1: the view is applied in place, so the screen never remounts
+  and the SSE connection it was holding is the one it still holds.
 
 ## Adding a surface or a screen
 
