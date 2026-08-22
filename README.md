@@ -185,7 +185,21 @@ fly secrets set \
 # that path resolves relative to fly.toml's own directory.
 fly deploy . --config apps/api/fly.toml
 
-# Web
+# Web — first time only
+vercel env add SITE_URL production    # https://bingo.twinion.net
+
+# Production only, and server-only. Every Room URL — the share link, the canonical
+# tag, `metadataBase`, the unfurl — is built from it, and setting it is the whole
+# difference between a room whose link names its one real home and one that names
+# whichever deployment hostname happened to serve the page. Leave it unset in
+# Preview and Development: there the host the request arrived on is the right
+# answer, which is what makes a preview's share link point at that preview. It has
+# no NEXT_PUBLIC_ prefix on purpose, so it never reaches a client bundle.
+#
+# It must name the same origin as the API's WEB_ORIGIN above. A canonical Room URL
+# is only useful if a browser sitting on it is allowed to call the API.
+
+# Web — every time
 vercel deploy --prod    # root directory apps/web, NEXT_PUBLIC_API_URL=https://twinion-bingo-api.fly.dev
 ```
 

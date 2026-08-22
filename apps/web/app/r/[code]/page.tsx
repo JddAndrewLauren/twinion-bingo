@@ -1,17 +1,8 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
+import { siteOrigin } from '../../site-origin';
 import { RoomScreen } from './room-screen';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
-
-/** The host the request arrived on, which is the host the share link names. */
-async function origin(): Promise<string> {
-  const requestHeaders = await headers();
-
-  return `${requestHeaders.get('x-forwarded-proto') ?? 'http'}://${
-    requestHeaders.get('host') ?? 'localhost:3000'
-  }`;
-}
 
 /**
  * The unfurl, because the share link is the primary join path and it mostly gets
@@ -32,14 +23,26 @@ export async function generateMetadata({
   const room = (await params).code.trim().toUpperCase();
 
   return {
-    // Relative image URLs in the sibling `opengraph-image` need an absolute base,
-    // and an unfurler is a different machine — a relative one silently unfurls
-    // as a link with no card.
-    metadataBase: new URL(await origin()),
+    /*
+      Set here as well as in the root layout, even though metadata inherits.
+      Relative image URLs in the sibling `opengraph-image` need an absolute base,
+      and an unfurler is a different machine — a relative one silently unfurls as
+      a link with no card. That is the one gated claim in the app, so it does not
+      rest on inheritance holding.
+    */
+    metadataBase: new URL(await siteOrigin()),
     title: `Room ${room}`,
     description: `Join room ${room} and play along.`,
+    /*
+      Relative on purpose: `metadataBase` is the single origin, so the canonical
+      tag, the OG URL and the OG image cannot disagree about which host this room
+      lives on. `room` is already normalised, so `/r/abcd` canonicalises to
+      `/r/ABCD` rather than being a second URL for the same room.
+    */
+    alternates: { canonical: `/r/${room}` },
     openGraph: {
       type: 'website',
+      url: `/r/${room}`,
       title: `Room ${room}`,
       description: `Join room ${room} and play along.`,
     },
@@ -56,9 +59,10 @@ export default async function RoomPage({
   const { code } = await params;
   const room = code.trim().toUpperCase();
 
-  // Built on the server from the request that arrived, so the link a player is
-  // told to pass on is the same host they reached the app on.
-  const base = await origin();
+  // The one resolved origin — production's configured name, or the host the
+  // request arrived on everywhere else — so the link a player is told to pass on
+  // is the same one the unfurl and the canonical tag name.
+  const base = await siteOrigin();
 
   /*
     No column and no padding here. The game screen is full-bleed — a `max-w-md` on

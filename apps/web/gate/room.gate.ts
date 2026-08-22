@@ -816,6 +816,7 @@ test.describe('the unfurl for a share link', () => {
   test('carries the room code, and draws a card with no API to ask', async ({
     page,
     request,
+    baseURL,
   }) => {
     await page.goto('/r/ABCD');
 
@@ -838,5 +839,25 @@ test.describe('the unfurl for a share link', () => {
     const card = await request.get(image!);
     expect(card.status(), 'the card must render with the API unreachable').toBe(200);
     expect(card.headers()['content-type']).toContain('image/png');
+
+    /*
+      The canonical tag and the OG URL name the same origin the image does — one
+      resolved origin per request (`app/site-origin.ts`), or a room has three
+      names and a crawler picks one. This run sets no `SITE_URL`, so what passes
+      here is specifically the request-origin branch: the one every preview and
+      every laptop takes. The production override is covered in
+      `test/site-origin.test.ts`, which needs no build of its own.
+    */
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      `${baseURL}/r/ABCD`,
+    );
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute(
+      'content',
+      `${baseURL}/r/ABCD`,
+    );
+    expect(image, 'the image must share that origin').toContain(
+      `${baseURL}/r/ABCD/opengraph-image`,
+    );
   });
 });

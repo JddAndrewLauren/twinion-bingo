@@ -80,7 +80,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — a prize landing | `/r/:code`, a PRIZE frame arriving on a live game | The burst playing while **the card's box is identical to the pixel**, and a cell tapped mid-burst still calling for the room. The only surface here that is not docked in flow: `canvas-confetti` owns the canvas and gives it `position: fixed; pointer-events: none`, so both halves are a library's property and are asserted rather than trusted |
 | Legibility — the pool's worst 24 | `/legibility`, an inert card of the committed pool's 24 worst labels | Every real label **unclipped in its own cell**, and each one named below the card with its character count, its longest unbreakable run and its square id — so a label that fails by eye on real hardware maps straight to a `themes/f1/overrides.json` reword. The card is the room's geometry class for class, including the empty right column at `ipad-11-landscape`, or it would be judging a larger card than the room renders. The squares are picked by metric (`app/legibility/worst-labels.ts`), never by hand, so `pnpm pool:build` re-aims both the page and its gate |
 | Install — the head of `/` | `/`, as a phone reads it before offering Add to Home Screen | A `link[rel=manifest]` and a `link[rel=apple-touch-icon]` that both fetch 200, a manifest whose `display` is `standalone` with 192/512/maskable icons that all resolve, and **no service worker registered** — a negative claim, so it is gated rather than written down (see the note in `app/manifest.ts` for why there is none) |
-| Share — room unfurl | `/r/:code`, as a group-chat crawler reads it | The room code in `og:title`, an **absolute** `og:image` URL, and a 1200×630 image naming both the room code and its theme when the API is reachable; with the API unavailable, a code-only fallback still answering 200 `image/png` rather than collapsing to a bare link |
+| Share — room unfurl | `/r/:code`, as a group-chat crawler reads it | The room code in `og:title`, an **absolute** `og:image` URL, and a 1200×630 image naming both the room code and its theme when the API is reachable; with the API unavailable, a code-only fallback still answering 200 `image/png` rather than collapsing to a bare link. A `link[rel=canonical]` and an `og:url` naming the **same origin** as `og:image` — one resolved origin per request (`app/site-origin.ts`), or a room has three names and a crawler picks one |
 
 ### Known-unverified claims inherited from #7
 
@@ -528,7 +528,10 @@ stood then — before #14's layout skips were in it):
   *absolute* (a relative one unfurls as a bare link on every machine but the one that rendered it),
   and the image route answers 200 `image/png` **with no API to ask** — the gate builds and serves
   against `http://api.gate.invalid`, so what passes there is specifically the code-only fallback
-  card. The theme half of the criterion needs a real API and is a hardware/by-hand check.
+  card. The theme half of the criterion needs a real API and is a hardware/by-hand check. The
+  canonical tag and `og:url` are gated against the same origin, and that run sets no `SITE_URL` —
+  so what it proves is the request-origin branch, the one every preview and every laptop takes.
+  The production override is unit-covered in `test/site-origin.test.ts`, which needs no build.
 - **The install head is gated at `/`**, including the negative claim. Seeded regression: registering
   a service worker in `layout.tsx` fails `registers no service worker` immediately, which is what
   makes that criterion evidence rather than prose.
