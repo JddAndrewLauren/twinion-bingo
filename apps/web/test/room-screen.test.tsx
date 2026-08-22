@@ -120,14 +120,14 @@ describe('opening a share link', () => {
     );
   });
 
-  it('shows the share link for the room', async () => {
+  it('offers the room for sharing', async () => {
     stubApi();
     window.localStorage.setItem('twinion-bingo:token:ABCD', 'guest-token');
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     expect(
-      await screen.findByText(`Share this link: ${shareLink}`),
+      await screen.findByRole('button', { name: 'Share room' }),
     ).toBeDefined();
   });
 
@@ -232,6 +232,81 @@ describe('opening a share link', () => {
     ).toBe(true);
 
     spy.mockRestore();
+  });
+});
+
+/**
+ * Sharing is offered from every state where the room resolved, and from none where it
+ * did not. The three unresolved states return before the control exists at all, which
+ * makes "nothing to share here" structural rather than a condition to keep in step —
+ * these cases pin that it stays so.
+ */
+describe('sharing the room', () => {
+  it('offers it to somebody who has not joined yet', async () => {
+    stubApi();
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    // The join form, not the lobby: this browser holds no token.
+    await screen.findByLabelText('Your name');
+    expect(screen.getByRole('button', { name: 'Share room' })).toBeDefined();
+  });
+
+  it('offers it from the lobby', async () => {
+    stubApi();
+    window.localStorage.setItem('twinion-bingo:token:ABCD', 'guest-token');
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    await screen.findByText(/Ash/);
+    expect(screen.getByRole('button', { name: 'Share room' })).toBeDefined();
+  });
+
+  it('offers nothing while the room is still loading', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(await screen.findByText('Loading room ABCD…')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Share room' })).toBeNull();
+  });
+
+  it('offers nothing for a room that does not exist', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 404 })),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ZZZZ" shareLink={shareLink} />);
+
+    await screen.findByText('No room has the code ZZZZ.');
+    expect(screen.queryByRole('button', { name: 'Share room' })).toBeNull();
+  });
+
+  it('offers nothing for a code the API rejects', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 400 })),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABIO" shareLink={shareLink} />);
+
+    await screen.findByText('No room has the code ABIO.');
+    expect(screen.queryByRole('button', { name: 'Share room' })).toBeNull();
+  });
+
+  it('offers nothing when the API cannot be reached', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new TypeError('Failed to fetch');
+      }),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    await screen.findByText('Could not reach the room.');
+    expect(screen.queryByRole('button', { name: 'Share room' })).toBeNull();
   });
 });
 

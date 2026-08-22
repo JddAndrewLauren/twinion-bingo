@@ -48,11 +48,11 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | Home                  | `/`                                              | The two stacked forms ("Start a room", "Join with a code") both reachable without scrolling past one; the API health line |
 | Room — needs a name   | `/r/:code`, roster `you === null`                | The name form and heading fit; the disabled/enabled button state is legible                                               |
-| Room — roster         | `/r/:code`, joined                               | The room code heading, **the share link wrapping rather than overflowing**, and the roster with `(host)` and `— you`      |
+| Room — roster         | `/r/:code`, joined                               | The room code heading, **Share room** where the share link used to be printed (#88 — the link itself is in the dialog now), and the roster with `(host)` and `— you` |
 | Room — loading        | `/r/:code` before the roster resolves            | The single-line state does not shift the layout when it resolves                                                          |
 | Room — missing        | `/r/:code` with an unknown code                  | "No room has the code XXXX." reads as an answer, not an error page                                                        |
 | Room — unreachable    | `/r/:code` with the API down                     | Distinguishable from "missing" at a glance                                                                                |
-| Room — host lobby     | `/r/:code`, joined as the host, no game yet      | The **Start game** button below the roster, reachable without scrolling past the share link                                |
+| Room — host lobby     | `/r/:code`, joined as the host, no game yet      | The **Start game** button below the roster, reachable without scrolling past the **Share room** control that replaced the share link |
 | Game — card           | `/r/:code`, a live game, this player dealt in    | The **5x5 card**: 25 square cells, the free centre reading "LIGHTS OUT", and every label legible and unclipped in its cell |
 | Game — marked card    | `/r/:code`, a live game with squares called      | Marked cells telling apart from unmarked ones at a glance, and still unclipped — a marked label is bolder, so a label that fit unmarked has to be re-checked marked |
 | Game — spotter toast  | `/r/:code`, just after a CALL arrives            | The toast **docked below the card** crediting the spotter by name — docked in flow since #13, not pinned over the card, so **covering no part of the card** is a property of the layout rather than a measurement to re-take — and wrapping rather than overflowing on a long name plus a 30-character label |
@@ -67,7 +67,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Game — credit over undo | `/r/:code`, a remote CALL arriving while your own undo window is open | **Both rows on screen at once** — the spotter credit stacked above the undo row rather than replacing it — still docked, still **covering no part of the card**, and the **Undo** button still reachable beneath the credit |
 | Game — retract dialog | `/r/:code`, tapping a marked square you may correct | The confirmation centred over the dimmed card: the prose naming the square and saying it unmarks for everyone, with **Take it back** and **Keep it** both on screen without scrolling, and both **thumb-sized (44px)** — they were 24px until #46 measured them |
 | Game — retract dialog over the sheet | `/r/:code`, the host tapping a **called** row of the deck sheet | The same confirmation over the 40-row sheet rather than the card — so nothing here can be said as "clear of the card", and the panel has to be **whole inside the viewport** while the scroller behind it is three screens tall. The prose **names the square**, which only works because the host holds the deck's prose; and the row it was opened from goes back to uncalled once **Take it back** is tapped. This is the only surface that reaches a call on one of the ~16 deck squares that are on no card of the host's |
-| Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code, and the rung dropping out rather than reading "full house next" once the ladder is spent |
+| Game — slim bar       | `/r/:code`, a live game                          | One line carrying **your mark count, the rung being played for, and the roster size** (not presence — see #67) — all three fitting at 375 CSS px beside the room code **and beside the Share room control (#88, whose trigger reads "Share" for exactly this reason)**, and the rung dropping out rather than reading "full house next" once the ladder is spent |
 | Game — the two surfaces | `/r/:code`, tapping `Card` and `Race` — the **phone layout**, so `phone-small`, `phone` and `ipad-11-portrait` | The segmented control **thumb-sized (44px)**, each surface whole and neither covering the other, and the card's box **identical to the pixel** after a round trip through the Race tab — both panels stay mounted, so a lost scroll position or a re-measured grid is a defect |
 | Game — race surface   | `/r/:code`, `Race` up on a game with calls in it | Prizes, standings and timeline at full column width, no row overflowing its own box on a 24-character display name |
 | Game — a square's prose | `/r/:code`, a card cell held down for 400ms    | D4's `description` in the docked slot, **covering no part of the card**, gone on release — and the release **not** also calling the square, which is the way this can go wrong that no screenshot shows. Drive it with a **second pointer on another cell** too: a resting thumb on a one-handed card once turned the hold into a call for the whole room |
@@ -81,6 +81,7 @@ Dark is the only theme (`globals.css` is bare Tailwind v4 and the components har
 | Legibility — the pool's worst 24 | `/legibility`, an inert card of the committed pool's 24 worst labels | Every real label **unclipped in its own cell**, and each one named below the card with its character count, its longest unbreakable run and its square id — so a label that fails by eye on real hardware maps straight to a `themes/f1/overrides.json` reword. The card is the room's geometry class for class, including the empty right column at `ipad-11-landscape`, or it would be judging a larger card than the room renders. The squares are picked by metric (`app/legibility/worst-labels.ts`), never by hand, so `pnpm pool:build` re-aims both the page and its gate |
 | Install — the head of `/` | `/`, as a phone reads it before offering Add to Home Screen | A `link[rel=manifest]` and a `link[rel=apple-touch-icon]` that both fetch 200, a manifest whose `display` is `standalone` with 192/512/maskable icons that all resolve, and **no service worker registered** — a negative claim, so it is gated rather than written down (see the note in `app/manifest.ts` for why there is none) |
 | Share — room unfurl | `/r/:code`, as a group-chat crawler reads it | The room code in `og:title`, an **absolute** `og:image` URL, and a 1200×630 image naming both the room code and its theme when the API is reachable; with the API unavailable, a code-only fallback still answering 200 `image/png` rather than collapsing to a bare link. A `link[rel=canonical]` and an `og:url` naming the **same origin** as `og:image` — one resolved origin per request (`app/site-origin.ts`), or a room has three names and a crawler picks one |
+| Share — room dialog | `/r/:code`, tapping **Share room** in any resolved state | The native `<dialog>` **whole inside the viewport** at `phone-small` and **centred** rather than cornered; a high-contrast **black-on-white SVG QR with its white quiet zone**, encoding the canonical room URL; the room code; the full link **wrapping rather than overflowing**; **Copy link, Close and the link all thumb-sized (44px)**; a Copy tap **always answering** — either "Link copied" or the fallback naming the link to press and hold; **Escape and Close both closing with focus back on the trigger**; the card's box **identical to the pixel** while the dialog is open and the stream **not dropped**; and **loading, missing and unreachable offering nothing at all** |
 
 ### Known-unverified claims inherited from #7
 
@@ -543,6 +544,81 @@ manifest entirely and reads `apple-icon.png` and `appleWebApp` instead, so **the
 is a two-device hardware pass** (one iPhone, one Android) and the gate is the part of it that can be
 re-run. The icon art is a deliberate placeholder — a monogram on `neutral-950` — and is a design
 question, not a gate one.
+
+**#88's gate run** (WebKit with `hasTouch`, all four matrix viewports, 192 tests green and 24
+skipped — the layout-specific skips — with `gate/share.gate.ts` contributing 17 tests per viewport):
+
+- **The dialog is one box at every size.** 320x544, with a 270x270 QR and 286x44 for each of the
+  link, **Copy link** and **Close**; the **Share** trigger is 55x44 — see the slim-bar note below
+  for why it is not 104x44. Its width is
+  `min(20rem, 100vw - 2rem)`, so 320 is the answer at 375 CSS px and at 1194 alike — it is centred
+  at every viewport rather than growing: (28,62) in 375x667, (35,150) in 390x844, (257,325) in
+  834x1194, (437,145) in 1194x834.
+- **A defect this found, and it is the reason the run exists.** Without `m-auto` the dialog measured
+  320x544 at **x=0, y=0 on all four viewports** — a panel jammed into the corner of an 834x1194
+  iPad, and `expectWholeOnScreen` passed it happily, because a cornered dialog *is* whole on screen.
+  Centring a modal `<dialog>` is the UA sheet's `margin: auto`, and Tailwind's preflight zeroes every
+  margin, so this is the app's claim and not the platform's. It is asserted as geometry now, in the
+  same test as "whole on screen".
+- **Escape and focus restore are gated here because jsdom cannot hold them.** jsdom 30's
+  `HTMLDialogElement` has no `showModal`, no `show` and no `close` at all; `apps/web/test/setup.ts`
+  polyfills the open/closed state and records, in the comment, that it models neither the top layer,
+  the focus move in, the focus trap, Escape, nor focus restore. Asserting any of those there would
+  be asserting the polyfill.
+- **Focus restore is the platform's on the keyboard path and the app's on the touch path.** WebKit
+  does not focus a `<button>` on tap, so a dialog opened by tap has an invoker that was never focused
+  and nothing for `close()` to restore to — measured at `phone-small`: after a tapped open and a
+  tapped **Close**, `document.activeElement` was the closed `<dialog>` itself, which is
+  `display: none`, so the next Tab or VoiceOver step restarts at the top of the document rather than
+  beside the trigger. `onClose` now focuses the trigger, which makes both paths land on it at all
+  four viewports; the keyboard path was already right and is still gated separately, because the two
+  fail separately.
+
+- **The QR's quiet zone is four modules, carried by `marginSize` rather than by padding.** The
+  symbol renders at 270px with a `0 0 33 33` viewBox, so a module is 8.2px and the wrapper's `p-2`
+  is 0.98 of one — `marginSize={2}` plus that padding came to 2.98 against the four the format asks
+  for. Padding cannot make up a module-denominated shortfall, so the margin carries all four.
+
+- **The slim bar wrapped, and nothing already in the gate could see it.** A wrapped row is not
+  clipped, does not scroll the page and overflows nothing; at 375 CSS px a **Share room** trigger
+  measured 104px, which put the row 30px over and wrapped *both* the room code and the statistics
+  onto second lines — a 44px bar became 69px, out of the card's own height, with every existing
+  assertion green. The row is `px-2`/`gap-2` now and the trigger reads **Share** (accessible name
+  still "Share room"), which holds one line against the *worst* statistics line rather than the one
+  on screen: "24 marks · full house next · 12 here" is 199.7px, the room code 81.7px and the trigger
+  55.2px, inside 343px — about 6px of slack. `room.gate.ts` counts the lines against each row's own
+  computed `line-height`, so this cannot regress silently again.
+
+- **"The stream is not dropped" is asserted as delivery, not as construction.** `streams()` counts
+  every `EventSource` the page ever opened, so a sole source that closed and was never replaced
+  still counts 1 and the old assertion passed. A CALL frame is pushed down the stream after the
+  dialog has been and gone, and the spotter credit it raises is what says the source is still live.
+  (The credit rather than the mark: a mark comes back from the game re-read, and the fixture's call
+  log is only appended to by its own `/call` route.)
+- **The initial focus needed the real `autofocus` attribute, not React's `autoFocus` prop.** The prop
+  is a `.focus()` call at mount, and at mount a closed `<dialog>` is `display: none` — measured, the
+  dialog opened on the link (the first focusable) instead of on **Copy link**. The attribute is read
+  by the platform's own dialog-focusing steps at `showModal()` and lands on the primary action.
+- **Copy is gated as "always answers", deliberately.** WebKit's clipboard permission is not grantable
+  from Playwright, so which branch runs is the browser's business; the success/fallback split is
+  pinned deterministically in `test/share-dialog.test.tsx`, including the no-`navigator.clipboard`
+  case that is the LAN-over-`http` one this fallback exists for.
+- **Seeded regression**, in the form this file keeps writing down — rendered is not modal:
+
+  | Seed | What fails |
+  | --- | --- |
+  | `showModal()` → `show()` in `share-dialog.tsx` | 12 of 68 share tests, 3 per viewport: `closes on Escape and hands focus back`, and both `is whole on screen and thumb-sized` tests via the centring assertion — a non-modal dialog is laid out in flow. Everything else stays green, including `opens on the primary action`: `show()` honours `autofocus` too, so "the dialog appeared and took focus" proves nothing about modality |
+  | `onClose` back to `setCopied('idle')` alone | `hands focus back on the touch path too`, and only that one — the keyboard test still passes, because the platform restores what it was given |
+  | The trigger's label back to **Share room** | `says where you are without covering the card` at `phone-small`, on the room code's line count. Nothing in `share.gate.ts` moves: the accessible name is unchanged, so every selector still finds it |
+
+- **What moved out of `lobby.gate.ts`.** `wraps the share link rather than overflowing it` is gone
+  with the `<p>` it measured; the wrap risk is now the dialog's `break-all` anchor in a ~320px
+  column, and `expectNoRowClipped` follows it there. `offers no Start game to anyone but the host`
+  asserts the **Share room** button where it asserted the share line.
+- **One shared instrument needed scoping.** `room.gate.ts`'s spotter-credit locator was a bare
+  `p[role="status"]`, and the dialog carries a live region of its own for the copy feedback. The two
+  are never painted together — a closed `<dialog>` is `display: none` — but both are in the
+  document, so the credit is located as `p[role="status"]:not(dialog p)` now.
 
 ## Adding a surface or a screen
 

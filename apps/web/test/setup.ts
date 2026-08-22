@@ -105,6 +105,40 @@ if (globalThis.matchMedia === undefined) {
   });
 }
 
+/**
+ * jsdom 30 ships `HTMLDialogElement` as a bare subclass of `HTMLElement`: no
+ * `showModal`, no `show`, no `close`. The share dialog is a native `<dialog>`, so
+ * without these three the very first tap throws.
+ *
+ * What this models is only the open/closed *state*: `showModal` and `show` set the
+ * `open` attribute, `close` removes it, records a `returnValue` and dispatches a
+ * `close` Event — non-delegated, and dispatched on the element itself, which is how
+ * React's `onClose` on the node receives it.
+ *
+ * What it deliberately does **not** model, because the platform is what provides it:
+ * the top layer, the focus move into the dialog, the focus trap, Escape-to-close, and
+ * focus restore to the invoker on close. Asserting any of those here would be
+ * asserting this polyfill rather than the app. `gate/share.gate.ts` is where they are
+ * real, in WebKit.
+ */
+if (HTMLDialogElement.prototype.showModal === undefined) {
+  const open = function (this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  };
+
+  HTMLDialogElement.prototype.showModal = open;
+  HTMLDialogElement.prototype.show = open;
+  HTMLDialogElement.prototype.close = function (
+    this: HTMLDialogElement,
+    returnValue?: string,
+  ) {
+    if (!this.hasAttribute('open')) return;
+    this.removeAttribute('open');
+    if (returnValue !== undefined) this.returnValue = returnValue;
+    this.dispatchEvent(new Event('close'));
+  };
+}
+
 // Installed once, for the whole file, and never stubbed: see the note on the
 // class. Only the record of what was opened is per-test.
 Object.defineProperty(globalThis, 'EventSource', {

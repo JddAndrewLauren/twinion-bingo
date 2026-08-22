@@ -23,6 +23,7 @@ import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
 import { LookingFor, LookingForPanel, openSquares } from './looking-for';
 import { Results, nextPrizeName } from './results';
+import { ShareRoom } from './share-dialog';
 import { useWakeLock } from './use-wake-lock';
 
 type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
@@ -585,6 +586,11 @@ export function RoomScreen({
           {joining ? 'Joining…' : 'Join'}
         </button>
         {joinFailed !== null && <p role="alert">{joinFailed}</p>}
+        {/*
+          Below Join, so the form's own primary action keeps its place: somebody who
+          followed a link here is joining, not re-sharing.
+        */}
+        <ShareRoom code={code} shareLink={shareLink} />
       </form>
     );
   }
@@ -672,13 +678,27 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-baseline justify-between gap-3 border-b border-neutral-800 px-3 py-2">
+        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-neutral-800 px-2 py-2">
           <h1 className="text-sm font-semibold">Room {code}</h1>
-          <p className="text-xs tabular-nums text-neutral-400">
+          <p className="min-w-0 text-xs tabular-nums text-neutral-400">
             {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
             {nextPrize !== undefined && ` · ${nextPrize} next`} ·{' '}
             {roster.players.length} here
           </p>
+          {/*
+            The bar is the one node both layouts and both game states share, so a
+            latecomer can be pulled into a race already running from anywhere.
+
+            It is also the tightest row in the app, and the third item is what made it
+            tight: `px-2` and `gap-2` here rather than `px-3`/`gap-3` are what buy it
+            back. Measured at 375 CSS px against the *worst* line rather than the one
+            on screen — "24 marks · full house next · 12 here" is 199.7px, the room
+            code is 81.7px and the trigger is 55.2px, inside the 343px the row has —
+            about 6px of slack. Wrapping is the failure and it is silent: a second line
+            is not clipped, does not scroll the page and takes 25px out of the card. So
+            `room.gate.ts` counts the lines.
+          */}
+          <ShareRoom code={code} shareLink={shareLink} />
         </header>
 
         {/*
@@ -997,7 +1017,7 @@ export function RoomScreen({
   return (
     <div className={COLUMN}>
       <h1 className="text-2xl font-semibold">Room {code}</h1>
-      <p>Share this link: {shareLink}</p>
+      <ShareRoom code={code} shareLink={shareLink} />
       <h2 className="font-semibold">Players</h2>
       <ul>
         {roster.players.map((player) => (
