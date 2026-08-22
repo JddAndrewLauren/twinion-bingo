@@ -800,6 +800,12 @@ export function RoomScreen({
             button (~44px each) and Share (~55px) — which is why the stats line
             itself had to come down from ~200px to under ~110px rather than the
             other way around. `room.gate.ts` still counts the lines.
+
+            The row also went `items-baseline` -> `items-center`: the control group
+            below is `items-stretch` so the dice slot's `aspect-square` can track the
+            Theme button's height, and a baseline-aligned parent gives a stretched
+            child nothing to align to. `legibility/page.tsx`, which stands in for this
+            header, was moved with it so the two do not drift.
           */}
           <div className="flex shrink-0 items-stretch gap-2">
             {/*

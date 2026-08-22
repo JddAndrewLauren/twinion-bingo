@@ -351,9 +351,36 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
   await page.evaluate(() => document.fonts.ready);
 
   return {
-    emit: (event) => page.evaluate((payload) => {
-      (window as unknown as { __gateEmit: (p: unknown) => void }).__gateEmit(payload);
-    }, event),
+    /**
+     * A frame does not arrive out of nowhere: the API appended the call to the room's
+     * log and *then* broadcast it, so anything that re-reads `/game` after the frame
+     * sees the new row. This fixture used to broadcast without appending, which made
+     * the two disagree — the frame drove the toast, but a re-read handed back the log
+     * as it was before, so the timeline could never grow no matter how healthy the
+     * stream was. #103's acceptance criterion asks for exactly that growth, so the
+     * log is written first here, in the same order the server writes it.
+     *
+     * Only `CALL` and only a square the log does not already carry: the same
+     * one-square-one-live-call rule the `/call` route enforces, so a frame for an
+     * already-called square stays the no-op it is server-side.
+     */
+    emit: async (event) => {
+      if (
+        event.kind === 'CALL' &&
+        event.squareId !== undefined &&
+        !calls.some((call) => call.squareId === event.squareId)
+      ) {
+        calls.push({
+          squareId: event.squareId,
+          seq: event.seq,
+          actorPlayerId: event.actorPlayerId ?? GUEST.id,
+        });
+      }
+
+      await page.evaluate((payload) => {
+        (window as unknown as { __gateEmit: (p: unknown) => void }).__gateEmit(payload);
+      }, event);
+    },
     square: (index) => CARD[index]!,
     streams: () =>
       page.evaluate(
