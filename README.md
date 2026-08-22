@@ -154,7 +154,9 @@ pnpm db:workspace
 
 ## Deploy
 
-The API is its own Fly app; the web app is on Vercel. Both are deployed manually.
+The API is its own Fly app; the web app is on Vercel. Both are deployed manually, and the order
+they go out in is load-bearing — see [docs/release-runbook.md](docs/release-runbook.md), which
+carries the ordering, the production verification checklist, and rollback.
 
 ```bash
 # API — first time only
@@ -170,8 +172,10 @@ fly secrets set \
 # deploy fails its health check and Fly rolls back to the previous release.
 #
 # WEB_ORIGIN is a comma-separated list of browser origins allowed to call the API.
-# Vercel preview URLs are matched automatically under the listed project's prefix,
-# so previews need no extra entry. In production there is no localhost default.
+# Vercel preview URLs are matched automatically under a listed `*.vercel.app` project
+# origin, so previews need no entry of their own — but that project origin has to stay
+# listed alongside the custom domain, or there is nothing left to match them under.
+# In production there is no localhost default.
 #
 # DATABASE_URL is the connection string for the shared project's database, where the
 # bingo tables live in their own `bingo` schema. There is no in-memory mode, so the
