@@ -2,8 +2,10 @@
 
 import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
+import { ACTION_BUTTON } from '../../action-button';
 import { readToken, storeToken } from '../../player-token';
 import {
+  ApiError,
   callSquare,
   fetchGame,
   fetchRoster,
@@ -32,15 +34,6 @@ type Load = 'loading' | 'ready' | 'missing' | 'unreachable';
  * The game screen is not this shape — see the note on the shell below.
  */
 const COLUMN = 'mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-6';
-
-/**
- * **Join** and **Start game**, which were bare `<button>` elements and therefore 24px
- * tall — a target no thumb reliably hits, on the two taps that stand between six
- * friends and a game. Found by #13's gate rather than by review, which is the same way
- * #12 found its own 22x24px switcher; `min-h-11` is 44px, Apple's documented minimum.
- */
-const ACTION =
-  'min-h-11 rounded border border-neutral-700 px-3 font-semibold disabled:text-neutral-500';
 
 /**
  * The card's two surfaces in the phone layout, per #12's C1. Not a sheet and not a
@@ -80,6 +73,56 @@ const TOAST_MS = 4000;
  * a window that sometimes never opened at all.
  */
 const UNDO_WINDOW_MS = 10_000;
+
+type Action = 'join' | 'start' | 'call' | 'retract';
+
+/** Every status this screen distinguishes from the generic sentence, by action. */
+const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = {
+  join: { 404: 'That room is gone.' },
+  start: {
+    403: 'Only the host can start the game.',
+    409: 'This room already has a game.',
+    // #76's own example: the theme's pool cannot fill a deck. Nothing the host
+    // can do about it, and the diagnosis that says why is in the console.
+    503: 'This theme cannot fill a game right now.',
+  },
+  call: {
+    403: 'That square is not yours to call.',
+    // ADR-0003: a call racing the full-house transaction is refused with 409,
+    // which reads as the game being over rather than as a square that failed.
+    409: 'This game has finished.',
+  },
+  retract: {
+    403: 'Only the caller or the host can take that call back.',
+    404: 'That call is gone.',
+    409: 'This game has finished.',
+  },
+};
+
+/** The one fixed sentence each action falls back to for a status it does not name. */
+const FALLBACK_SENTENCES: Record<Action, string> = {
+  join: 'Could not join that room.',
+  start: 'Could not start the game.',
+  call: 'Could not call that square.',
+  retract: 'Could not take that call back.',
+};
+
+/**
+ * Picks the player-facing sentence from the failed response's status (#76) and
+ * logs the server's own `error` body to the console, verbatim, so a body is never
+ * silently lost even when the sentence it earns is the generic one.
+ */
+function describeFailure(action: Action, error: unknown): string {
+  if (error instanceof ApiError) {
+    console.error(`${action} failed: ${error.status} ${error.body}`);
+
+    return KNOWN_STATUS_SENTENCES[action][error.status] ?? FALLBACK_SENTENCES[action];
+  }
+
+  console.error(`${action} failed:`, error);
+
+  return FALLBACK_SENTENCES[action];
+}
 
 /**
  * The credit half of D1. Spotting is what the game rewards, so a call says who
@@ -186,10 +229,10 @@ export function RoomScreen({
   const [game, setGame] = useState<Game | null>(null);
   const [name, setName] = useState('');
   const [joining, setJoining] = useState(false);
-  const [joinFailed, setJoinFailed] = useState(false);
+  const [joinFailed, setJoinFailed] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [startFailed, setStartFailed] = useState(false);
-  const [callFailed, setCallFailed] = useState(false);
+  const [startFailed, setStartFailed] = useState<string | null>(null);
+  const [callFailed, setCallFailed] = useState<string | null>(null);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   /**
    * Whether the host is looking at the deck sheet instead of their card. One at a
@@ -226,7 +269,7 @@ export function RoomScreen({
   const [undo, setUndo] = useState<Mark | null>(null);
   /** The mark a tap on the card is asking to take back, once the window has shut. */
   const [confirming, setConfirming] = useState<Mark | null>(null);
-  const [retractFailed, setRetractFailed] = useState(false);
+  const [retractFailed, setRetractFailed] = useState<string | null>(null);
   /** Bumped to re-read the roster: after joining, and on every streamed event. */
   const [reload, setReload] = useState(0);
   /**
@@ -412,14 +455,14 @@ export function RoomScreen({
   async function submitName(event: React.FormEvent) {
     event.preventDefault();
     setJoining(true);
-    setJoinFailed(false);
+    setJoinFailed(null);
 
     try {
       const joined = await joinRoom(apiUrl, code, name.trim());
       storeToken(code, joined.token);
       setReload((count) => count + 1);
-    } catch {
-      setJoinFailed(true);
+    } catch (error) {
+      setJoinFailed(describeFailure('join', error));
     } finally {
       setJoining(false);
     }
@@ -430,14 +473,14 @@ export function RoomScreen({
     if (token === undefined) return;
 
     setStarting(true);
-    setStartFailed(false);
+    setStartFailed(null);
 
     try {
       const started = await startGame(apiUrl, code, token);
       gameRef.current = started;
       setGame(started);
-    } catch {
-      setStartFailed(true);
+    } catch (error) {
+      setStartFailed(describeFailure('start', error));
     } finally {
       setStarting(false);
     }
@@ -459,7 +502,7 @@ export function RoomScreen({
     const token = readToken(code);
     if (token === undefined || game === null) return;
 
-    setCallFailed(false);
+    setCallFailed(null);
 
     try {
       const called = await callSquare(apiUrl, game.id, squareId, token);
@@ -471,8 +514,8 @@ export function RoomScreen({
         });
       }
       setReload((count) => count + 1);
-    } catch {
-      setCallFailed(true);
+    } catch (error) {
+      setCallFailed(describeFailure('call', error));
     }
   }
 
@@ -488,13 +531,13 @@ export function RoomScreen({
 
     setConfirming(null);
     setUndo(null);
-    setRetractFailed(false);
+    setRetractFailed(null);
 
     try {
       await retractCall(apiUrl, game.id, mark.seq, token);
       setReload((count) => count + 1);
-    } catch {
-      setRetractFailed(true);
+    } catch (error) {
+      setRetractFailed(describeFailure('retract', error));
     }
   }
 
@@ -538,11 +581,11 @@ export function RoomScreen({
         <button
           type="submit"
           disabled={joining || name.trim() === ''}
-          className={ACTION}
+          className={ACTION_BUTTON}
         >
           {joining ? 'Joining…' : 'Join'}
         </button>
-        {joinFailed && <p role="alert">Could not join that room.</p>}
+        {joinFailed !== null && <p role="alert">{joinFailed}</p>}
         {/*
           Below Join, so the form's own primary action keeps its place: somebody who
           followed a link here is joining, not re-sharing.
@@ -770,8 +813,8 @@ export function RoomScreen({
                   {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
                 </button>
               )}
-              {callFailed && <p role="alert">Could not call that square.</p>}
-              {retractFailed && <p role="alert">Could not take that call back.</p>}
+              {callFailed !== null && <p role="alert">{callFailed}</p>}
+              {retractFailed !== null && <p role="alert">{retractFailed}</p>}
             </div>
           </section>
 
@@ -990,12 +1033,12 @@ export function RoomScreen({
           type="button"
           onClick={start}
           disabled={starting}
-          className={ACTION}
+          className={ACTION_BUTTON}
         >
           {starting ? 'Dealing…' : 'Start game'}
         </button>
       )}
-      {startFailed && <p role="alert">Could not start the game.</p>}
+      {startFailed !== null && <p role="alert">{startFailed}</p>}
     </div>
   );
 }

@@ -166,6 +166,73 @@ describe('opening a share link', () => {
 
     expect(await screen.findByText('Could not reach the room.')).toBeDefined();
   });
+
+  /**
+   * #76: a 404 on `/join` means the room is gone between this browser reading
+   * the roster and submitting a name — a different fact from a generic failure,
+   * and the sentence says so.
+   */
+  it('reads a 404 on join as the room being gone', async () => {
+    const fetchMock = stubApi();
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        return Response.json({ error: 'no room with that code' }, { status: 404 });
+      }
+
+      return Response.json({
+        code: 'ABCD',
+        themeId: 'f1.v1',
+        hostPlayerId: host.id,
+        players: [host],
+        you: null,
+      });
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.change(await screen.findByLabelText('Your name'), {
+      target: { value: 'Bea' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+
+    expect(await screen.findByText('That room is gone.')).toBeDefined();
+  });
+
+  it("logs the server's error body to the console, verbatim, on a failed join", async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchMock = stubApi();
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        return Response.json({ error: 'no room with that code' }, { status: 404 });
+      }
+
+      return Response.json({
+        code: 'ABCD',
+        themeId: 'f1.v1',
+        hostPlayerId: host.id,
+        players: [host],
+        you: null,
+      });
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.change(await screen.findByLabelText('Your name'), {
+      target: { value: 'Bea' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+    await screen.findByRole('alert');
+
+    expect(
+      spy.mock.calls.some(
+        (call) =>
+          call.some((arg) => String(arg).includes('404')) &&
+          call.some((arg) => String(arg).includes('no room with that code')),
+      ),
+    ).toBe(true);
+
+    spy.mockRestore();
+  });
 });
 
 /**
