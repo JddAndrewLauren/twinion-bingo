@@ -57,6 +57,16 @@ export const MIN_CERTAIN_PER_CARD = 6;
  */
 const DRAW_ATTEMPTS = 200;
 
+/**
+ * How many reshuffles `dealCard` tries before declaring a deck undealable (#122).
+ * A square holding several exclusivity groups can make one of the three passes
+ * spend more than one group's worth of budget on a single square — order-
+ * dependent, not a property of the deck — so a shuffle that comes up short is
+ * retried against a fresh order rather than trusted as proof the deck cannot
+ * deal. See docs/adr/0007-dealcard-retries-a-short-shuffle.md.
+ */
+const DEAL_ATTEMPTS = 200;
+
 export class DeckCompositionError extends Error {
   constructor(themeId: string, reasons: string[]) {
     super(
@@ -145,7 +155,9 @@ export function composeDeck(pool: Pool, seed: string): Deck {
  * then find the leftover groups were rare-only and the card short.
  *
  * Seeded by the game's seed and the player's id, so the same game with the same
- * roster deals the same cards however many times it is replayed.
+ * roster deals the same cards however many times it is replayed. A shuffle that
+ * comes up short is retried against a fresh order derived from the same seed
+ * (#122), so the replay stays deterministic across attempts too.
  */
 export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   const shortfalls = cardBoundsShortfalls(deck);
@@ -156,7 +168,29 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
     );
   }
 
-  const random = createRandom(`${seed}:${playerId}`);
+  for (let attempt = 0; attempt < DEAL_ATTEMPTS; attempt += 1) {
+    const attemptSeed = attempt === 0 ? `${seed}:${playerId}` : `${seed}:${playerId}:${attempt}`;
+    const squareIds = attemptDeal(deck, attemptSeed);
+
+    if (squareIds !== undefined) return squareIds;
+  }
+
+  // A real failure path, not an assumption: the shortfall check above is
+  // necessary but not sufficient once a square can hold several exclusivity
+  // groups, so a deck can pass it and still have no shuffle order that fills
+  // all 24 slots. DEAL_ATTEMPTS reshuffles rule that out for every deck the
+  // committed pools draw in practice (see the seeded-deal regression suite),
+  // but the deck itself does not prove it, so this stays a loud, named error
+  // rather than an "Unreachable" assertion (#122).
+  throw new Error(
+    `could not deal a ${CARD_SQUARES}-square card from a deck of ${deck.length} in ` +
+      `${distinctGroups(deck)} distinct exclusivity groups after ${DEAL_ATTEMPTS} reshuffles`,
+  );
+}
+
+/** One shuffle's worth of the three-pass deal, or undefined if it fell short. */
+function attemptDeal(deck: Deck, seed: string): string[] | undefined {
+  const random = createRandom(seed);
   const order = shuffled(deck, random);
   const groups = new Set<string>();
   const squareIds: string[] = [];
@@ -177,19 +211,7 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   fill(CARD_SQUARES - MAX_RARE_PER_CARD, (square) => square.tier !== 'rare');
   fill(CARD_SQUARES, () => true);
 
-  // Meant to be unreachable: the shortfall check above is exactly the condition
-  // under which these three passes fill all 24 slots — true when every square
-  // holds one exclusivity group. A square spanning several groups can make this
-  // reachable (#122). Asserted rather than assumed because a card short of 24
-  // squares would be a silently unplayable game.
-  if (squareIds.length !== CARD_SQUARES) {
-    throw new Error(
-      `dealt ${squareIds.length} squares, not ${CARD_SQUARES}, from a deck of ` +
-        `${deck.length} in ${distinctGroups(deck)} distinct exclusivity groups`,
-    );
-  }
-
-  return squareIds;
+  return squareIds.length === CARD_SQUARES ? squareIds : undefined;
 }
 
 /**
@@ -202,8 +224,10 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
  * claim those groups in that order, so each pass has what the count promised.
  *
  * A square that spans several groups can claim more than one pass's budget at
- * once, so the counts here are no longer provably sufficient on their own —
- * that gap is #122's to close.
+ * once, so the counts here stay necessary but stop being provably sufficient
+ * on their own — used as a cheap early refusal for decks that are short on
+ * their face, with `dealCard`'s reshuffle-and-retry (#122) covering the gap
+ * a single flat pass can no longer close by itself.
  */
 function cardBoundsShortfalls(deck: Deck): string[] {
   const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
