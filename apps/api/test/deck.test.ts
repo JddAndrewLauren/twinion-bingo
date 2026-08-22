@@ -261,9 +261,13 @@ describe('composing a deck from the real F1 pool', () => {
 describe('the card tier bounds, against the real F1 pool', () => {
   const f1 = poolFor(loadPoolRegistry(themesRoot()), defaultThemeId());
   const PLAYERS = ['a', 'b', 'c', 'd', 'e', 'f'];
-  const SEEDS = 200;
+  // 500 seeds x 6 players is the 3000-deal measurement this file's module
+  // comment documents, extended (#122) into an executable regression: every one
+  // of those 3000 deals has to come back 24 squares, or `dealCard` throws and
+  // this whole describe block fails before a single expectation runs.
+  const SEEDS = 500;
 
-  /** Every card of a 200-seed, six-player room: 1200 cards, as tier counts. */
+  /** Every card of a 500-seed, six-player room: 3000 cards, as tier counts. */
   const cards: Record<SquareTier, number>[] = [];
 
   for (let n = 0; n < SEEDS; n += 1) {
@@ -273,6 +277,10 @@ describe('the card tier bounds, against the real F1 pool', () => {
 
     for (const player of PLAYERS) {
       const card = dealCard(deck, seed, `player-${player}`);
+
+      if (card.length !== CARD_SQUARES) {
+        throw new Error(`seed ${seed}/${player} dealt ${card.length} squares, not ${CARD_SQUARES}`);
+      }
 
       cards.push(tiersOf(card.map((id) => byId.get(id)!)));
     }
@@ -494,6 +502,77 @@ describe('dealing a card', () => {
 
     expect(() => dealCard(cramped, 'seed-one', 'player-a')).toThrow(
       /only 2 distinct exclusivity groups/,
+    );
+  });
+});
+
+/**
+ * A square holding several exclusivity groups (#121) can make the three-pass
+ * deal claim more than one group's worth of budget on a single square, which is
+ * what turns `dealCard`'s "Unreachable" throw reachable (#122): the shortfall
+ * check's counts stay necessary but stop being sufficient. These decks pass
+ * `cardBoundsShortfalls` — a card of 24 groups genuinely fits — but a single
+ * shuffle can still land short depending on the order a multi-group square is
+ * offered relative to the squares it overlaps.
+ */
+describe('dealing a card under multi-group squares (#122)', () => {
+  function sq(id: string, tier: SquareTier, groups: string[]): PoolSquare {
+    return {
+      id,
+      label: id,
+      description: 'A square.',
+      tier,
+      source: 'generated',
+      exclusivityGroups: groups,
+      templateId: 't',
+    };
+  }
+
+  /**
+   * 6 certain, 13 solo medium, 5 solo rare: 24 distinct groups, exactly enough
+   * for the card. `q` adds no new group — it doubles up on two of the medium
+   * squares' groups — so whether a card reaches 24 depends on whether `q` is
+   * offered before or after `m0` and `m1` in the shuffle. Confirmed against the
+   * pre-#122 three-pass-only algorithm: roughly half of 200 trial seeds threw.
+   */
+  function orderDependentDeck(): Deck {
+    const certain = Array.from({ length: MIN_CERTAIN_PER_CARD }, (_, i) =>
+      sq(`c${i}`, 'certain', [`g${i}`]),
+    );
+    const medium = Array.from({ length: 13 }, (_, i) => sq(`m${i}`, 'medium', [`h${i}`]));
+    const doubled = sq('q', 'medium', ['h0', 'h1']);
+    const rare = Array.from({ length: MAX_RARE_PER_CARD }, (_, i) => sq(`r${i}`, 'rare', [`r${i}`]));
+
+    return [...certain, ...medium, doubled, ...rare];
+  }
+
+  it('still deals 24 squares across many seeds, retrying past a short shuffle', () => {
+    const deck = orderDependentDeck();
+
+    for (let n = 0; n < 200; n += 1) {
+      const card = dealCard(deck, `order-${n}`, 'player-a');
+      const groups = card.flatMap((id) => deck.find((square) => square.id === id)!.exclusivityGroups);
+
+      expect(card, `seed order-${n}`).toHaveLength(CARD_SQUARES);
+      expect(new Set(groups).size, `seed order-${n}`).toBe(groups.length);
+    }
+  });
+
+  /**
+   * A deck no shuffle can deal: every square shares one common group, so at most
+   * one square can ever be taken. `cardBoundsShortfalls` cannot see this — the
+   * necessary counts all pass — so this is the real failure path DEAL_ATTEMPTS
+   * exists for, not the removed "Unreachable" assertion.
+   */
+  it('gives up with a named error, not a false assertion, on a truly undealable deck', () => {
+    const commonGroup = 'shared';
+    const certain = Array.from({ length: 6 }, (_, i) => sq(`c${i}`, 'certain', [`g${i}`, commonGroup]));
+    const medium = Array.from({ length: 20 }, (_, i) => sq(`m${i}`, 'medium', [`h${i}`, commonGroup]));
+    const rare = Array.from({ length: 14 }, (_, i) => sq(`r${i}`, 'rare', [`r${i}`, commonGroup]));
+    const deck: Deck = [...certain, ...medium, ...rare];
+
+    expect(() => dealCard(deck, 'seed-one', 'player-a')).toThrow(
+      /could not deal a 24-square card .* after 200 reshuffles/,
     );
   });
 });
