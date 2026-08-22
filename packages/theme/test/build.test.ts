@@ -56,7 +56,7 @@ describe('buildPool', () => {
       tier: 'medium',
       source: 'generated',
       exclusivityGroups: ['out:R1'],
-      entities: { racer: 'R1', team: 'AA' },
+      entities: { racer: ['R1'], team: ['AA'] },
       templateId: 'racer_wins',
     });
   });
@@ -65,7 +65,7 @@ describe('buildPool', () => {
     const pool = buildPool(source());
     const square = pool.squares.find((s) => s.id === 't.v1:racer_wins:R1');
 
-    expect(square?.entities).toEqual({ racer: 'R1', team: 'AA' });
+    expect(square?.entities).toEqual({ racer: ['R1'], team: ['AA'] });
   });
 
   it('drops entities whose tier rule is excluded', () => {

@@ -52,3 +52,14 @@ one team several times over. If a team cap is wanted later, it needs its own iss
 numbers above are the starting evidence for sizing it, and it will likely need to revisit the card
 bounds (`MIN_CERTAIN_PER_CARD`, `MAX_RARE_PER_CARD`) rather than bolt on cleanly the way the
 per-driver cap did.
+
+## Addendum: hand-crafted squares
+
+Review round 1 found that six of the F1 pool's 70 hand-crafted squares name a driver outright
+(`max_complains`, `russell_bad_luck`, `alonso_age_stat`, `hammertime`, `orange_smoke`, and
+`nostalgia_2021`, which names two) and were shipped with `entities: {}` regardless — a real gap in
+the driver cap this issue exists to close, not a team question, and fixed in the same PR rather than
+deferred (`HandcraftedSquare.entities`, authored on those six squares). None of the six pair to a
+team, so this fix adds no new `entities.team` data and does not change the measurement above; the
+91.5%/91.0% team-crowding figures already came from driver squares' `team` pairing alone. Re-measured
+after the fix, over the same 3000-deal shape: `cardsWithDuplicateDriver: 0`.

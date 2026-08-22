@@ -150,9 +150,11 @@ export function composeDeck(pool: Pool, seed: string): Deck {
  * "Norris leads a lap" and "Norris on the podium" contradict nothing, so
  * nothing above stops all three landing on one card and quietly handing a
  * third of the grid to one driver. So the deal also takes a square only if
- * its `entities.driver` (when it names one) has not already been taken —
- * at most one square per driver per card (#123). Teams get no cap of their
- * own: see docs/adr/0008-no-team-crowding-cap.md.
+ * none of the drivers it names (`entities.driver`, `CROWDING_ENTITY_TYPE`
+ * below — almost always at most one, but a hand-crafted square can name two)
+ * has already been taken — at most one square per driver per card (#123),
+ * generated and hand-crafted squares alike. Teams get no cap of their own:
+ * see docs/adr/0008-no-team-crowding-cap.md.
  *
  * Three passes over one shuffle, in bound order: the certain floor first, then
  * the non-rare squares up to the rare cap's complement, then anything left. Each
@@ -196,6 +198,17 @@ export function dealCard(deck: Deck, seed: string, playerId: string): string[] {
   );
 }
 
+/**
+ * The `entities` key the driver cap (#123) reads. Hardcoded rather than
+ * derived: it names a vocabulary word every theme's `entities.json` happens
+ * to spell `driver`, not a structural property `Pool` enforces. IndyCar also
+ * declares `indy500Driver` (unused by any template today); a square naming
+ * only that type would silently escape this cap. If a theme ever needs the
+ * cap to reach a second driver-shaped entity type, this is the one place to
+ * widen.
+ */
+const CROWDING_ENTITY_TYPE = 'driver';
+
 /** One shuffle's worth of the three-pass deal, or undefined if it fell short. */
 function attemptDeal(deck: Deck, seed: string): string[] | undefined {
   const random = createRandom(seed);
@@ -209,12 +222,12 @@ function attemptDeal(deck: Deck, seed: string): string[] | undefined {
     for (const square of order) {
       if (squareIds.length === upTo) return;
       if (square.exclusivityGroups.some((group) => groups.has(group))) continue;
-      const driver = square.entities.driver;
-      if (driver !== undefined && drivers.has(driver)) continue;
+      const namedDrivers = square.entities[CROWDING_ENTITY_TYPE] ?? [];
+      if (namedDrivers.some((driver) => drivers.has(driver))) continue;
       if (!accepts(square)) continue;
 
       for (const group of square.exclusivityGroups) groups.add(group);
-      if (driver !== undefined) drivers.add(driver);
+      for (const driver of namedDrivers) drivers.add(driver);
       squareIds.push(square.id);
     }
   };

@@ -13,8 +13,12 @@
         "radio_moan:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -28,8 +32,12 @@
         "radio_moan:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -43,8 +51,12 @@
         "radio_moan:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -58,8 +70,12 @@
         "radio_moan:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -73,8 +89,12 @@
         "radio_moan:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -88,8 +108,12 @@
         "radio_moan:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -103,8 +127,12 @@
         "radio_moan:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -118,8 +146,12 @@
         "radio_moan:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -133,8 +165,12 @@
         "radio_moan:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -148,8 +184,12 @@
         "radio_moan:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -163,8 +203,12 @@
         "radio_moan:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -178,8 +222,12 @@
         "radio_moan:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -193,8 +241,12 @@
         "radio_moan:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -208,8 +260,12 @@
         "radio_moan:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -223,8 +279,12 @@
         "radio_moan:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -238,8 +298,12 @@
         "radio_moan:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -253,8 +317,12 @@
         "radio_moan:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -268,8 +336,12 @@
         "radio_moan:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -283,8 +355,12 @@
         "radio_moan:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -298,8 +374,12 @@
         "radio_moan:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -313,8 +393,12 @@
         "radio_moan:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -328,8 +412,12 @@
         "radio_moan:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_battery_moan"
     },
@@ -343,8 +431,12 @@
         "teammate:WIL"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -358,8 +450,12 @@
         "teammate:AMR"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -373,8 +469,12 @@
         "teammate:MER"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -388,8 +488,12 @@
         "teammate:HAA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -403,8 +507,12 @@
         "teammate:AUD"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -418,8 +526,12 @@
         "teammate:CAD"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -433,8 +545,12 @@
         "teammate:ALP"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -448,8 +564,12 @@
         "teammate:ALP"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -463,8 +583,12 @@
         "teammate:RBR"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -478,8 +602,12 @@
         "teammate:FER"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -493,8 +621,12 @@
         "teammate:AUD"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -508,8 +640,12 @@
         "teammate:RBL"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -523,8 +659,12 @@
         "teammate:FER"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -538,8 +678,12 @@
         "teammate:RBL"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -553,8 +697,12 @@
         "teammate:MCL"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -568,8 +716,12 @@
         "teammate:HAA"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -583,8 +735,12 @@
         "teammate:CAD"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -598,8 +754,12 @@
         "teammate:MCL"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -613,8 +773,12 @@
         "teammate:MER"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -628,8 +792,12 @@
         "teammate:WIL"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -643,8 +811,12 @@
         "teammate:AMR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -658,8 +830,12 @@
         "teammate:RBR"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_beats_teammate"
     },
@@ -673,8 +849,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -688,8 +868,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -703,8 +887,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -718,8 +906,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -733,8 +925,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -748,8 +944,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -763,8 +963,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -778,8 +982,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -793,8 +1001,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -808,8 +1020,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -823,8 +1039,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -838,8 +1058,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -853,8 +1077,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -868,8 +1096,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -883,8 +1115,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -898,8 +1134,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -913,8 +1153,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -928,8 +1172,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -943,8 +1191,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -958,8 +1210,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -973,8 +1229,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -988,8 +1248,12 @@
         "retirement:any"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_dnf"
     },
@@ -1003,8 +1267,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1018,8 +1286,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1033,8 +1305,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1048,8 +1324,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1063,8 +1343,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1078,8 +1362,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1093,8 +1381,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1108,8 +1400,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1123,8 +1419,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1138,8 +1438,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1153,8 +1457,12 @@
         "fastest_lap"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_fastest_lap"
     },
@@ -1169,8 +1477,12 @@
         "finish:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1185,8 +1497,12 @@
         "finish:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1201,8 +1517,12 @@
         "finish:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1217,8 +1537,12 @@
         "finish:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1233,8 +1557,12 @@
         "finish:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1249,8 +1577,12 @@
         "finish:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1265,8 +1597,12 @@
         "finish:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1281,8 +1617,12 @@
         "finish:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1297,8 +1637,12 @@
         "finish:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1313,8 +1657,12 @@
         "finish:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1329,8 +1677,12 @@
         "finish:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1345,8 +1697,12 @@
         "finish:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1361,8 +1717,12 @@
         "finish:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1377,8 +1737,12 @@
         "finish:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1393,8 +1757,12 @@
         "finish:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1409,8 +1777,12 @@
         "finish:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1425,8 +1797,12 @@
         "finish:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1441,8 +1817,12 @@
         "finish:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1457,8 +1837,12 @@
         "finish:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1473,8 +1857,12 @@
         "finish:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1489,8 +1877,12 @@
         "finish:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1505,8 +1897,12 @@
         "finish:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_in_gravel"
     },
@@ -1521,8 +1917,12 @@
         "finish:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1537,8 +1937,12 @@
         "finish:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1553,8 +1957,12 @@
         "finish:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1569,8 +1977,12 @@
         "finish:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1585,8 +1997,12 @@
         "finish:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1601,8 +2017,12 @@
         "finish:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1617,8 +2037,12 @@
         "finish:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1633,8 +2057,12 @@
         "finish:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1649,8 +2077,12 @@
         "finish:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1665,8 +2097,12 @@
         "finish:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1681,8 +2117,12 @@
         "finish:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1697,8 +2137,12 @@
         "finish:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1713,8 +2157,12 @@
         "finish:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1729,8 +2177,12 @@
         "finish:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1745,8 +2197,12 @@
         "finish:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_in_points"
     },
@@ -1760,8 +2216,12 @@
         "leads_lap:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1775,8 +2235,12 @@
         "leads_lap:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1790,8 +2254,12 @@
         "leads_lap:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1805,8 +2273,12 @@
         "leads_lap:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1820,8 +2292,12 @@
         "leads_lap:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1835,8 +2311,12 @@
         "leads_lap:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1850,8 +2330,12 @@
         "leads_lap:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1865,8 +2349,12 @@
         "leads_lap:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1880,8 +2368,12 @@
         "leads_lap:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1895,8 +2387,12 @@
         "leads_lap:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1910,8 +2406,12 @@
         "leads_lap:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_leads_lap"
     },
@@ -1925,8 +2425,12 @@
         "radio_moan:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -1940,8 +2444,12 @@
         "radio_moan:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -1955,8 +2463,12 @@
         "radio_moan:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -1970,8 +2482,12 @@
         "radio_moan:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -1985,8 +2501,12 @@
         "radio_moan:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2000,8 +2520,12 @@
         "radio_moan:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2015,8 +2539,12 @@
         "radio_moan:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2030,8 +2558,12 @@
         "radio_moan:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2045,8 +2577,12 @@
         "radio_moan:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2060,8 +2596,12 @@
         "radio_moan:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2075,8 +2615,12 @@
         "radio_moan:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2090,8 +2634,12 @@
         "radio_moan:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2105,8 +2653,12 @@
         "radio_moan:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2120,8 +2672,12 @@
         "radio_moan:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2135,8 +2691,12 @@
         "radio_moan:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2150,8 +2710,12 @@
         "radio_moan:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2165,8 +2729,12 @@
         "radio_moan:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2180,8 +2748,12 @@
         "radio_moan:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2195,8 +2767,12 @@
         "radio_moan:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2210,8 +2786,12 @@
         "radio_moan:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2225,8 +2805,12 @@
         "radio_moan:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2240,8 +2824,12 @@
         "radio_moan:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_moans_at_team"
     },
@@ -2255,8 +2843,12 @@
         "penalty:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2270,8 +2862,12 @@
         "penalty:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2285,8 +2881,12 @@
         "penalty:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2300,8 +2900,12 @@
         "penalty:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2315,8 +2919,12 @@
         "penalty:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2330,8 +2938,12 @@
         "penalty:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2345,8 +2957,12 @@
         "penalty:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2360,8 +2976,12 @@
         "penalty:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2375,8 +2995,12 @@
         "penalty:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2390,8 +3014,12 @@
         "penalty:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2405,8 +3033,12 @@
         "penalty:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2420,8 +3052,12 @@
         "penalty:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2435,8 +3071,12 @@
         "penalty:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2450,8 +3090,12 @@
         "penalty:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2465,8 +3109,12 @@
         "penalty:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2480,8 +3128,12 @@
         "penalty:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2495,8 +3147,12 @@
         "penalty:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2510,8 +3166,12 @@
         "penalty:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2525,8 +3185,12 @@
         "penalty:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2540,8 +3204,12 @@
         "penalty:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2555,8 +3223,12 @@
         "penalty:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2570,8 +3242,12 @@
         "penalty:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_penalty"
     },
@@ -2586,8 +3262,12 @@
         "finish:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2602,8 +3282,12 @@
         "finish:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2618,8 +3302,12 @@
         "finish:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2634,8 +3322,12 @@
         "finish:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2650,8 +3342,12 @@
         "finish:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2666,8 +3362,12 @@
         "finish:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2682,8 +3382,12 @@
         "finish:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2698,8 +3402,12 @@
         "finish:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2714,8 +3422,12 @@
         "finish:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2730,8 +3442,12 @@
         "finish:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2746,8 +3462,12 @@
         "finish:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_podium"
     },
@@ -2761,8 +3481,12 @@
         "swears:ALB"
       ],
       "entities": {
-        "driver": "ALB",
-        "team": "WIL"
+        "driver": [
+          "ALB"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2776,8 +3500,12 @@
         "swears:ALO"
       ],
       "entities": {
-        "driver": "ALO",
-        "team": "AMR"
+        "driver": [
+          "ALO"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2791,8 +3519,12 @@
         "swears:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2806,8 +3538,12 @@
         "swears:BEA"
       ],
       "entities": {
-        "driver": "BEA",
-        "team": "HAA"
+        "driver": [
+          "BEA"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2821,8 +3557,12 @@
         "swears:BOR"
       ],
       "entities": {
-        "driver": "BOR",
-        "team": "AUD"
+        "driver": [
+          "BOR"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2836,8 +3576,12 @@
         "swears:BOT"
       ],
       "entities": {
-        "driver": "BOT",
-        "team": "CAD"
+        "driver": [
+          "BOT"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2851,8 +3595,12 @@
         "swears:COL"
       ],
       "entities": {
-        "driver": "COL",
-        "team": "ALP"
+        "driver": [
+          "COL"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2866,8 +3614,12 @@
         "swears:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2881,8 +3633,12 @@
         "swears:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2896,8 +3652,12 @@
         "swears:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2911,8 +3671,12 @@
         "swears:HUL"
       ],
       "entities": {
-        "driver": "HUL",
-        "team": "AUD"
+        "driver": [
+          "HUL"
+        ],
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2926,8 +3690,12 @@
         "swears:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2941,8 +3709,12 @@
         "swears:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2956,8 +3728,12 @@
         "swears:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2971,8 +3747,12 @@
         "swears:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -2986,8 +3766,12 @@
         "swears:OCO"
       ],
       "entities": {
-        "driver": "OCO",
-        "team": "HAA"
+        "driver": [
+          "OCO"
+        ],
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3001,8 +3785,12 @@
         "swears:PER"
       ],
       "entities": {
-        "driver": "PER",
-        "team": "CAD"
+        "driver": [
+          "PER"
+        ],
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3016,8 +3804,12 @@
         "swears:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3031,8 +3823,12 @@
         "swears:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3046,8 +3842,12 @@
         "swears:SAI"
       ],
       "entities": {
-        "driver": "SAI",
-        "team": "WIL"
+        "driver": [
+          "SAI"
+        ],
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3061,8 +3861,12 @@
         "swears:STR"
       ],
       "entities": {
-        "driver": "STR",
-        "team": "AMR"
+        "driver": [
+          "STR"
+        ],
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3076,8 +3880,12 @@
         "swears:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_swears"
     },
@@ -3092,8 +3900,12 @@
         "finish:ANT"
       ],
       "entities": {
-        "driver": "ANT",
-        "team": "MER"
+        "driver": [
+          "ANT"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3108,8 +3920,12 @@
         "finish:GAS"
       ],
       "entities": {
-        "driver": "GAS",
-        "team": "ALP"
+        "driver": [
+          "GAS"
+        ],
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3124,8 +3940,12 @@
         "finish:HAD"
       ],
       "entities": {
-        "driver": "HAD",
-        "team": "RBR"
+        "driver": [
+          "HAD"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3140,8 +3960,12 @@
         "finish:HAM"
       ],
       "entities": {
-        "driver": "HAM",
-        "team": "FER"
+        "driver": [
+          "HAM"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3156,8 +3980,12 @@
         "finish:LAW"
       ],
       "entities": {
-        "driver": "LAW",
-        "team": "RBL"
+        "driver": [
+          "LAW"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3172,8 +4000,12 @@
         "finish:LEC"
       ],
       "entities": {
-        "driver": "LEC",
-        "team": "FER"
+        "driver": [
+          "LEC"
+        ],
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3188,8 +4020,12 @@
         "finish:LIN"
       ],
       "entities": {
-        "driver": "LIN",
-        "team": "RBL"
+        "driver": [
+          "LIN"
+        ],
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3204,8 +4040,12 @@
         "finish:NOR"
       ],
       "entities": {
-        "driver": "NOR",
-        "team": "MCL"
+        "driver": [
+          "NOR"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3220,8 +4060,12 @@
         "finish:PIA"
       ],
       "entities": {
-        "driver": "PIA",
-        "team": "MCL"
+        "driver": [
+          "PIA"
+        ],
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3236,8 +4080,12 @@
         "finish:RUS"
       ],
       "entities": {
-        "driver": "RUS",
-        "team": "MER"
+        "driver": [
+          "RUS"
+        ],
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3252,8 +4100,12 @@
         "finish:VER"
       ],
       "entities": {
-        "driver": "VER",
-        "team": "RBR"
+        "driver": [
+          "VER"
+        ],
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "driver_wins"
     },
@@ -3266,7 +4118,11 @@
       "exclusivityGroups": [
         "broadcast:silly_stat"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "ALO"
+        ]
+      },
       "templateId": null
     },
     {
@@ -3494,7 +4350,11 @@
       "exclusivityGroups": [
         "radio:hammertime"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "HAM"
+        ]
+      },
       "templateId": null
     },
     {
@@ -3578,7 +4438,11 @@
       "exclusivityGroups": [
         "radio_moan:VER"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "VER"
+        ]
+      },
       "templateId": null
     },
     {
@@ -3614,7 +4478,12 @@
       "exclusivityGroups": [
         "storyline:2021"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "VER",
+          "HAM"
+        ]
+      },
       "templateId": null
     },
     {
@@ -3638,7 +4507,11 @@
       "exclusivityGroups": [
         "crowd:orange_smoke"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "VER"
+        ]
+      },
       "templateId": null
     },
     {
@@ -3854,7 +4727,11 @@
       "exclusivityGroups": [
         "storyline:russell_luck"
       ],
-      "entities": {},
+      "entities": {
+        "driver": [
+          "RUS"
+        ]
+      },
       "templateId": null
     },
     {
@@ -4107,7 +4984,9 @@
         "double_points:ALP"
       ],
       "entities": {
-        "team": "ALP"
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4121,7 +5000,9 @@
         "double_points:FER"
       ],
       "entities": {
-        "team": "FER"
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4135,7 +5016,9 @@
         "double_points:MCL"
       ],
       "entities": {
-        "team": "MCL"
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4149,7 +5032,9 @@
         "double_points:MER"
       ],
       "entities": {
-        "team": "MER"
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4163,7 +5048,9 @@
         "double_points:RBL"
       ],
       "entities": {
-        "team": "RBL"
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4177,7 +5064,9 @@
         "double_points:RBR"
       ],
       "entities": {
-        "team": "RBR"
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "team_double_points"
     },
@@ -4191,7 +5080,9 @@
         "slow_stop:ALP"
       ],
       "entities": {
-        "team": "ALP"
+        "team": [
+          "ALP"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4205,7 +5096,9 @@
         "slow_stop:AMR"
       ],
       "entities": {
-        "team": "AMR"
+        "team": [
+          "AMR"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4219,7 +5112,9 @@
         "slow_stop:AUD"
       ],
       "entities": {
-        "team": "AUD"
+        "team": [
+          "AUD"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4233,7 +5128,9 @@
         "slow_stop:CAD"
       ],
       "entities": {
-        "team": "CAD"
+        "team": [
+          "CAD"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4247,7 +5144,9 @@
         "slow_stop:FER"
       ],
       "entities": {
-        "team": "FER"
+        "team": [
+          "FER"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4261,7 +5160,9 @@
         "slow_stop:HAA"
       ],
       "entities": {
-        "team": "HAA"
+        "team": [
+          "HAA"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4275,7 +5176,9 @@
         "slow_stop:MCL"
       ],
       "entities": {
-        "team": "MCL"
+        "team": [
+          "MCL"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4289,7 +5192,9 @@
         "slow_stop:MER"
       ],
       "entities": {
-        "team": "MER"
+        "team": [
+          "MER"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4303,7 +5208,9 @@
         "slow_stop:RBL"
       ],
       "entities": {
-        "team": "RBL"
+        "team": [
+          "RBL"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4317,7 +5224,9 @@
         "slow_stop:RBR"
       ],
       "entities": {
-        "team": "RBR"
+        "team": [
+          "RBR"
+        ]
       },
       "templateId": "team_slow_stop"
     },
@@ -4331,7 +5240,9 @@
         "slow_stop:WIL"
       ],
       "entities": {
-        "team": "WIL"
+        "team": [
+          "WIL"
+        ]
       },
       "templateId": "team_slow_stop"
     }

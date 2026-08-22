@@ -322,7 +322,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "radio:hammertime"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "HAM"
+        ]
+      }
     },
     {
       "key": "full_beans",
@@ -349,7 +354,12 @@
       "tier": "certain",
       "exclusivityGroups": [
         "radio_moan:VER"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "VER"
+        ]
+      }
     },
     {
       "key": "two_secs_ted",
@@ -376,7 +386,12 @@
       "tier": "certain",
       "exclusivityGroups": [
         "broadcast:silly_stat"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "ALO"
+        ]
+      }
     },
     {
       "key": "cuts_away_from_battle",
@@ -538,7 +553,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "storyline:russell_luck"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "RUS"
+        ]
+      }
     },
     {
       "key": "nostalgia_2021",
@@ -547,7 +567,13 @@
       "tier": "medium",
       "exclusivityGroups": [
         "storyline:2021"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "VER",
+          "HAM"
+        ]
+      }
     },
     {
       "key": "partner_in_garage",
@@ -601,7 +627,12 @@
       "tier": "medium",
       "exclusivityGroups": [
         "crowd:orange_smoke"
-      ]
+      ],
+      "entities": {
+        "driver": [
+          "VER"
+        ]
+      }
     },
     {
       "key": "empty_seats_shown",
