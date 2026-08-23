@@ -50,6 +50,13 @@
       "when": 1787502249654,
       "tag": "0006_lazy_sphinx",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787503764028,
+      "tag": "0007_sharp_moon_knight",
+      "breakpoints": true
     }
   ]
 }

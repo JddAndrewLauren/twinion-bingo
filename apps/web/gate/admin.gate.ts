@@ -75,6 +75,10 @@ test.describe('the admin room list, unlocked', () => {
             code: 'ABCD',
             themeId: 'f1.v2',
             playerCount: requests === 1 ? 2 : 5,
+            players: [
+              { id: 'p1', name: 'Ash' },
+              { id: 'p2', name: 'Bea' },
+            ],
             gameState: requests === 1 ? 'lobby' : 'live',
             ageSeconds: 90,
           },
@@ -93,5 +97,92 @@ test.describe('the admin room list, unlocked', () => {
     // The list refreshes on its own timer — no reload, no re-submit — so the
     // second poll's state has to arrive without any further interaction here.
     await expect(page.getByRole('cell', { name: 'live' })).toBeVisible({ timeout: 15_000 });
+  });
+});
+
+/**
+ * #126's three mutating actions, gated at `phone` alongside the rest of this
+ * screen (docs/SURFACES.md's "Admin — mutating actions" row) — none of it is
+ * skin-dependent, so one viewport is the whole claim, the same reasoning the
+ * read-only list above already applies.
+ */
+test.describe('the admin room list, mutating actions', () => {
+  test.beforeEach(({}, testInfo) => {
+    test.skip(
+      testInfo.project.name !== 'phone',
+      "phone is this screen's primary viewport, per docs/SURFACES.md",
+    );
+  });
+
+  async function unlockWithOneLiveRoom(page: Page): Promise<void> {
+    await page.route('**/admin/rooms', (route) =>
+      json(route, {
+        rooms: [
+          {
+            code: 'ABCD',
+            themeId: 'f1.v2',
+            playerCount: 1,
+            players: [{ id: 'p1', name: 'Ash' }],
+            gameState: 'live',
+            ageSeconds: 90,
+          },
+        ],
+      }),
+    );
+
+    await openAdmin(page);
+    await page.getByLabel('Admin secret').fill('lax-paddock');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(page.getByRole('cell', { name: 'ABCD' })).toBeVisible();
+  }
+
+  test('offers End game, Delete and Kick, thumb-sized and without scrolling the row sideways', async ({
+    page,
+  }) => {
+    await unlockWithOneLiveRoom(page);
+
+    const endGame = page.getByRole('button', { name: 'End game' });
+    const del = page.getByRole('button', { name: 'Delete' });
+    const kick = page.getByRole('button', { name: 'Kick' });
+
+    await expect(endGame).toBeVisible();
+    await expect(del).toBeVisible();
+    await expect(kick).toBeVisible();
+    await expectNoHorizontalScroll(page);
+  });
+
+  test('confirms before force-ending a game, and sends nothing on a declined confirm', async ({
+    page,
+  }) => {
+    await unlockWithOneLiveRoom(page);
+
+    let ended = false;
+    await page.route('**/admin/rooms/ABCD/game/end', (route) => {
+      ended = true;
+      return route.fulfill({ status: 204 });
+    });
+
+    page.once('dialog', (dialog) => dialog.dismiss());
+    await page.getByRole('button', { name: 'End game' }).click();
+    expect(ended).toBe(false);
+
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: 'End game' }).click();
+    await expect.poll(() => ended).toBe(true);
+  });
+
+  test('kicks a named player after confirming', async ({ page }) => {
+    await unlockWithOneLiveRoom(page);
+
+    let kicked = false;
+    await page.route('**/admin/rooms/ABCD/players/p1/kick', (route) => {
+      kicked = true;
+      return route.fulfill({ status: 204 });
+    });
+
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: 'Kick' }).click();
+
+    await expect.poll(() => kicked).toBe(true);
   });
 });

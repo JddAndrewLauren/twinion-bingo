@@ -47,6 +47,45 @@ const truncate = async () => {
   );
 };
 
+async function start(
+  app: ReturnType<typeof createApp>,
+  code: string,
+  token: string,
+): Promise<Response> {
+  return app.request(`/rooms/${code}/games`, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${token}` },
+  });
+}
+
+async function call(
+  app: ReturnType<typeof createApp>,
+  gameId: string,
+  squareId: string,
+  token: string,
+): Promise<Response> {
+  return app.request(`/games/${gameId}/call`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ square_id: squareId }),
+  });
+}
+
+async function readGame(
+  app: ReturnType<typeof createApp>,
+  code: string,
+  token: string,
+): Promise<{ state: string }> {
+  const res = await app.request(`/rooms/${code}/game`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+
+  return (await res.json()) as { state: string };
+}
+
 describe.skipIf(noTestDatabase)('listing open rooms', () => {
   beforeEach(truncate);
 
@@ -167,3 +206,213 @@ describe.skipIf(noTestDatabase)('GET /admin/rooms', () => {
     expect(body.rooms[0]).toMatchObject({ code: host.code, playerCount: 1 });
   });
 });
+
+const SECRET = 'lax-paddock';
+
+describe.skipIf(noTestDatabase)('POST /admin/rooms/:code/game/end', () => {
+  beforeEach(truncate);
+
+  it('refuses without the right secret, identically to every admin route', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+
+    const res = await app.request(`/admin/rooms/${host.code}/game/end`, { method: 'POST' });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('force-ends a live game: the game reads done, and a further call is refused with 409', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+    const started = await start(app, host.code, host.token);
+    expect(started.status).toBe(201);
+    const game = (await started.json()) as { id: string; card: { id: string }[] };
+
+    const res = await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+    expect(res.status).toBe(204);
+
+    const read = await readGame(app, host.code, host.token);
+    expect(read.state).toBe('done');
+
+    const attempt = await call(app, game.id, game.card[0]!.id, host.token);
+    expect(attempt.status).toBe(409);
+  });
+
+  it('appends an event so a connected device learns without re-reading', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+    await start(app, host.code, host.token);
+
+    await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+
+    const rows = await db.execute<{ kind: string }>(
+      sql`SELECT kind FROM bingo.room_events WHERE room_code = ${host.code} ORDER BY seq DESC LIMIT 1`,
+    );
+    expect([...rows][0]).toMatchObject({ kind: 'GAME_FORCE_ENDED' });
+  });
+
+  it('is idempotent: ending an already-done game does not error', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+    await start(app, host.code, host.token);
+
+    await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+    const again = await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+
+    expect(again.status).toBe(204);
+  });
+
+  it('404s a room with no game to end', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+
+    const res = await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe.skipIf(noTestDatabase)('DELETE /admin/rooms/:code', () => {
+  beforeEach(truncate);
+
+  it('refuses without the right secret', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+
+    const res = await app.request(`/admin/rooms/${host.code}`, { method: 'DELETE' });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('hard-deletes a room and everything under it, and does not error on a finished game', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+    const started = await start(app, host.code, host.token);
+    const game = (await started.json()) as { id: string; card: { id: string }[] };
+    await call(app, game.id, game.card[0]!.id, host.token);
+
+    const res = await app.request(`/admin/rooms/${host.code}`, {
+      method: 'DELETE',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+    expect(res.status).toBe(204);
+
+    const [room] = await db.execute(sql`SELECT code FROM bingo.rooms WHERE code = ${host.code}`);
+    expect(room).toBeUndefined();
+    const [gameRow] = await db.execute(sql`SELECT id FROM bingo.games WHERE id = ${game.id}::uuid`);
+    expect(gameRow).toBeUndefined();
+    const [eventRow] = await db.execute(
+      sql`SELECT seq FROM bingo.room_events WHERE room_code = ${host.code}`,
+    );
+    expect(eventRow).toBeUndefined();
+    const [playerRow] = await db.execute(
+      sql`SELECT id FROM bingo.players WHERE id = ${host.player.id}::uuid`,
+    );
+    expect(playerRow).toBeUndefined();
+  });
+
+  it('404s a room that does not exist', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+
+    const res = await app.request('/admin/rooms/ZZZZ', {
+      method: 'DELETE',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe.skipIf(noTestDatabase)('POST /admin/rooms/:code/players/:playerId/kick', () => {
+  beforeEach(truncate);
+
+  it('refuses without the right secret', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+
+    const res = await app.request(`/admin/rooms/${host.code}/players/${host.player.id}/kick`, {
+      method: 'POST',
+    });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('revokes the token: further calls are rejected, but their calls and others’ marks stand', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+    const guest = await join(app, host.code, 'Bea');
+    const started = await start(app, host.code, host.token);
+    const game = (await started.json()) as { id: string; card: { id: string }[] };
+
+    const bea = (await (await readGameRes(app, host.code, guest.token)).json()) as {
+      card: { id: string }[];
+    };
+    const guestSquare = bea.card[0]!.id;
+    const guestCall = await call(app, game.id, guestSquare, guest.token);
+    expect(guestCall.status).toBe(201);
+
+    const res = await app.request(`/admin/rooms/${host.code}/players/${guest.player.id}/kick`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+    expect(res.status).toBe(204);
+
+    // The kicked player's token no longer identifies them.
+    const rejected = await call(app, game.id, guestSquare, guest.token);
+    expect(rejected.status).toBe(401);
+
+    // Their existing call stands, credited to their player row, which stands too.
+    const rows = await db.execute<{ actor_player_id: string }>(
+      sql`SELECT actor_player_id FROM bingo.room_events WHERE room_code = ${host.code} AND kind = 'CALL'`,
+    );
+    expect([...rows][0]).toMatchObject({ actor_player_id: guest.player.id });
+
+    const [player] = await db.execute(
+      sql`SELECT id FROM bingo.players WHERE id = ${guest.player.id}::uuid`,
+    );
+    expect(player).toBeDefined();
+
+    // The host's own read of the game is unaffected — the mark is still there.
+    const hostView = (await readGame(app, host.code, host.token)) as {
+      state: string;
+    };
+    expect(hostView.state).toBe('live');
+  });
+
+  it('404s a player that does not exist in the room', async () => {
+    const app = createApp({ allowedOrigins: ['http://localhost:3000'], db, adminSecret: SECRET });
+    const host = await createRoom(app, 'Ash');
+
+    const res = await app.request(
+      `/admin/rooms/${host.code}/players/00000000-0000-0000-0000-000000000000/kick`,
+      { method: 'POST', headers: { authorization: `Bearer ${SECRET}` } },
+    );
+
+    expect(res.status).toBe(404);
+  });
+});
+
+async function readGameRes(
+  app: ReturnType<typeof createApp>,
+  code: string,
+  token: string,
+): Promise<Response> {
+  return app.request(`/rooms/${code}/game`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+}
