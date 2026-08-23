@@ -14,12 +14,20 @@ export type AppConfig = {
   pools?: Map<string, Pool>;
   /** Poll and heartbeat periods for the SSE stream; the defaults are the real ones. */
   streamTimings?: Partial<StreamTimings>;
+  /**
+   * The one shared secret that gates `/admin/rooms` (#125). Undefined locks the
+   * surface rather than crashing the API: unlike `DATABASE_URL`, nothing else here
+   * needs it, so a deploy that never set it should serve rooms and games as normal
+   * and simply refuse every admin request.
+   */
+  adminSecret?: string;
 };
 
 export type ServerConfig = {
   allowedOrigins: string[];
   databaseUrl: string;
   port: number;
+  adminSecret?: string;
 };
 
 const DEFAULT_PORT = 8080;
@@ -37,6 +45,7 @@ export function resolveServerConfig(
     allowedOrigins: resolveAllowedOrigins(env),
     databaseUrl: resolveDatabaseUrl(env),
     port: resolvePort(env),
+    adminSecret: resolveAdminSecret(env),
   };
 }
 
@@ -73,6 +82,20 @@ function resolveAllowedOrigins(
   }
 
   return [LOCAL_WEB_ORIGIN];
+}
+
+/**
+ * No default, in any environment, and no throw either: `/admin` is the one
+ * surface this gates, so an unset secret means that surface stays locked rather
+ * than the API refusing to boot for rooms and games that don't need it. Set out
+ * of band per the repo secrets rule (1Password, `dev` vault) — never committed.
+ */
+function resolveAdminSecret(
+  env: Record<string, string | undefined>,
+): string | undefined {
+  const secret = env.ADMIN_SECRET?.trim();
+
+  return secret === undefined || secret === '' ? undefined : secret;
 }
 
 function resolvePort(env: Record<string, string | undefined>): number {

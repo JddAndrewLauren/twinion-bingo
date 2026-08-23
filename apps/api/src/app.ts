@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { createAdminRoutes } from './admin/routes.js';
 import { isOriginAllowed, type AppConfig } from './config.js';
 import { createGameRoutes } from './games/routes.js';
 import { loadPoolRegistry } from './games/pools.js';
@@ -26,6 +27,7 @@ export function createApp(config: AppConfig) {
   app.route('/', createRoomRoutes(config.db, pools));
   app.route('/', createGameRoutes(config.db, pools));
   app.route('/', createStreamRoutes(config.db, config.streamTimings));
+  app.route('/', createAdminRoutes(config.db, config.adminSecret));
 
   return app;
 }

@@ -81,4 +81,22 @@ describe('resolving server config from the environment', () => {
       resolveServerConfig({ DATABASE_URL, PORT: 'eight thousand' }),
     ).toThrow(/PORT/);
   });
+
+  it('reads the admin secret', () => {
+    const config = resolveServerConfig({ DATABASE_URL, ADMIN_SECRET: 'lax-paddock' });
+
+    expect(config.adminSecret).toBe('lax-paddock');
+  });
+
+  it('leaves the admin secret undefined when unset, in every environment', () => {
+    const config = resolveServerConfig({ DATABASE_URL, NODE_ENV: 'production', WEB_ORIGIN: 'https://bingo.example' });
+
+    expect(config.adminSecret).toBeUndefined();
+  });
+
+  it('treats a blank admin secret the same as unset', () => {
+    const config = resolveServerConfig({ DATABASE_URL, ADMIN_SECRET: '   ' });
+
+    expect(config.adminSecret).toBeUndefined();
+  });
 });
