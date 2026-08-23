@@ -154,8 +154,12 @@ async function callRows(code: string): Promise<{ square_id: string }[]> {
 }
 
 async function gameRow(code: string): Promise<{ seed: string; deck: string[]; state: string }> {
+  // The deck lives on `rooms` now (ADR-0010); the game row itself keeps seed
+  // and state.
   const rows = await db.execute<{ seed: string; deck: string[]; state: string }>(
-    sql`SELECT seed, deck, state FROM bingo.games WHERE room_code = ${code}`,
+    sql`SELECT g.seed, r.deck, g.state
+        FROM bingo.games g JOIN bingo.rooms r ON r.code = g.room_code
+        WHERE g.room_code = ${code}`,
   );
 
   const [row] = [...rows];
@@ -310,6 +314,29 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
       sql`SELECT count(*) AS count FROM bingo.games WHERE room_code = ${host.code}`,
     );
     expect([...rows][0]!.count).toBe('1');
+  });
+
+  /**
+   * A room is one session (ADR-0010): the finished game does not free the room
+   * for another. The deck is the check that matters — a second start would
+   * overwrite `rooms.deck`, and the first game's cards were dealt from it.
+   */
+  it('refuses to start a second game once the first is done', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const before = (await gameRow(host.code)).deck;
+
+    await db.execute(sql`UPDATE bingo.games SET state = 'done' WHERE id = ${started.id}`);
+
+    const again = await start(host.code, host.token);
+    expect(again.status).toBe(409);
+    expect(await again.json()).toEqual({ error: 'this room has already started its game' });
+
+    const rows = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games WHERE room_code = ${host.code}`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+    expect((await gameRow(host.code)).deck).toEqual(before);
   });
 
   it('has no game to read before the host starts one', async () => {
@@ -508,11 +535,12 @@ describe.skipIf(noTestDatabase)('re-rolling a card', () => {
     const started = (await (await start(host.code, host.token)).json()) as GameView;
     const originalIds = started.card!.map((square) => square.id);
 
+    // The deck lives on `rooms` now (ADR-0010).
     await db.execute(
-      sql`UPDATE bingo.games SET deck = ARRAY[${sql.join(
+      sql`UPDATE bingo.rooms SET deck = ARRAY[${sql.join(
         originalIds.map((id) => sql`${id}`),
         sql`, `,
-      )}]::text[] WHERE id = ${started.id}`,
+      )}]::text[] WHERE code = ${host.code}`,
     );
 
     const res = await reroll(started.id, host.token);

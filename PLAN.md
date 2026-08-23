@@ -69,7 +69,7 @@ correct late-joiner state, and cheap corrections. It **requires** stable determi
 | **D10** | **Themes are repo folders.** Theme #1 F1, **theme #2 IndyCar**. No editor, no DB-backed themes. |
 | **D11** | **Identity: display name + server-issued token in localStorage.** Per-browser. No accounts. |
 | **D12** | **Next.js 16 / React 19 / Tailwind v4, manifest + icons, no service worker.** |
-| **D13** | **Room ≠ game.** Room = persistent group (code, theme, roster). Game = one session (deck, cards, log, winners). Same code for Saturday's sprint and Sunday's race, all season. |
+| **D13** | ~~**Room ≠ game.** Room = persistent group (code, theme, roster). Game = one session (deck, cards, log, winners). Same code for Saturday's sprint and Sunday's race, all season.~~ **Superseded by `docs/adr/0010-a-room-is-one-session.md`:** a room is one session, and the deck belongs to the room. |
 | **D14** | **Two layouts in v1: phone and 11" iPad.** Prototype-gated. |
 | **D15** | **Clean cards may re-roll immediately and without a limit.** A re-roll replaces the card, appends a `CARD_REROLLED` event, and resets its claim boundary. |
 
@@ -232,6 +232,11 @@ something structurally different (a non-racing theme) has been through it.
 
 ### D13 — lifecycle details
 
+Superseded by `docs/adr/0010-a-room-is-one-session.md`: a room is one session rather than a
+persistent group spanning several, and its deck lives on the room row, not the game row. The
+lifecycle details below (late joiners, claim boundaries) are unaffected — they describe how one
+session behaves, which this ADR does not change.
+
 Late joiners get a card from the same deck and it arrives correctly marked (free from the model).
 Win detection fires only on calls at or after the player's current claim boundary: `join_seq` until
 the first re-roll, then the latest `CARD_REROLLED` sequence. A line already complete at either
@@ -267,9 +272,9 @@ the 68pt-cell legibility question cannot be settled in a resized desktop browser
 ## Data model (`bingo` schema)
 
 ```
-rooms        code(4) PK, theme_id, host_player_id, created_at
+rooms        code(4) PK, theme_id, host_player_id, deck(square_id[]) NULL, created_at
 players      id PK, room_code, name, token(opaque), join_seq, last_seen_at
-games        id PK, room_code, theme_id, deck(square_id[]), seed,
+games        id PK, room_code, theme_id, seed,
              state(lobby|live|done), started_at, ended_at
 cards        game_id, player_id, square_ids[24], latest_reroll_seq BIGINT NULL, PK(game_id, player_id)
 room_events  seq BIGSERIAL PK, room_code, game_id NULL, actor_player_id, at,

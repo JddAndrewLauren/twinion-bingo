@@ -11,7 +11,7 @@ import {
   CardMarked,
   CardNotFound,
   CallNotFound,
-  GameAlreadyLive,
+  GameAlreadyStarted,
   GameNotLive,
   NoDifferentCard,
   NotHost,
@@ -61,8 +61,8 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
       if (error instanceof NotHost) {
         return c.json({ error: 'only the host can start a game' }, 403);
       }
-      if (error instanceof GameAlreadyLive) {
-        return c.json({ error: 'this room already has a live game' }, 409);
+      if (error instanceof GameAlreadyStarted) {
+        return c.json({ error: 'this room has already started its game' }, 409);
       }
       /**
        * The theme's pool cannot supply a deck to D6's composition. That is a

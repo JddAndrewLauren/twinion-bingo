@@ -12,6 +12,7 @@
  */
 const NAMES: Record<string, string> = {
   f1: 'Formula 1',
+  indycar: 'IndyCar',
 };
 
 export function themeName(themeId: string): string {

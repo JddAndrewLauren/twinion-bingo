@@ -11,6 +11,7 @@ import {
   SOURCE_QUOTA,
   TIER_QUOTA,
   composeDeck,
+  composeToQuotas,
   dealCard,
   type Deck,
 } from '../src/games/deck.js';
@@ -428,6 +429,47 @@ describe('refusing a deck the bounds cannot be met from', () => {
     expect(() => composeDeck(clustered, 'seed-one')).toThrow(
       /at least 6 certain and at most 5 rare/,
     );
+  });
+});
+
+/**
+ * The draw loop fills `DECK_SIZE` slots and stops, so it cannot notice a quota
+ * it never got to: 14/20/7 came back as a 40-square deck counting 13/20/7,
+ * which is the "approximate rather than refuse" ADR-0002 rules out. The guard
+ * is on `composeToQuotas` rather than on `composeDeck`, whose own quotas are
+ * constants — the arbitrary quotas are #119's range search and #120's
+ * slider-confirm path.
+ */
+describe('quotas that do not describe a deck', () => {
+  it('refuses tier quotas summing past the deck, rather than dropping one', () => {
+    expect(() =>
+      composeToQuotas(fixture, { certain: 14, medium: 20, rare: 7 }, SOURCE_QUOTA, 'seed-one'),
+    ).toThrow(/tier quotas sum to 41/);
+  });
+
+  it('refuses tier quotas summing short of the deck', () => {
+    expect(() =>
+      composeToQuotas(fixture, { certain: 12, medium: 20, rare: 7 }, SOURCE_QUOTA, 'seed-one'),
+    ).toThrow(/tier quotas sum to 39/);
+  });
+
+  it('refuses source quotas summing past the deck', () => {
+    expect(() =>
+      composeToQuotas(fixture, TIER_QUOTA, { handcrafted: 24, generated: 17 }, 'seed-one'),
+    ).toThrow(/source quotas sum to 41/);
+  });
+
+  it('refuses a negative or fractional quota', () => {
+    expect(() =>
+      composeToQuotas(fixture, { certain: -1, medium: 34, rare: 7 }, SOURCE_QUOTA, 'seed-one'),
+    ).toThrow(/quota for certain is -1/);
+    expect(() =>
+      composeToQuotas(fixture, { certain: 13.5, medium: 19.5, rare: 7 }, SOURCE_QUOTA, 'seed-one'),
+    ).toThrow(/quota for certain is 13.5/);
+  });
+
+  it('composes as before when the quotas do describe a deck', () => {
+    expect(composeToQuotas(fixture, TIER_QUOTA, SOURCE_QUOTA, 'seed-one')).toHaveLength(DECK_SIZE);
   });
 });
 
