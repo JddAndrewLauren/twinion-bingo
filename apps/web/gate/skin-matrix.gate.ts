@@ -83,13 +83,15 @@ test.describe('the card, at every skin', () => {
    * invisible to a run that only ever opens `start`.
    */
   test('clips no cell, marked or unmarked, at any skin', async ({ page }) => {
-    await forEachSkin(page, async () => {
+    await forEachSkin(page, async (skin) => {
       await openRoom(page, 'start');
+      await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
       await settleSkinFonts(page);
       await expectNoCellClipped(page);
       await expectNoHorizontalScroll(page);
 
       await openRoom(page, 'mid');
+      await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
       await settleSkinFonts(page);
       await expectNoCellClipped(page);
       await expectNoHorizontalScroll(page);
