@@ -260,12 +260,19 @@ export async function startGame(
   }));
 
   const gameId = await db.transaction(async (tx) => {
+    // The deck is the room's now (ADR-0010), so it is written onto the room
+    // row in the same transaction as the game it seeds — one operation, so a
+    // deck without a game (or the reverse) is never observable.
+    await tx
+      .update(rooms)
+      .set({ deck: deck.map((square) => square.id) })
+      .where(eq(rooms.code, code));
+
     const [inserted] = await tx
       .insert(games)
       .values({
         roomCode: code,
         themeId: room.themeId,
-        deck: deck.map((square) => square.id),
         seed,
         state: 'live',
         startedAt: new Date(),
@@ -340,7 +347,7 @@ export async function readGame(
       themeId: games.themeId,
       state: games.state,
       startedAt: games.startedAt,
-      deck: games.deck,
+      deck: rooms.deck,
       hostPlayerId: rooms.hostPlayerId,
     })
     .from(games)
@@ -351,6 +358,14 @@ export async function readGame(
 
   if (game === undefined) return undefined;
 
+  // A game row exists only after `startGame` has written the room's deck in
+  // the same transaction (ADR-0010), so a null here means the two have
+  // drifted rather than that the deck was ever optional for a live game.
+  if (game.deck === null) {
+    throw new Error(`room ${code} has a game but no deck`);
+  }
+
+  const deck = game.deck;
   const pool = poolFor(pools, game.themeId);
 
   /**
@@ -412,8 +427,8 @@ export async function readGame(
     deck:
       playerId !== undefined && playerId === game.hostPlayerId
         ? {
-            squares: describeCard(pool, game.deck),
-            called: game.deck
+            squares: describeCard(pool, deck),
+            called: deck
               .map((id) => called.get(id))
               .filter((mark): mark is Mark => mark !== undefined),
           }
@@ -448,7 +463,6 @@ export async function rerollCard(
       .select({
         roomCode: games.roomCode,
         themeId: games.themeId,
-        deck: games.deck,
         seed: games.seed,
         state: games.state,
       })
@@ -458,6 +472,19 @@ export async function rerollCard(
 
     if (game === undefined) throw new CardNotFound();
     if (game.state !== 'live') throw new GameNotLive(game.state);
+
+    // The deck lives on the room now (ADR-0010). Read unlocked: the game row's
+    // own lock above already serialises this against the only thing that could
+    // change it — a new game starting in this room — since that requires the
+    // current game to not be live.
+    const [room] = await tx
+      .select({ deck: rooms.deck })
+      .from(rooms)
+      .where(eq(rooms.code, game.roomCode));
+
+    if (room === undefined || room.deck === null) {
+      throw new Error(`room ${game.roomCode} has a live game but no deck`);
+    }
 
     const [hand] = await tx
       .select({
@@ -477,7 +504,7 @@ export async function rerollCard(
     }
 
     const pool = poolFor(pools, game.themeId);
-    const deck = deckSquares(pool, game.deck);
+    const deck = deckSquares(pool, room.deck);
     const claimBoundarySeq = Number(
       hand.latestRerollSeq ?? hand.playerJoinSeq,
     );
@@ -567,7 +594,7 @@ export async function callSquare(
     const [game] = await tx
       .select({
         roomCode: games.roomCode,
-        deck: games.deck,
+        deck: rooms.deck,
         hostPlayerId: rooms.hostPlayerId,
       })
       .from(games)
@@ -575,6 +602,9 @@ export async function callSquare(
       .where(eq(games.id, gameId));
 
     if (game === undefined) throw new NotOnYourCard(squareId);
+    if (game.deck === null) {
+      throw new Error(`room ${game.roomCode} has a live game but no deck`);
+    }
 
     if (playerId === game.hostPlayerId) {
       if (!game.deck.includes(squareId)) throw new NotInDeck(squareId);

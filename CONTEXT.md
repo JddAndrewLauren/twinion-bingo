@@ -8,12 +8,19 @@ named too — the definition in the code is the authority, and this file is the 
 
 ## The two containers
 
-**Room** — a persistent group: a four-character code, a theme, a roster. It outlives any one
-session, which is D13's whole point: the same code serves Saturday's sprint and Sunday's race, all
-season. `apps/api/src/rooms/`.
+**Room** — a four-character code, a theme, a roster, and the deck the room's game deals cards from
+(`rooms.deck`). A room is created for one *session* and does not outlive it — ADR-0010 supersedes
+D13's "same code serves Saturday's sprint and Sunday's race, all season". `apps/api/src/rooms/`.
 
-**Game** — one session inside a room: a deck, cards, a log, winners (D13). A room has at most one
-game that is not finished. `apps/api/src/games/`.
+**Game** — the play inside a room: cards, a log, winners. A room has at most one game that is not
+finished. The deck used to live here too (D13); ADR-0010 moved it to the room, since a room now
+hosts exactly the one game it was created for. `apps/api/src/games/`.
+
+**Session** — quali, sprint, or race: the real-world broadcast window a room exists to play against.
+One room per session (ADR-0010). This is the word "session" names now; earlier revisions of this
+file used it loosely as a synonym for *Game* (a room's *"one session"*), which read as if a room
+still spanned several — it does not, so *Game* is the word for the app's own construct and
+*Session* is reserved for the thing outside the app that a room is created to cover.
 
 **Game state** — `lobby`, `live`, `done` (`gameState` in `apps/api/src/db/schema.ts`). `live` is the
 only state in which a square may be called; `done` is terminal and one-way (ADR-0003).
@@ -28,9 +35,10 @@ row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-
 folders under `themes/` (D9, D10). Not a runtime concept: nothing reads a pool during a race except
 the deck composer.
 
-**Deck** — the ~40 squares one game is played with, composed from the pool to D6's tier quotas.
-Composition is a hard constraint, and a pool that cannot meet it is refused rather than
-approximated (ADR-0002). `apps/api/src/games/deck.ts`.
+**Deck** — the ~40 squares a room's one game is played with, composed from the pool to D6's tier
+quotas and stored on the room row rather than the game's (`rooms.deck`, ADR-0010). Composition is a
+hard constraint, and a pool that cannot meet it is refused rather than approximated (ADR-0002).
+`apps/api/src/games/deck.ts`.
 
 **Card** — the 24 squares one player is dealt from the room's deck, plus a free centre, laid out
 5×5 (D4). Dealt from the *deck*, never from the pool — the 24-of-40 overlap is what puts each square

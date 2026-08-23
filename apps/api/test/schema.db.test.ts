@@ -16,14 +16,15 @@ describe.skipIf(noTestDatabase)('the bingo schema', () => {
   beforeAll(async () => {
     await sql`TRUNCATE bingo.room_events, bingo.cards, bingo.games, bingo.players, bingo.rooms CASCADE`;
 
-    await sql`INSERT INTO bingo.rooms (code, theme_id) VALUES ('ABCD', 'f1.v1')`;
+    // The deck lives on `rooms` now (ADR-0010), not on the game row.
+    await sql`INSERT INTO bingo.rooms (code, theme_id, deck) VALUES ('ABCD', 'f1.v1', ARRAY['f1.v1:driver_retires:VER'])`;
     const [player] = await sql<{ id: string }[]>`
       INSERT INTO bingo.players (room_code, name, token, join_seq)
       VALUES ('ABCD', 'Max', 'token-1', 1)
       RETURNING id`;
     const [game] = await sql<{ id: string }[]>`
-      INSERT INTO bingo.games (room_code, theme_id, deck, seed)
-      VALUES ('ABCD', 'f1.v1', ARRAY['f1.v1:driver_retires:VER'], 'seed-1')
+      INSERT INTO bingo.games (room_code, theme_id, seed)
+      VALUES ('ABCD', 'f1.v1', 'seed-1')
       RETURNING id`;
 
     if (player === undefined || game === undefined) {
