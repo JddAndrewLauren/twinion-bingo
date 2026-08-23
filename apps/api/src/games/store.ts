@@ -240,19 +240,6 @@ export async function startGame(
   if (room === undefined) throw new RoomNotFound(code);
   if (room.hostPlayerId !== playerId) throw new NotHost();
 
-  // Any game, not only a live one: a room is one session (ADR-0010), so a
-  // finished game closes the room rather than freeing it for another. Starting
-  // a second one would overwrite `rooms.deck` — the deck the first game's cards
-  // were dealt from — leaving those cards describing squares the room no longer
-  // holds. A new session gets a new code and a fresh join, which is what
-  // ADR-0010 declined "clone this room" in favour of.
-  const [existing] = await db
-    .select({ id: games.id })
-    .from(games)
-    .where(eq(games.roomCode, code));
-
-  if (existing !== undefined) throw new GameAlreadyStarted(code);
-
   const pool = poolFor(pools, room.themeId);
 
   // 16 bytes: the seed is stored and reproduced, never guessed at, so its only
@@ -272,6 +259,37 @@ export async function startGame(
   }));
 
   const gameId = await db.transaction(async (tx) => {
+    // Locked first, before anything else in the transaction reads or writes:
+    // this is what makes "at most one live game per room" hold under
+    // concurrency. Two concurrent starts can both pass the unlocked
+    // `RoomNotFound`/`NotHost` checks above — that race is harmless, since
+    // both readings agree — but only one can hold this row lock at a time,
+    // so the `GameAlreadyStarted` check below, re-read under the lock, is
+    // exact rather than advisory. The room is the natural arbiter for it:
+    // it is the row this transaction already writes (the deck), and locking
+    // one room's row does not serialise any other room's start.
+    await tx
+      .select({ code: rooms.code })
+      .from(rooms)
+      .where(eq(rooms.code, code))
+      .for('update');
+
+    // Any game, not only a live one: a room is one session (ADR-0010), so a
+    // finished game closes the room rather than freeing it for another.
+    // Starting a second one would overwrite `rooms.deck` — the deck the
+    // first game's cards were dealt from — leaving those cards describing
+    // squares the room no longer holds. A new session gets a new code and a
+    // fresh join, which is what ADR-0010 declined "clone this room" in
+    // favour of. Checked here, under the room lock just taken, so a second
+    // start racing this one finds the first start's game row rather than
+    // missing it.
+    const [existing] = await tx
+      .select({ id: games.id })
+      .from(games)
+      .where(eq(games.roomCode, code));
+
+    if (existing !== undefined) throw new GameAlreadyStarted(code);
+
     // The deck is the room's now (ADR-0010), so it is written onto the room
     // row in the same transaction as the game it seeds — one operation, so a
     // deck without a game (or the reverse) is never observable.
@@ -485,10 +503,12 @@ export async function rerollCard(
     if (game === undefined) throw new CardNotFound();
     if (game.state !== 'live') throw new GameNotLive(game.state);
 
-    // The deck lives on the room now (ADR-0010). Read unlocked: the game row's
-    // own lock above already serialises this against the only thing that could
-    // change it — a new game starting in this room — since that requires the
-    // current game to not be live.
+    // The deck lives on the room now (ADR-0010). Read unlocked, and safe to:
+    // a room hosts at most one game, ever (ADR-0010), and `startGame` takes a
+    // row lock on the room before it re-checks that under concurrency, so by
+    // the time any game row exists `rooms.deck` has been written once and
+    // will never be written again — there is no second start left to race,
+    // live game or done.
     const [room] = await tx
       .select({ deck: rooms.deck })
       .from(rooms)

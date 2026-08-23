@@ -339,6 +339,65 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
     expect((await gameRow(host.code)).deck).toEqual(before);
   });
 
+  /**
+   * The race issue #143 found: the "is a game already live" check used to run
+   * outside the transaction that starts one, so two concurrent starts could
+   * both pass it. Under ADR-0010 the deck lives on `rooms`, so the second
+   * start's unconditional `UPDATE rooms SET deck = ...` would overwrite the
+   * first's — leaving the surviving game's players holding cards dealt from
+   * a deck the room no longer reports. The row lock `startGame` now takes on
+   * the room, before it re-reads the check, is what this test is against.
+   */
+  it('lets exactly one of two concurrent starts through, deck intact', async () => {
+    const host = await createRoom('Host');
+
+    const [first, second] = await Promise.all([
+      start(host.code, host.token),
+      start(host.code, host.token),
+    ]);
+
+    const statuses = [first.status, second.status].sort();
+    expect(statuses).toEqual([201, 409]);
+
+    const winner = first.status === 201 ? first : second;
+    const loser = first.status === 201 ? second : first;
+
+    expect(await loser.json()).toEqual({ error: 'this room has already started its game' });
+
+    const started = (await winner.json()) as GameView;
+
+    const rows = await db.execute<{ count: string; state: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games WHERE room_code = ${host.code}`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+
+    const live = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games
+          WHERE room_code = ${host.code} AND state = 'live'`,
+    );
+    expect([...live][0]!.count).toBe('1');
+
+    // The overwrite specifically: the room's deck is the deck the surviving
+    // game's own response carries, dealt by its own seed.
+    const row = await gameRow(host.code);
+    const replayed = composeDeck(fixture, row.seed);
+    expect(row.deck).toEqual(replayed.map((square) => square.id));
+    expect(started.deck!.squares.map((square) => square.id)).toEqual(row.deck);
+  });
+
+  it('does not serialise two different rooms starting at once', async () => {
+    const roomA = await createRoom('Host A');
+    const roomB = await createRoom('Host B');
+
+    const [a, b] = await Promise.all([
+      start(roomA.code, roomA.token),
+      start(roomB.code, roomB.token),
+    ]);
+
+    expect(a.status).toBe(201);
+    expect(b.status).toBe(201);
+  });
+
   it('has no game to read before the host starts one', async () => {
     const host = await createRoom('Host');
 
