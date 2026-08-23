@@ -57,6 +57,8 @@ export default function Legibility() {
               onRetract={noop}
               onPeek={noop}
               finished
+              lightsOutSeq={null}
+              onLightsOut={noop}
             />
 
             {/*

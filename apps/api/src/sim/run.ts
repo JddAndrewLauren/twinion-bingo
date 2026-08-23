@@ -583,16 +583,26 @@ check(
   })),
 );
 
+// This script never taps LIGHTS_OUT (#124), so every row is a CALL row — but
+// the type is a union with the marker now, so that is asserted rather than
+// assumed before the CALL-only fields below are read off it.
 const serverTimeline = views[0]!.timeline;
+checkThat(
+  'the timeline holds no LIGHTS_OUT marker — this script never taps it',
+  serverTimeline.every((entry) => entry.kind === 'CALL'),
+  serverTimeline.map((entry) => entry.kind),
+);
 check(
   'the timeline is the live calls, 1:1 and credited',
   timelineOf(cards, derivedCalls),
-  serverTimeline.map((entry) => ({
-    seq: entry.seq,
-    squareId: entry.squareId,
-    playerId: entry.playerId,
-    name: entry.name,
-  })),
+  serverTimeline
+    .filter((entry): entry is typeof entry & { kind: 'CALL' } => entry.kind === 'CALL')
+    .map((entry) => ({
+      seq: entry.seq,
+      squareId: entry.squareId,
+      playerId: entry.playerId,
+      name: entry.name,
+    })),
 );
 // Newest first (CONTEXT.md), so the stamps count *down* the list — a timeline
 // whose elapsed column climbed as you read down it would be in log order.

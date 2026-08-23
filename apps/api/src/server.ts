@@ -3,10 +3,13 @@ import { createApp } from './app.js';
 import { resolveServerConfig } from './config.js';
 import { createDb } from './db/client.js';
 
-const { port, allowedOrigins, databaseUrl } = resolveServerConfig(process.env);
+const { port, allowedOrigins, databaseUrl, adminSecret } = resolveServerConfig(
+  process.env,
+);
 
 serve({
-  fetch: createApp({ allowedOrigins, db: createDb(databaseUrl) }).fetch,
+  fetch: createApp({ allowedOrigins, db: createDb(databaseUrl), adminSecret })
+    .fetch,
   port,
   hostname: '::',
 });

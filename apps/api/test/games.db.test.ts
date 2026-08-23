@@ -56,8 +56,17 @@ type GameView = {
   deck: { squares: CardSquare[]; called: Mark[] } | null;
   marks: Mark[];
   inheritedMarks: string[];
+  lightsOutSeq: number | null;
   prizes: { prizeKind: string; playerId: string }[];
   standings: { playerId: string; name: string; marks: number }[];
+  timeline: {
+    kind: string;
+    seq: number;
+    squareId?: string;
+    elapsed: string;
+    playerId: string;
+    name: string;
+  }[];
   streamedThroughSeq: number;
 };
 
@@ -130,6 +139,13 @@ async function retract(
 
 async function reroll(gameId: string, token?: string): Promise<Response> {
   return app.request(`/games/${gameId}/card/reroll`, {
+    method: 'POST',
+    headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
+  });
+}
+
+async function lightsOut(gameId: string, token?: string): Promise<Response> {
+  return app.request(`/games/${gameId}/lights-out`, {
     method: 'POST',
     headers: token === undefined ? {} : { authorization: `Bearer ${token}` },
   });
@@ -337,6 +353,65 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
     );
     expect([...rows][0]!.count).toBe('1');
     expect((await gameRow(host.code)).deck).toEqual(before);
+  });
+
+  /**
+   * The race issue #143 found: the "is a game already live" check used to run
+   * outside the transaction that starts one, so two concurrent starts could
+   * both pass it. Under ADR-0010 the deck lives on `rooms`, so the second
+   * start's unconditional `UPDATE rooms SET deck = ...` would overwrite the
+   * first's — leaving the surviving game's players holding cards dealt from
+   * a deck the room no longer reports. The row lock `startGame` now takes on
+   * the room, before it re-reads the check, is what this test is against.
+   */
+  it('lets exactly one of two concurrent starts through, deck intact', async () => {
+    const host = await createRoom('Host');
+
+    const [first, second] = await Promise.all([
+      start(host.code, host.token),
+      start(host.code, host.token),
+    ]);
+
+    const statuses = [first.status, second.status].sort();
+    expect(statuses).toEqual([201, 409]);
+
+    const winner = first.status === 201 ? first : second;
+    const loser = first.status === 201 ? second : first;
+
+    expect(await loser.json()).toEqual({ error: 'this room has already started its game' });
+
+    const started = (await winner.json()) as GameView;
+
+    const rows = await db.execute<{ count: string; state: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games WHERE room_code = ${host.code}`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+
+    const live = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games
+          WHERE room_code = ${host.code} AND state = 'live'`,
+    );
+    expect([...live][0]!.count).toBe('1');
+
+    // The overwrite specifically: the room's deck is the deck the surviving
+    // game's own response carries, dealt by its own seed.
+    const row = await gameRow(host.code);
+    const replayed = composeDeck(fixture, row.seed);
+    expect(row.deck).toEqual(replayed.map((square) => square.id));
+    expect(started.deck!.squares.map((square) => square.id)).toEqual(row.deck);
+  });
+
+  it('does not serialise two different rooms starting at once', async () => {
+    const roomA = await createRoom('Host A');
+    const roomB = await createRoom('Host B');
+
+    const [a, b] = await Promise.all([
+      start(roomA.code, roomA.token),
+      start(roomB.code, roomB.token),
+    ]);
+
+    expect(a.status).toBe(201);
+    expect(b.status).toBe(201);
   });
 
   it('has no game to read before the host starts one', async () => {
@@ -1686,5 +1761,216 @@ describe.skipIf(noTestDatabase)('retracting a call', () => {
 
       expect(await markedIdsOf(host.code, host.token)).toEqual([shared]);
     });
+  });
+});
+
+/**
+ * #124: `LIGHTS_OUT` becomes a room-wide event rather than a call. It has no
+ * square id and is not in the deck, so `NotOnYourCard`/`NotInDeck` never apply
+ * to it, and the timeline re-bases to it once it lands.
+ */
+describe.skipIf(noTestDatabase)('lights out', () => {
+  beforeEach(truncate);
+
+  it('appends LIGHTS_OUT, lights up for everyone via the stream, and earns no mark', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const res = await lightsOut(started.id, guest.token);
+    expect(res.status).toBe(201);
+    const result = (await res.json()) as { seq: number; actorPlayerId: string };
+    expect(result.actorPlayerId).toBe(guest.player.id);
+
+    const rows = await db.execute<{ kind: string; actor_player_id: string }>(
+      sql`SELECT kind, actor_player_id FROM bingo.room_events
+          WHERE room_code = ${host.code} ORDER BY seq`,
+    );
+    expect([...rows].map((row) => row.kind)).toEqual([
+      'PLAYER_JOINED',
+      'PLAYER_JOINED',
+      'GAME_STARTED',
+      'LIGHTS_OUT',
+    ]);
+
+    // Everyone in the room sees the same lit state, on their own next read.
+    const hostView = (await (await readGame(host.code, host.token)).json()) as GameView;
+    const guestView = (await (await readGame(host.code, guest.token)).json()) as GameView;
+    expect(hostView.lightsOutSeq).toBe(result.seq);
+    expect(guestView.lightsOutSeq).toBe(result.seq);
+
+    // No mark, for anybody: LIGHTS_OUT is not a CALL, so it cannot mark a card.
+    expect(hostView.marks).toEqual([]);
+    expect(guestView.marks).toEqual([]);
+  });
+
+  it('lets anyone in the room tap it, not only the host', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const res = await lightsOut(started.id, guest.token);
+    expect(res.status).toBe(201);
+    expect((await res.json()) as { actorPlayerId: string }).toMatchObject({
+      actorPlayerId: guest.player.id,
+    });
+  });
+
+  /** First tap wins, the same shape as a tied call (ADR-0004). */
+  it('makes a second and third tap no-ops, appending nothing new', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const first = (await (await lightsOut(started.id, host.token)).json()) as {
+      seq: number;
+    };
+
+    const second = await lightsOut(started.id, guest.token);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual({
+      seq: first.seq,
+      actorPlayerId: host.player.id,
+      appended: false,
+    });
+
+    const third = await lightsOut(started.id, host.token);
+    expect(third.status).toBe(200);
+    expect(await third.json()).toEqual({
+      seq: first.seq,
+      actorPlayerId: host.player.id,
+      appended: false,
+    });
+
+    const rows = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.room_events
+          WHERE room_code = ${host.code} AND kind = 'LIGHTS_OUT'`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+  });
+
+  /** Two taps landing in the same tick are arbitrated by the game-row lock. */
+  it('turns two simultaneous taps into one row, with neither caller erroring', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    const [mine, yours] = await Promise.all([
+      lightsOut(started.id, host.token),
+      lightsOut(started.id, guest.token),
+    ]);
+
+    expect(mine.ok).toBe(true);
+    expect(yours.ok).toBe(true);
+    expect([mine.status, yours.status].sort()).toEqual([200, 201]);
+
+    const rows = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.room_events
+          WHERE room_code = ${host.code} AND kind = 'LIGHTS_OUT'`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+
+    const [one, two] = [
+      (await mine.json()) as { seq: number; actorPlayerId: string },
+      (await yours.json()) as { seq: number; actorPlayerId: string },
+    ];
+    expect(one.seq).toBe(two.seq);
+    expect(one.actorPlayerId).toBe(two.actorPlayerId);
+  });
+
+  it('needs a player token, and a game that exists', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    expect((await lightsOut(started.id)).status).toBe(401);
+    expect((await lightsOut(started.id, 'not-a-token')).status).toBe(401);
+    expect(
+      (await lightsOut('00000000-0000-4000-8000-000000000000', host.token)).status,
+    ).toBe(404);
+    expect((await lightsOut('nonsense', host.token)).status).toBe(404);
+  });
+
+  it('refuses a tap once the game has finished', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    await db.execute(sql`UPDATE bingo.games SET state = 'done' WHERE id = ${started.id}`);
+
+    const res = await lightsOut(started.id, host.token);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'this game has finished' });
+  });
+
+  /**
+   * #124's whole point: elapsed stamps count from LIGHTS_OUT once it lands,
+   * rather than from Start Game — retroactively, so a call made before it
+   * lands stamps negative once it does.
+   */
+  it('re-bases the timeline to itself, stamping earlier calls negative', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    // A call made before lights out.
+    const before = await call(started.id, started.card![0]!.id, host.token);
+    expect(before.status).toBe(201);
+
+    expect((await lightsOut(started.id, host.token)).status).toBe(201);
+
+    // A call made after lights out.
+    const after = await call(started.id, started.card![1]!.id, host.token);
+    expect(after.status).toBe(201);
+
+    const view = (await (await readGame(host.code, host.token)).json()) as GameView;
+    const marker = view.timeline.find((entry) => entry.kind === 'LIGHTS_OUT');
+    const preRace = view.timeline.find(
+      (entry) => entry.kind === 'CALL' && entry.squareId === started.card![0]!.id,
+    );
+    const postRace = view.timeline.find(
+      (entry) => entry.kind === 'CALL' && entry.squareId === started.card![1]!.id,
+    );
+
+    expect(marker).toBeDefined();
+    expect(marker!.elapsed).toBe('+00:00');
+    expect(preRace!.elapsed).toMatch(/^-\d{2}:\d{2}$/);
+    expect(postRace!.elapsed).toMatch(/^\+\d{2}:\d{2}$/);
+
+    // Newest first, by seq: the post-race call above the marker, above the
+    // pre-race call.
+    expect(view.timeline.map((entry) => entry.seq)).toEqual(
+      [...view.timeline.map((entry) => entry.seq)].sort((a, b) => b - a),
+    );
+  });
+
+  /**
+   * Standings are raw mark count and the win ladder is settled by CALLs alone
+   * (D5) — neither reads LIGHTS_OUT, so a room's marks and prizes read
+   * byte-identical whether or not it has landed.
+   */
+  it('leaves standings and the win ladder byte-identical before and after', async () => {
+    const host = await createRoom('Host');
+    const guest = await join(host.code, 'Guest');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    await call(started.id, started.card![0]!.id, host.token);
+
+    const before = (await (await readGame(host.code, host.token)).json()) as GameView;
+
+    expect((await lightsOut(started.id, guest.token)).status).toBe(201);
+
+    const after = (await (await readGame(host.code, host.token)).json()) as GameView;
+
+    expect(after.standings).toEqual(before.standings);
+    expect(after.prizes).toEqual(before.prizes);
+  });
+
+  it('is null before anyone has tapped it, including in the started response', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+
+    expect(started.lightsOutSeq).toBeNull();
+    expect(started.timeline).toEqual([]);
+
+    const view = (await (await readGame(host.code, host.token)).json()) as GameView;
+    expect(view.lightsOutSeq).toBeNull();
   });
 });

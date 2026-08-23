@@ -63,14 +63,28 @@ export type PrizeAward = {
 
 export type Standing = { playerId: string; name: string; marks: number };
 
-export type TimelineEntry = {
-  seq: number;
-  squareId: string;
-  /** Elapsed game time, `+42:10` — wall-clock since the host started it. */
-  elapsed: string;
-  playerId: string;
-  name: string;
-};
+/**
+ * One timeline row: an ordinary `CALL`, or (#124) the `LIGHTS_OUT` row itself as
+ * the race-start marker, which carries no `squareId` because it is not one.
+ */
+export type TimelineEntry =
+  | {
+      kind: 'CALL';
+      seq: number;
+      squareId: string;
+      /** Elapsed game time, `+42:10` — negative before lights out lands (#124). */
+      elapsed: string;
+      playerId: string;
+      name: string;
+    }
+  | {
+      kind: 'LIGHTS_OUT';
+      seq: number;
+      /** Always `+00:00`: this row is the base every other stamp counts from. */
+      elapsed: string;
+      playerId: string;
+      name: string;
+    };
 
 export type Game = {
   id: string;
@@ -93,6 +107,12 @@ export type Game = {
    * before they joined. Empty for everyone who was here at lights out.
    */
   inheritedMarks: string[];
+  /**
+   * The `seq` of the room's `LIGHTS_OUT` row, or null before anyone has tapped
+   * it (#124). First tap wins, so the free centre stops offering the tap once
+   * this is set rather than deciding locally whether to make one.
+   */
+  lightsOutSeq: number | null;
   /** The win ladder as the log recorded it, in the order it was climbed. */
   prizes: PrizeAward[];
   /** Every player by raw mark count, derived server-side on every read. */
@@ -315,6 +335,30 @@ export async function retractCall(
   if (!res.ok) {
     throw await apiError(res);
   }
+}
+
+/**
+ * Taps the free centre (#124). Anyone in the room may call it, and first tap
+ * wins — a losing tap is not a failure, since the response carries the row that
+ * already landed and the room is lit either way, which is what the tap wanted.
+ *
+ * Nothing here needs applying locally: it earns no mark and touches no card, so
+ * the tap's only visible effect is `lightsOutSeq` turning up on the next read of
+ * the game, the same path every other device's tap turns it up by.
+ */
+export async function triggerLightsOut(
+  apiUrl: string,
+  gameId: string,
+  token: string,
+): Promise<{ seq: number; actorPlayerId: string; appended: boolean }> {
+  const res = await fetch(
+    `${apiUrl}/games/${encodeURIComponent(gameId)}/lights-out`,
+    { method: 'POST', headers: { authorization: `Bearer ${token}` } },
+  );
+
+  if (!res.ok) throw await apiError(res);
+
+  return (await res.json()) as { seq: number; actorPlayerId: string; appended: boolean };
 }
 
 /**

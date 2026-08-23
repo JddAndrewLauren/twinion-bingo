@@ -106,14 +106,24 @@ export function Results({ game }: { game: Game }) {
                   Elapsed game time, not a lap number — there is no timing feed,
                   and on a recording this is wall-clock since the host started,
                   pauses included. Fixed-width so the column reads as a column.
+                  Negative once LIGHTS_OUT lands (#124): a call spotted while
+                  the grid was still forming.
                 */}
                 <span className="w-14 shrink-0 tabular-nums text-muted">
                   {entry.elapsed}
                 </span>
                 <span className="min-w-0">
-                  <span className="font-semibold">{entry.name}</span>
-                  {' spotted '}
-                  {labelFor(game.card, entry.squareId) ?? 'a square'}
+                  {entry.kind === 'LIGHTS_OUT' ? (
+                    // The race-start marker (#124), not a spotted square — it
+                    // has no `squareId` because it is not one.
+                    <span className="font-semibold uppercase">Lights out</span>
+                  ) : (
+                    <>
+                      <span className="font-semibold">{entry.name}</span>
+                      {' spotted '}
+                      {labelFor(game.card, entry.squareId) ?? 'a square'}
+                    </>
+                  )}
                 </span>
               </li>
             ))}

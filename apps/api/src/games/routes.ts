@@ -23,6 +23,7 @@ import {
   retractCall,
   roomCodeForGame,
   startGame,
+  triggerLightsOut,
 } from './store.js';
 
 /**
@@ -180,6 +181,42 @@ export function createGameRoutes(db: Db, pools: Map<string, Pool>) {
        * The full house closed the session (D5). 409 rather than 403: nothing is
        * wrong with who is asking or what they tapped, the game is simply over.
        */
+      if (error instanceof GameNotLive) {
+        return c.json({ error: 'this game has finished' }, 409);
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * `LIGHTS_OUT` (#124): the theme's free centre, tapped as a room-wide event
+   * rather than a call. Anyone in the room may tap it, and first tap wins — a
+   * later tap is handed the row that already landed rather than an error, the
+   * same shape as a tied call. It earns no mark and settles no rung, so nothing
+   * here needs card scope or deck scope the way `/call` does.
+   */
+  routes.post('/games/:id/lights-out', async (c) => {
+    const id = c.req.param('id');
+    if (!UUID.test(id)) return c.json({ error: 'no game with that id' }, 404);
+
+    const code = await roomCodeForGame(db, id);
+    if (code === undefined) return c.json({ error: 'no game with that id' }, 404);
+
+    const token = bearerToken(c.req.header('authorization'));
+    const you =
+      token === undefined ? undefined : await findPlayerByToken(db, code, token);
+
+    if (you === undefined) {
+      return c.json({ error: 'a player token is required' }, 401);
+    }
+
+    try {
+      const result = await triggerLightsOut(db, id, you.id);
+
+      // 200 rather than 201 when someone else's tap already landed: the room is
+      // lit, which is what this tap was asking for.
+      return c.json(result, result.appended ? 201 : 200);
+    } catch (error) {
       if (error instanceof GameNotLive) {
         return c.json({ error: 'this game has finished' }, 409);
       }
