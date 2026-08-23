@@ -8,6 +8,7 @@ import { RoomNotFound } from '../rooms/store.js';
 import {
   callsBySquare,
   claimableSquares,
+  lightsOutFor,
   liveCallFor,
   liveCalls,
   markedSquares,
@@ -184,6 +185,12 @@ export type GameView = {
    * at the moment the prize went elsewhere.
    */
   inheritedMarks: string[];
+  /**
+   * The `seq` of the room's `LIGHTS_OUT` row, or null before anyone has tapped
+   * it. First tap wins (#124), so a device uses this to stop offering the tap
+   * once it has landed rather than to decide whether to make one.
+   */
+  lightsOutSeq: number | null;
   /** The win ladder as the log recorded it: who won which rung, in order (D5). */
   prizes: PrizeAward[];
   /** Every player by raw mark count, derived on read like everything else. */
@@ -204,6 +211,14 @@ export type CallResult = {
   squareId: string;
   actorPlayerId: string;
   /** False when another device's identical call was already in the log. */
+  appended: boolean;
+};
+
+/** The row a `LIGHTS_OUT` tap resolved to, whether this request wrote it or lost the race. */
+export type LightsOutResult = {
+  seq: number;
+  actorPlayerId: string;
+  /** False when someone else's tap was already in the log — first tap wins. */
   appended: boolean;
 };
 
@@ -344,6 +359,7 @@ export async function startGame(
     // which is the whole roster on nothing.
     marks: [],
     inheritedMarks: [],
+    lightsOutSeq: null,
     prizes: [],
     standings: standings(
       dealt.map((hand) => ({
@@ -422,11 +438,12 @@ export async function readGame(
    * disconnect criterion hold with no catch-up path: a device that slept through
    * a stint re-reads the whole derived answer instead of replaying its way to one.
    */
-  const [calls, hands, prizes, streamedThroughSeq] = await Promise.all([
+  const [calls, hands, prizes, streamedThroughSeq, lightsOut] = await Promise.all([
     liveCalls(db, game.id),
     readHands(db, game.id),
     readPrizes(db, game.id),
     settledHeadSeq(db, code),
+    lightsOutFor(db, game.id),
   ]);
 
   const called = callsBySquare(calls);
@@ -467,9 +484,10 @@ export async function readGame(
     inheritedMarks: marks
       .map((mark) => mark.squareId)
       .filter((id) => !claimable.has(id)),
+    lightsOutSeq: lightsOut?.seq ?? null,
     prizes,
     standings: standings(hands, calls),
-    timeline: timeline(hands, calls, game.startedAt),
+    timeline: timeline(hands, calls, lightsOut, game.startedAt),
     streamedThroughSeq,
   };
 }
@@ -678,6 +696,63 @@ export async function callSquare(
     return {
       seq: Number(appended.seq),
       squareId,
+      actorPlayerId: playerId,
+      appended: true,
+    };
+  });
+}
+
+/**
+ * `LIGHTS_OUT` — the theme's free centre becoming a room-wide event rather than
+ * a call (#124). It has no square id and is not in the deck, so it cannot ride
+ * `callSquare`'s path at all: it earns no mark, settles no rung, and the two
+ * checks `callSquare` runs — card scope and deck scope — do not apply, because
+ * anyone in the room may tap it.
+ *
+ * First tap wins, the same shape as a tied call (ADR-0004): arbitrated by the
+ * lock `assertLive` already takes on the game row, so a second tap arriving in
+ * the same tick is handed the row the first just wrote rather than appending a
+ * second one. Nothing about that tap failed — the room is lit, which is what it
+ * was asking for.
+ */
+export async function triggerLightsOut(
+  db: Db,
+  gameId: string,
+  playerId: string,
+): Promise<LightsOutResult> {
+  return await db.transaction(async (tx) => {
+    await assertLive(tx, gameId);
+
+    const [game] = await tx
+      .select({ roomCode: games.roomCode })
+      .from(games)
+      .where(eq(games.id, gameId));
+
+    if (game === undefined) throw new Error(`no game with id ${gameId}`);
+
+    const existing = await lightsOutFor(tx, gameId);
+    if (existing !== undefined) {
+      return {
+        seq: existing.seq,
+        actorPlayerId: existing.actorPlayerId,
+        appended: false,
+      };
+    }
+
+    const [appended] = await tx
+      .insert(roomEvents)
+      .values({
+        roomCode: game.roomCode,
+        gameId,
+        actorPlayerId: playerId,
+        kind: 'LIGHTS_OUT',
+      })
+      .returning({ seq: roomEvents.seq });
+
+    if (appended === undefined) throw new Error('appending LIGHTS_OUT added no row');
+
+    return {
+      seq: Number(appended.seq),
       actorPlayerId: playerId,
       appended: true,
     };

@@ -1,7 +1,13 @@
 import { and, asc, eq } from 'drizzle-orm';
 import type { Db, Tx } from '../db/client.js';
 import { cards, games, players, roomEvents } from '../db/schema.js';
-import { claimableSquares, liveCalls, markedSquares, type LiveCall } from './calls.js';
+import {
+  claimableSquares,
+  liveCalls,
+  markedSquares,
+  type LightsOut,
+  type LiveCall,
+} from './calls.js';
 import { completedLines, isFullHouse } from './lines.js';
 
 /**
@@ -27,14 +33,29 @@ export type Standing = {
   marks: number;
 };
 
-export type TimelineEntry = {
-  seq: number;
-  squareId: string;
-  /** Elapsed game time, `+42:10` (never a lap number — there is no timing feed). */
-  elapsed: string;
-  playerId: string;
-  name: string;
-};
+/**
+ * One row of the timeline: an ordinary `CALL`, or (#124) the `LIGHTS_OUT` row
+ * itself, rendered as the race-start marker rather than as a spotted square —
+ * it carries no `squareId` because it is not one.
+ */
+export type TimelineEntry =
+  | {
+      kind: 'CALL';
+      seq: number;
+      squareId: string;
+      /** Elapsed game time, `+42:10` (never a lap number — there is no timing feed). */
+      elapsed: string;
+      playerId: string;
+      name: string;
+    }
+  | {
+      kind: 'LIGHTS_OUT';
+      seq: number;
+      /** Elapsed game time — always `+00:00`, since this row is the base every other stamp is elapsed from. */
+      elapsed: string;
+      playerId: string;
+      name: string;
+    };
 
 /** One player's card, as the ladder, the standings and the timeline see it. */
 export type Hand = {
@@ -211,12 +232,18 @@ export function standings(
 
 /**
  * The race timeline: every live call, stamped with elapsed game time and
- * credited to the player who spotted it.
+ * credited to the player who spotted it — plus, once tapped, the `LIGHTS_OUT`
+ * row itself as the race-start marker (#124).
  *
  * Elapsed, not lap number — there is no live timing feed and hand-entered laps
- * are not worth the friction. On a recording it is wall-clock since the host
- * started the game, so it includes any pause the room took; that is cosmetic and
- * deliberately not corrected.
+ * are not worth the friction. Stamps count from `LIGHTS_OUT` once it has landed
+ * rather than from Start Game (#124's whole point: a host who starts the game
+ * while the grid is still forming skews every stamp by the pre-race faff), and
+ * from the host's start until then. A call made before lights out stamps
+ * negative (`-04:12`) once it lands, which is retroactive by design — the same
+ * derive-on-read philosophy `CONTEXT.md`'s **Mark** already follows, applied to
+ * a different column. On a recording either base is wall-clock, so it includes
+ * any pause the room took; that is cosmetic and deliberately not corrected.
  *
  * A retracted call is not in `calls` and so is not in the timeline: the timeline
  * says what happened, and the log's memory of a correction is the log's business.
@@ -225,34 +252,57 @@ export function standings(
  * order a phone held at arm's length reads: what just happened is at the top of
  * the list rather than a scroll below it. `calls` arrive oldest-first, so this is
  * where the order is turned — once, on the way out of the API, rather than in
- * every client that renders it.
+ * every client that renders it. The marker is spliced in by `seq` alongside the
+ * calls, so a call made after lights out still reads above it.
  */
 export function timeline(
   hands: readonly Hand[],
   calls: readonly LiveCall[],
+  lightsOut: LightsOut | undefined,
   startedAt: Date | null,
 ): TimelineEntry[] {
   const named = new Map(hands.map((hand) => [hand.playerId, hand.name]));
+  const raceStart = lightsOut?.at ?? startedAt;
 
-  return [...calls].reverse().map((call) => ({
+  const entries: TimelineEntry[] = [...calls].reverse().map((call) => ({
+    kind: 'CALL',
     seq: call.seq,
     squareId: call.squareId,
-    elapsed: elapsedStamp(startedAt, call.at),
+    elapsed: elapsedStamp(raceStart, call.at),
     playerId: call.actorPlayerId,
     name: named.get(call.actorPlayerId) ?? 'Someone',
   }));
+
+  if (lightsOut === undefined) return entries;
+
+  const marker: TimelineEntry = {
+    kind: 'LIGHTS_OUT',
+    seq: lightsOut.seq,
+    elapsed: elapsedStamp(raceStart, lightsOut.at),
+    playerId: lightsOut.actorPlayerId,
+    name: named.get(lightsOut.actorPlayerId) ?? 'Someone',
+  };
+
+  const index = entries.findIndex((entry) => entry.seq < lightsOut.seq);
+  if (index === -1) return [...entries, marker];
+
+  entries.splice(index, 0, marker);
+  return entries;
 }
 
 /**
- * `+42:10`. Minutes are not wrapped into hours — a race is two of them, and
- * `+124:03` reads as further into the session than `+2:04:03` does at a glance
- * on a phone.
+ * `+42:10`, or `-04:12` for a call made before the base (#124: a call made
+ * before `LIGHTS_OUT` lands, once it does). Minutes are not wrapped into hours —
+ * a race is two of them, and `+124:03` reads as further into the session than
+ * `+2:04:03` does at a glance on a phone.
  */
-export function elapsedStamp(startedAt: Date | null, at: Date): string {
-  const ms = startedAt === null ? 0 : at.getTime() - startedAt.getTime();
-  const total = Math.max(0, Math.floor(ms / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
+export function elapsedStamp(base: Date | null, at: Date): string {
+  const ms = base === null ? 0 : at.getTime() - base.getTime();
+  const total = Math.floor(ms / 1000);
+  const sign = total < 0 ? '-' : '+';
+  const abs = Math.abs(total);
+  const minutes = Math.floor(abs / 60);
+  const seconds = abs % 60;
 
-  return `+${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return `${sign}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }

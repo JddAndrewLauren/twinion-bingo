@@ -17,6 +17,7 @@ import {
   retractCall,
   startGame,
   subscribeToRoomEvents,
+  triggerLightsOut,
   type CardSquare,
   type Game,
   type Mark,
@@ -81,7 +82,7 @@ const TOAST_MS = 4000;
  */
 const UNDO_WINDOW_MS = 10_000;
 
-type Action = 'join' | 'start' | 'call' | 'retract' | 'reroll';
+type Action = 'join' | 'start' | 'call' | 'retract' | 'reroll' | 'lights out';
 
 /** Every status this screen distinguishes from the generic sentence, by action. */
 const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = {
@@ -111,6 +112,10 @@ const KNOWN_STATUS_SENTENCES: Record<Action, Partial<Record<number, string>>> = 
   // would couple this screen to the server's wording for a branch only a race
   // with an in-flight frame can reach.
   reroll: { 409: 'This card cannot be re-rolled now.' },
+  // First tap wins (#124), so a losing tap is not an error at all — the API
+  // answers it 200 with the row that already landed, not a failing status. The
+  // only way here is the game finishing mid-tap.
+  'lights out': { 409: 'This game has finished.' },
 };
 
 /** The one fixed sentence each action falls back to for a status it does not name. */
@@ -120,6 +125,7 @@ const FALLBACK_SENTENCES: Record<Action, string> = {
   call: 'Could not call that square.',
   retract: 'Could not take that call back.',
   reroll: 'Could not re-roll your card.',
+  'lights out': 'Could not start the timer.',
 };
 
 /**
@@ -269,6 +275,7 @@ export function RoomScreen({
   const [starting, setStarting] = useState(false);
   const [startFailed, setStartFailed] = useState<string | null>(null);
   const [callFailed, setCallFailed] = useState<string | null>(null);
+  const [lightsOutFailed, setLightsOutFailed] = useState<string | null>(null);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
   /**
    * Whether the host is looking at the deck sheet instead of their card. One at a
@@ -572,6 +579,25 @@ export function RoomScreen({
       setReload((count) => count + 1);
     } catch (error) {
       setCallFailed(describeFailure('call', error));
+    }
+  }
+
+  /**
+   * The free centre's tap (#124). No local state to apply — `LIGHTS_OUT` earns
+   * no mark and touches no card — so this is `reload` and nothing else, the
+   * same convergence path `call()` leans on for the square that appended it.
+   */
+  async function triggerLightsOutTap() {
+    const token = readToken(code);
+    if (token === undefined || game === null) return;
+
+    setLightsOutFailed(null);
+
+    try {
+      await triggerLightsOut(apiUrl, game.id, token);
+      setReload((count) => count + 1);
+    } catch (error) {
+      setLightsOutFailed(describeFailure('lights out', error));
     }
   }
 
@@ -1084,6 +1110,8 @@ export function RoomScreen({
                     onRetract={setConfirming}
                     onPeek={setPeek}
                     finished={finished}
+                    lightsOutSeq={game.lightsOutSeq}
+                    onLightsOut={triggerLightsOutTap}
                   />
                   {canReroll && (
                     /*
@@ -1137,6 +1165,7 @@ export function RoomScreen({
                 </button>
               )}
               {callFailed !== null && <p role="alert">{callFailed}</p>}
+              {lightsOutFailed !== null && <p role="alert">{lightsOutFailed}</p>}
               {retractFailed !== null && <p role="alert">{retractFailed}</p>}
               {rerollFailed !== null && <p role="alert">{rerollFailed}</p>}
               {/*

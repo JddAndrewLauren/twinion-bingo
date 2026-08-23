@@ -33,6 +33,7 @@ export const roomEventKind = bingo.enum('room_event_kind', [
   'RETRACT',
   'PRIZE',
   'CARD_REROLLED',
+  'LIGHTS_OUT',
 ]);
 
 /** The win ladder of D5: one line, then two lines, then a full house. */

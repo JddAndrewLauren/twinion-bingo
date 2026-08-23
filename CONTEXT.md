@@ -27,7 +27,7 @@ only state in which a square may be called; `done` is terminal and one-way (ADR-
 
 **Room event** — an appended row in `room_events`, the log both containers are read out of. Every
 row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-ID`. Kinds:
-`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`, `CARD_REROLLED`.
+`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`, `CARD_REROLLED`, `LIGHTS_OUT`.
 
 ## Squares and where they come from
 
@@ -48,7 +48,11 @@ not reach a 24-square subset of it on its own.
 
 **Free centre** — the middle cell, theme-flavoured ("LIGHTS OUT"). Not a pool square and not
 "always marked": nothing has to happen for it to count, so lines through it are complete when their
-other four squares are (`apps/api/src/games/lines.ts`).
+other four squares are (`apps/api/src/games/lines.ts`). It has no square id and is not in the deck,
+so it cannot ride the call path — tapping it appends a `LIGHTS_OUT` room event instead of a `CALL`
+(#124). Anyone in the room may tap it; first tap wins, arbitrated by the same lock that arbitrates a
+tied call (ADR-0004), and it earns no mark — standings and the win ladder are unaffected. See
+**Timeline** for what it does once it lands.
 
 **Tier** — a square's per-race probability of being broadcast: `certain` ≈ fires most races, `medium`
 ≈ roughly every other race, `rare` ≈ a few times a season. The TV broadcast is the evidence a call is
@@ -125,8 +129,13 @@ later call and retraction refused with 409. One-way (ADR-0003).
 towards a win (D5). Read "Final standings" once the game is `done`.
 
 **Timeline** — every call in the game, newest first, stamped with elapsed game time (`+42:10`) and
-credited to its spotter. Elapsed wall-clock since the host started — never a lap number, because
-there is no timing feed.
+credited to its spotter, plus — once tapped — the `LIGHTS_OUT` row itself, as the race-start marker
+(#124). Elapsed wall-clock, never a lap number, because there is no timing feed: from the host's
+start until `LIGHTS_OUT` lands, and from `LIGHTS_OUT` itself once it has. The rebase is retroactive —
+a call already on screen stamped `+03:00` reads `-04:12` the moment `LIGHTS_OUT` lands, because a
+device re-reads the derived answer rather than remembering the one it showed before, the same
+philosophy **Mark** already follows. Negative is pre-race: a call spotted while the grid was still
+forming, before the race the room is actually timing began.
 
 **Spotter** — whoever made a call, as the room credits them: "Bea spotted Square 7". A device names
 a square only when it holds its prose, so calls for squares off your card read "spotted a square".
