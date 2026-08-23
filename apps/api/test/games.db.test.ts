@@ -401,7 +401,7 @@ describe.skipIf(noTestDatabase)('re-rolling a card', () => {
     expect(card.every((square) => deck.has(square.id))).toBe(true);
     expect(new Set(card.map((square) => square.id)).size).toBe(CARD_SQUARES);
     expect(
-      new Set(card.map((square) => poolSquareById.get(square.id)!.exclusivityGroup)).size,
+      new Set(card.flatMap((square) => poolSquareById.get(square.id)!.exclusivityGroups)).size,
     ).toBe(CARD_SQUARES);
     expect(card.filter((square) => square.tier === 'rare').length).toBeLessThanOrEqual(
       MAX_RARE_PER_CARD,

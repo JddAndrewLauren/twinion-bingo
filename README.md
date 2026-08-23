@@ -24,7 +24,7 @@ holding. The draw is seeded and the seed stored, so a deal can be reproduced fro
 hold `square_ids` and nothing else: marks are derived from the call log, never stored.
 
 **The F1 theme supplies that deck.** D6's quotas are hard constraints, and the committed F1 pool —
-300 squares at `poolVersion: v2`, 230 generated from 11 teams and 22 drivers plus 70 hand-crafted —
+300 squares at `poolVersion: v3`, 230 generated from 11 teams and 22 drivers plus 70 hand-crafted —
 meets every one of them, so starting a game deals real cards. A pool that could not would be
 refused rather than degraded: the composer answers 503 naming the quotas it cannot reach.
 `docs/adr/0002-deck-composition-hard-quotas.md` has the arithmetic and why it fails loudly.

@@ -9,7 +9,10 @@
       "description": "A hand-written square, number 1 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h01",
+      "exclusivityGroups": [
+        "hand:h01"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -18,7 +21,10 @@
       "description": "A hand-written square, number 2 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h02",
+      "exclusivityGroups": [
+        "hand:h02"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -27,7 +33,10 @@
       "description": "A hand-written square, number 3 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h03",
+      "exclusivityGroups": [
+        "hand:h03"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -36,7 +45,10 @@
       "description": "A hand-written square, number 4 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h04",
+      "exclusivityGroups": [
+        "hand:h04"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -45,7 +57,10 @@
       "description": "A hand-written square, number 5 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h05",
+      "exclusivityGroups": [
+        "hand:h05"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -54,7 +69,10 @@
       "description": "A hand-written square, number 6 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h06",
+      "exclusivityGroups": [
+        "hand:h06"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -63,7 +81,10 @@
       "description": "A hand-written square, number 7 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h07",
+      "exclusivityGroups": [
+        "hand:h07"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -72,7 +93,10 @@
       "description": "A hand-written square, number 8 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h08",
+      "exclusivityGroups": [
+        "hand:h08"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -81,7 +105,10 @@
       "description": "A hand-written square, number 9 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h09",
+      "exclusivityGroups": [
+        "hand:h09"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -90,7 +117,10 @@
       "description": "A hand-written square, number 10 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h10",
+      "exclusivityGroups": [
+        "hand:h10"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -99,7 +129,10 @@
       "description": "A hand-written square, number 11 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h11",
+      "exclusivityGroups": [
+        "hand:h11"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -108,7 +141,10 @@
       "description": "A hand-written square, number 12 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h12",
+      "exclusivityGroups": [
+        "hand:h12"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -117,7 +153,10 @@
       "description": "A hand-written square, number 13 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h13",
+      "exclusivityGroups": [
+        "hand:h13"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -126,7 +165,10 @@
       "description": "A hand-written square, number 14 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h14",
+      "exclusivityGroups": [
+        "hand:h14"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -135,7 +177,10 @@
       "description": "A hand-written square, number 15 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h15",
+      "exclusivityGroups": [
+        "hand:h15"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -144,7 +189,10 @@
       "description": "A hand-written square, number 16 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h16",
+      "exclusivityGroups": [
+        "hand:h16"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -153,7 +201,10 @@
       "description": "A hand-written square, number 17 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h17",
+      "exclusivityGroups": [
+        "hand:h17"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -162,7 +213,10 @@
       "description": "A hand-written square, number 18 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h18",
+      "exclusivityGroups": [
+        "hand:h18"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -171,7 +225,10 @@
       "description": "A hand-written square, number 19 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h19",
+      "exclusivityGroups": [
+        "hand:h19"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -180,7 +237,10 @@
       "description": "A hand-written square, number 20 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h20",
+      "exclusivityGroups": [
+        "hand:h20"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -189,7 +249,10 @@
       "description": "A hand-written square, number 21 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h21",
+      "exclusivityGroups": [
+        "hand:h21"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -198,7 +261,10 @@
       "description": "A hand-written square, number 22 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h22",
+      "exclusivityGroups": [
+        "hand:h22"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -207,7 +273,10 @@
       "description": "A hand-written square, number 23 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h23",
+      "exclusivityGroups": [
+        "hand:h23"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -216,7 +285,10 @@
       "description": "A hand-written square, number 24 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h24",
+      "exclusivityGroups": [
+        "hand:h24"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -225,7 +297,10 @@
       "description": "A hand-written square, number 25 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h25",
+      "exclusivityGroups": [
+        "hand:h25"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -234,7 +309,10 @@
       "description": "A hand-written square, number 26 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h26",
+      "exclusivityGroups": [
+        "hand:h26"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -243,7 +321,10 @@
       "description": "A hand-written square, number 27 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h27",
+      "exclusivityGroups": [
+        "hand:h27"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -252,7 +333,10 @@
       "description": "A hand-written square, number 28 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h28",
+      "exclusivityGroups": [
+        "hand:h28"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -261,7 +345,10 @@
       "description": "A hand-written square, number 29 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h29",
+      "exclusivityGroups": [
+        "hand:h29"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -270,7 +357,10 @@
       "description": "A hand-written square, number 30 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h30",
+      "exclusivityGroups": [
+        "hand:h30"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -279,7 +369,10 @@
       "description": "A hand-written square, number 31 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h31",
+      "exclusivityGroups": [
+        "hand:h31"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -288,7 +381,10 @@
       "description": "A hand-written square, number 32 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h32",
+      "exclusivityGroups": [
+        "hand:h32"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -297,7 +393,10 @@
       "description": "A hand-written square, number 33 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h33",
+      "exclusivityGroups": [
+        "hand:h33"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -306,7 +405,10 @@
       "description": "A hand-written square, number 34 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h34",
+      "exclusivityGroups": [
+        "hand:h34"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -315,7 +417,10 @@
       "description": "A hand-written square, number 35 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h35",
+      "exclusivityGroups": [
+        "hand:h35"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -324,7 +429,10 @@
       "description": "A hand-written square, number 36 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h36",
+      "exclusivityGroups": [
+        "hand:h36"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -333,7 +441,10 @@
       "description": "A hand-written square, number 37 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h37",
+      "exclusivityGroups": [
+        "hand:h37"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -342,7 +453,10 @@
       "description": "A hand-written square, number 38 of 40.",
       "tier": "medium",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h38",
+      "exclusivityGroups": [
+        "hand:h38"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -351,7 +465,10 @@
       "description": "A hand-written square, number 39 of 40.",
       "tier": "rare",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h39",
+      "exclusivityGroups": [
+        "hand:h39"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -360,7 +477,10 @@
       "description": "A hand-written square, number 40 of 40.",
       "tier": "certain",
       "source": "handcrafted",
-      "exclusivityGroup": "hand:h40",
+      "exclusivityGroups": [
+        "hand:h40"
+      ],
+      "entities": {},
       "templateId": null
     },
     {
@@ -369,7 +489,10 @@
       "description": "Template t01 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e01",
+      "exclusivityGroups": [
+        "fam1:e01"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -378,7 +501,10 @@
       "description": "Template t01 expanded for entity e02.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam1:e02",
+      "exclusivityGroups": [
+        "fam1:e02"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -387,7 +513,10 @@
       "description": "Template t01 expanded for entity e03.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam1:e03",
+      "exclusivityGroups": [
+        "fam1:e03"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -396,7 +525,10 @@
       "description": "Template t01 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e04",
+      "exclusivityGroups": [
+        "fam1:e04"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -405,7 +537,10 @@
       "description": "Template t01 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e05",
+      "exclusivityGroups": [
+        "fam1:e05"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -414,7 +549,10 @@
       "description": "Template t01 expanded for entity e06.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam1:e06",
+      "exclusivityGroups": [
+        "fam1:e06"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -423,7 +561,10 @@
       "description": "Template t01 expanded for entity e07.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam1:e07",
+      "exclusivityGroups": [
+        "fam1:e07"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -432,7 +573,10 @@
       "description": "Template t01 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e08",
+      "exclusivityGroups": [
+        "fam1:e08"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -441,7 +585,10 @@
       "description": "Template t01 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e09",
+      "exclusivityGroups": [
+        "fam1:e09"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -450,7 +597,10 @@
       "description": "Template t01 expanded for entity e10.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam1:e10",
+      "exclusivityGroups": [
+        "fam1:e10"
+      ],
+      "entities": {},
       "templateId": "t01"
     },
     {
@@ -459,7 +609,10 @@
       "description": "Template t02 expanded for entity e01.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e01",
+      "exclusivityGroups": [
+        "fam2:e01"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -468,7 +621,10 @@
       "description": "Template t02 expanded for entity e02.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam2:e02",
+      "exclusivityGroups": [
+        "fam2:e02"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -477,7 +633,10 @@
       "description": "Template t02 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e03",
+      "exclusivityGroups": [
+        "fam2:e03"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -486,7 +645,10 @@
       "description": "Template t02 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e04",
+      "exclusivityGroups": [
+        "fam2:e04"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -495,7 +657,10 @@
       "description": "Template t02 expanded for entity e05.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e05",
+      "exclusivityGroups": [
+        "fam2:e05"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -504,7 +669,10 @@
       "description": "Template t02 expanded for entity e06.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam2:e06",
+      "exclusivityGroups": [
+        "fam2:e06"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -513,7 +681,10 @@
       "description": "Template t02 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e07",
+      "exclusivityGroups": [
+        "fam2:e07"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -522,7 +693,10 @@
       "description": "Template t02 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e08",
+      "exclusivityGroups": [
+        "fam2:e08"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -531,7 +705,10 @@
       "description": "Template t02 expanded for entity e09.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e09",
+      "exclusivityGroups": [
+        "fam2:e09"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -540,7 +717,10 @@
       "description": "Template t02 expanded for entity e10.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam2:e10",
+      "exclusivityGroups": [
+        "fam2:e10"
+      ],
+      "entities": {},
       "templateId": "t02"
     },
     {
@@ -549,7 +729,10 @@
       "description": "Template t03 expanded for entity e01.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e01",
+      "exclusivityGroups": [
+        "fam3:e01"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -558,7 +741,10 @@
       "description": "Template t03 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e02",
+      "exclusivityGroups": [
+        "fam3:e02"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -567,7 +753,10 @@
       "description": "Template t03 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e03",
+      "exclusivityGroups": [
+        "fam3:e03"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -576,7 +765,10 @@
       "description": "Template t03 expanded for entity e04.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam3:e04",
+      "exclusivityGroups": [
+        "fam3:e04"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -585,7 +777,10 @@
       "description": "Template t03 expanded for entity e05.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e05",
+      "exclusivityGroups": [
+        "fam3:e05"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -594,7 +789,10 @@
       "description": "Template t03 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e06",
+      "exclusivityGroups": [
+        "fam3:e06"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -603,7 +801,10 @@
       "description": "Template t03 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e07",
+      "exclusivityGroups": [
+        "fam3:e07"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -612,7 +813,10 @@
       "description": "Template t03 expanded for entity e08.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam3:e08",
+      "exclusivityGroups": [
+        "fam3:e08"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -621,7 +825,10 @@
       "description": "Template t03 expanded for entity e09.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e09",
+      "exclusivityGroups": [
+        "fam3:e09"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -630,7 +837,10 @@
       "description": "Template t03 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e10",
+      "exclusivityGroups": [
+        "fam3:e10"
+      ],
+      "entities": {},
       "templateId": "t03"
     },
     {
@@ -639,7 +849,10 @@
       "description": "Template t04 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e01",
+      "exclusivityGroups": [
+        "fam4:e01"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -648,7 +861,10 @@
       "description": "Template t04 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e02",
+      "exclusivityGroups": [
+        "fam4:e02"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -657,7 +873,10 @@
       "description": "Template t04 expanded for entity e03.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam4:e03",
+      "exclusivityGroups": [
+        "fam4:e03"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -666,7 +885,10 @@
       "description": "Template t04 expanded for entity e04.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam4:e04",
+      "exclusivityGroups": [
+        "fam4:e04"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -675,7 +897,10 @@
       "description": "Template t04 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e05",
+      "exclusivityGroups": [
+        "fam4:e05"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -684,7 +909,10 @@
       "description": "Template t04 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e06",
+      "exclusivityGroups": [
+        "fam4:e06"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -693,7 +921,10 @@
       "description": "Template t04 expanded for entity e07.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam4:e07",
+      "exclusivityGroups": [
+        "fam4:e07"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -702,7 +933,10 @@
       "description": "Template t04 expanded for entity e08.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam4:e08",
+      "exclusivityGroups": [
+        "fam4:e08"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -711,7 +945,10 @@
       "description": "Template t04 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e09",
+      "exclusivityGroups": [
+        "fam4:e09"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -720,7 +957,10 @@
       "description": "Template t04 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e10",
+      "exclusivityGroups": [
+        "fam4:e10"
+      ],
+      "entities": {},
       "templateId": "t04"
     },
     {
@@ -729,7 +969,10 @@
       "description": "Template t05 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e01",
+      "exclusivityGroups": [
+        "fam5:e01"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -738,7 +981,10 @@
       "description": "Template t05 expanded for entity e02.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam5:e02",
+      "exclusivityGroups": [
+        "fam5:e02"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -747,7 +993,10 @@
       "description": "Template t05 expanded for entity e03.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam5:e03",
+      "exclusivityGroups": [
+        "fam5:e03"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -756,7 +1005,10 @@
       "description": "Template t05 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e04",
+      "exclusivityGroups": [
+        "fam5:e04"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -765,7 +1017,10 @@
       "description": "Template t05 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e05",
+      "exclusivityGroups": [
+        "fam5:e05"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -774,7 +1029,10 @@
       "description": "Template t05 expanded for entity e06.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam5:e06",
+      "exclusivityGroups": [
+        "fam5:e06"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -783,7 +1041,10 @@
       "description": "Template t05 expanded for entity e07.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam5:e07",
+      "exclusivityGroups": [
+        "fam5:e07"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -792,7 +1053,10 @@
       "description": "Template t05 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e08",
+      "exclusivityGroups": [
+        "fam5:e08"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -801,7 +1065,10 @@
       "description": "Template t05 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e09",
+      "exclusivityGroups": [
+        "fam5:e09"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -810,7 +1077,10 @@
       "description": "Template t05 expanded for entity e10.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam5:e10",
+      "exclusivityGroups": [
+        "fam5:e10"
+      ],
+      "entities": {},
       "templateId": "t05"
     },
     {
@@ -819,7 +1089,10 @@
       "description": "Template t06 expanded for entity e01.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e01",
+      "exclusivityGroups": [
+        "fam6:e01"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -828,7 +1101,10 @@
       "description": "Template t06 expanded for entity e02.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam6:e02",
+      "exclusivityGroups": [
+        "fam6:e02"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -837,7 +1113,10 @@
       "description": "Template t06 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e03",
+      "exclusivityGroups": [
+        "fam6:e03"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -846,7 +1125,10 @@
       "description": "Template t06 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e04",
+      "exclusivityGroups": [
+        "fam6:e04"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -855,7 +1137,10 @@
       "description": "Template t06 expanded for entity e05.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e05",
+      "exclusivityGroups": [
+        "fam6:e05"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -864,7 +1149,10 @@
       "description": "Template t06 expanded for entity e06.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam6:e06",
+      "exclusivityGroups": [
+        "fam6:e06"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -873,7 +1161,10 @@
       "description": "Template t06 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e07",
+      "exclusivityGroups": [
+        "fam6:e07"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -882,7 +1173,10 @@
       "description": "Template t06 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e08",
+      "exclusivityGroups": [
+        "fam6:e08"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -891,7 +1185,10 @@
       "description": "Template t06 expanded for entity e09.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e09",
+      "exclusivityGroups": [
+        "fam6:e09"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -900,7 +1197,10 @@
       "description": "Template t06 expanded for entity e10.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam6:e10",
+      "exclusivityGroups": [
+        "fam6:e10"
+      ],
+      "entities": {},
       "templateId": "t06"
     },
     {
@@ -909,7 +1209,10 @@
       "description": "Template t07 expanded for entity e01.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e01",
+      "exclusivityGroups": [
+        "fam0:e01"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -918,7 +1221,10 @@
       "description": "Template t07 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e02",
+      "exclusivityGroups": [
+        "fam0:e02"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -927,7 +1233,10 @@
       "description": "Template t07 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e03",
+      "exclusivityGroups": [
+        "fam0:e03"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -936,7 +1245,10 @@
       "description": "Template t07 expanded for entity e04.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam0:e04",
+      "exclusivityGroups": [
+        "fam0:e04"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -945,7 +1257,10 @@
       "description": "Template t07 expanded for entity e05.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e05",
+      "exclusivityGroups": [
+        "fam0:e05"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -954,7 +1269,10 @@
       "description": "Template t07 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e06",
+      "exclusivityGroups": [
+        "fam0:e06"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -963,7 +1281,10 @@
       "description": "Template t07 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e07",
+      "exclusivityGroups": [
+        "fam0:e07"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -972,7 +1293,10 @@
       "description": "Template t07 expanded for entity e08.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam0:e08",
+      "exclusivityGroups": [
+        "fam0:e08"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -981,7 +1305,10 @@
       "description": "Template t07 expanded for entity e09.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e09",
+      "exclusivityGroups": [
+        "fam0:e09"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -990,7 +1317,10 @@
       "description": "Template t07 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e10",
+      "exclusivityGroups": [
+        "fam0:e10"
+      ],
+      "entities": {},
       "templateId": "t07"
     },
     {
@@ -999,7 +1329,10 @@
       "description": "Template t08 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e01",
+      "exclusivityGroups": [
+        "fam1:e01"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1008,7 +1341,10 @@
       "description": "Template t08 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e02",
+      "exclusivityGroups": [
+        "fam1:e02"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1017,7 +1353,10 @@
       "description": "Template t08 expanded for entity e03.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam1:e03",
+      "exclusivityGroups": [
+        "fam1:e03"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1026,7 +1365,10 @@
       "description": "Template t08 expanded for entity e04.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam1:e04",
+      "exclusivityGroups": [
+        "fam1:e04"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1035,7 +1377,10 @@
       "description": "Template t08 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e05",
+      "exclusivityGroups": [
+        "fam1:e05"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1044,7 +1389,10 @@
       "description": "Template t08 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e06",
+      "exclusivityGroups": [
+        "fam1:e06"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1053,7 +1401,10 @@
       "description": "Template t08 expanded for entity e07.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam1:e07",
+      "exclusivityGroups": [
+        "fam1:e07"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1062,7 +1413,10 @@
       "description": "Template t08 expanded for entity e08.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam1:e08",
+      "exclusivityGroups": [
+        "fam1:e08"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1071,7 +1425,10 @@
       "description": "Template t08 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e09",
+      "exclusivityGroups": [
+        "fam1:e09"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1080,7 +1437,10 @@
       "description": "Template t08 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam1:e10",
+      "exclusivityGroups": [
+        "fam1:e10"
+      ],
+      "entities": {},
       "templateId": "t08"
     },
     {
@@ -1089,7 +1449,10 @@
       "description": "Template t09 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e01",
+      "exclusivityGroups": [
+        "fam2:e01"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1098,7 +1461,10 @@
       "description": "Template t09 expanded for entity e02.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e02",
+      "exclusivityGroups": [
+        "fam2:e02"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1107,7 +1473,10 @@
       "description": "Template t09 expanded for entity e03.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam2:e03",
+      "exclusivityGroups": [
+        "fam2:e03"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1116,7 +1485,10 @@
       "description": "Template t09 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e04",
+      "exclusivityGroups": [
+        "fam2:e04"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1125,7 +1497,10 @@
       "description": "Template t09 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e05",
+      "exclusivityGroups": [
+        "fam2:e05"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1134,7 +1509,10 @@
       "description": "Template t09 expanded for entity e06.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e06",
+      "exclusivityGroups": [
+        "fam2:e06"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1143,7 +1521,10 @@
       "description": "Template t09 expanded for entity e07.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam2:e07",
+      "exclusivityGroups": [
+        "fam2:e07"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1152,7 +1533,10 @@
       "description": "Template t09 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e08",
+      "exclusivityGroups": [
+        "fam2:e08"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1161,7 +1545,10 @@
       "description": "Template t09 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam2:e09",
+      "exclusivityGroups": [
+        "fam2:e09"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1170,7 +1557,10 @@
       "description": "Template t09 expanded for entity e10.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam2:e10",
+      "exclusivityGroups": [
+        "fam2:e10"
+      ],
+      "entities": {},
       "templateId": "t09"
     },
     {
@@ -1179,7 +1569,10 @@
       "description": "Template t10 expanded for entity e01.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam3:e01",
+      "exclusivityGroups": [
+        "fam3:e01"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1188,7 +1581,10 @@
       "description": "Template t10 expanded for entity e02.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e02",
+      "exclusivityGroups": [
+        "fam3:e02"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1197,7 +1593,10 @@
       "description": "Template t10 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e03",
+      "exclusivityGroups": [
+        "fam3:e03"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1206,7 +1605,10 @@
       "description": "Template t10 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e04",
+      "exclusivityGroups": [
+        "fam3:e04"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1215,7 +1617,10 @@
       "description": "Template t10 expanded for entity e05.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam3:e05",
+      "exclusivityGroups": [
+        "fam3:e05"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1224,7 +1629,10 @@
       "description": "Template t10 expanded for entity e06.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e06",
+      "exclusivityGroups": [
+        "fam3:e06"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1233,7 +1641,10 @@
       "description": "Template t10 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e07",
+      "exclusivityGroups": [
+        "fam3:e07"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1242,7 +1653,10 @@
       "description": "Template t10 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam3:e08",
+      "exclusivityGroups": [
+        "fam3:e08"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1251,7 +1665,10 @@
       "description": "Template t10 expanded for entity e09.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam3:e09",
+      "exclusivityGroups": [
+        "fam3:e09"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1260,7 +1677,10 @@
       "description": "Template t10 expanded for entity e10.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam3:e10",
+      "exclusivityGroups": [
+        "fam3:e10"
+      ],
+      "entities": {},
       "templateId": "t10"
     },
     {
@@ -1269,7 +1689,10 @@
       "description": "Template t11 expanded for entity e01.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam4:e01",
+      "exclusivityGroups": [
+        "fam4:e01"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1278,7 +1701,10 @@
       "description": "Template t11 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e02",
+      "exclusivityGroups": [
+        "fam4:e02"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1287,7 +1713,10 @@
       "description": "Template t11 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e03",
+      "exclusivityGroups": [
+        "fam4:e03"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1296,7 +1725,10 @@
       "description": "Template t11 expanded for entity e04.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam4:e04",
+      "exclusivityGroups": [
+        "fam4:e04"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1305,7 +1737,10 @@
       "description": "Template t11 expanded for entity e05.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam4:e05",
+      "exclusivityGroups": [
+        "fam4:e05"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1314,7 +1749,10 @@
       "description": "Template t11 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e06",
+      "exclusivityGroups": [
+        "fam4:e06"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1323,7 +1761,10 @@
       "description": "Template t11 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e07",
+      "exclusivityGroups": [
+        "fam4:e07"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1332,7 +1773,10 @@
       "description": "Template t11 expanded for entity e08.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam4:e08",
+      "exclusivityGroups": [
+        "fam4:e08"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1341,7 +1785,10 @@
       "description": "Template t11 expanded for entity e09.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam4:e09",
+      "exclusivityGroups": [
+        "fam4:e09"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1350,7 +1797,10 @@
       "description": "Template t11 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam4:e10",
+      "exclusivityGroups": [
+        "fam4:e10"
+      ],
+      "entities": {},
       "templateId": "t11"
     },
     {
@@ -1359,7 +1809,10 @@
       "description": "Template t12 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e01",
+      "exclusivityGroups": [
+        "fam5:e01"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1368,7 +1821,10 @@
       "description": "Template t12 expanded for entity e02.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e02",
+      "exclusivityGroups": [
+        "fam5:e02"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1377,7 +1833,10 @@
       "description": "Template t12 expanded for entity e03.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam5:e03",
+      "exclusivityGroups": [
+        "fam5:e03"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1386,7 +1845,10 @@
       "description": "Template t12 expanded for entity e04.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam5:e04",
+      "exclusivityGroups": [
+        "fam5:e04"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1395,7 +1857,10 @@
       "description": "Template t12 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e05",
+      "exclusivityGroups": [
+        "fam5:e05"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1404,7 +1869,10 @@
       "description": "Template t12 expanded for entity e06.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e06",
+      "exclusivityGroups": [
+        "fam5:e06"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1413,7 +1881,10 @@
       "description": "Template t12 expanded for entity e07.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam5:e07",
+      "exclusivityGroups": [
+        "fam5:e07"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1422,7 +1893,10 @@
       "description": "Template t12 expanded for entity e08.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam5:e08",
+      "exclusivityGroups": [
+        "fam5:e08"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1431,7 +1905,10 @@
       "description": "Template t12 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e09",
+      "exclusivityGroups": [
+        "fam5:e09"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1440,7 +1917,10 @@
       "description": "Template t12 expanded for entity e10.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam5:e10",
+      "exclusivityGroups": [
+        "fam5:e10"
+      ],
+      "entities": {},
       "templateId": "t12"
     },
     {
@@ -1449,7 +1929,10 @@
       "description": "Template t13 expanded for entity e01.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e01",
+      "exclusivityGroups": [
+        "fam6:e01"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1458,7 +1941,10 @@
       "description": "Template t13 expanded for entity e02.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e02",
+      "exclusivityGroups": [
+        "fam6:e02"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1467,7 +1953,10 @@
       "description": "Template t13 expanded for entity e03.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam6:e03",
+      "exclusivityGroups": [
+        "fam6:e03"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1476,7 +1965,10 @@
       "description": "Template t13 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e04",
+      "exclusivityGroups": [
+        "fam6:e04"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1485,7 +1977,10 @@
       "description": "Template t13 expanded for entity e05.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e05",
+      "exclusivityGroups": [
+        "fam6:e05"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1494,7 +1989,10 @@
       "description": "Template t13 expanded for entity e06.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e06",
+      "exclusivityGroups": [
+        "fam6:e06"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1503,7 +2001,10 @@
       "description": "Template t13 expanded for entity e07.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam6:e07",
+      "exclusivityGroups": [
+        "fam6:e07"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1512,7 +2013,10 @@
       "description": "Template t13 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e08",
+      "exclusivityGroups": [
+        "fam6:e08"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1521,7 +2025,10 @@
       "description": "Template t13 expanded for entity e09.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam6:e09",
+      "exclusivityGroups": [
+        "fam6:e09"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1530,7 +2037,10 @@
       "description": "Template t13 expanded for entity e10.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam6:e10",
+      "exclusivityGroups": [
+        "fam6:e10"
+      ],
+      "entities": {},
       "templateId": "t13"
     },
     {
@@ -1539,7 +2049,10 @@
       "description": "Template t14 expanded for entity e01.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam0:e01",
+      "exclusivityGroups": [
+        "fam0:e01"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1548,7 +2061,10 @@
       "description": "Template t14 expanded for entity e02.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e02",
+      "exclusivityGroups": [
+        "fam0:e02"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1557,7 +2073,10 @@
       "description": "Template t14 expanded for entity e03.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e03",
+      "exclusivityGroups": [
+        "fam0:e03"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1566,7 +2085,10 @@
       "description": "Template t14 expanded for entity e04.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e04",
+      "exclusivityGroups": [
+        "fam0:e04"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1575,7 +2097,10 @@
       "description": "Template t14 expanded for entity e05.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam0:e05",
+      "exclusivityGroups": [
+        "fam0:e05"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1584,7 +2109,10 @@
       "description": "Template t14 expanded for entity e06.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e06",
+      "exclusivityGroups": [
+        "fam0:e06"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1593,7 +2121,10 @@
       "description": "Template t14 expanded for entity e07.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e07",
+      "exclusivityGroups": [
+        "fam0:e07"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1602,7 +2133,10 @@
       "description": "Template t14 expanded for entity e08.",
       "tier": "medium",
       "source": "generated",
-      "exclusivityGroup": "fam0:e08",
+      "exclusivityGroups": [
+        "fam0:e08"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1611,7 +2145,10 @@
       "description": "Template t14 expanded for entity e09.",
       "tier": "rare",
       "source": "generated",
-      "exclusivityGroup": "fam0:e09",
+      "exclusivityGroups": [
+        "fam0:e09"
+      ],
+      "entities": {},
       "templateId": "t14"
     },
     {
@@ -1620,7 +2157,10 @@
       "description": "Template t14 expanded for entity e10.",
       "tier": "certain",
       "source": "generated",
-      "exclusivityGroup": "fam0:e10",
+      "exclusivityGroups": [
+        "fam0:e10"
+      ],
+      "entities": {},
       "templateId": "t14"
     }
   ]
