@@ -27,11 +27,40 @@ issue acceptance criteria, so a criterion can say "at `phone-small`" and mean so
 | `ipad-11-portrait`   | 834 × 1194    | iPad Pro 11" upright                          |
 | `ipad-11-landscape`  | 1194 × 834    | iPad Pro 11" on its side — #14's two-pane case |
 
-There are four skins now, two of them light (#102, #103) — the Theme button in every screen's top
-bar reaches Confetti and Scorecard from any surface, so "dark is the only theme" stopped being true
-once that control existed. There is still no per-skin gate: the matrix above is about viewport, not
-skin, and every gate run in this file exercises whichever skin the browser opens on (`pitwall`, the
-cookie's default) rather than sweeping all four.
+There are four skins, two of them light (#102, #103) — the Theme button in every screen's top bar
+reaches Confetti and Scorecard from any surface, so "dark is the only theme" stopped being true once
+that control existed.
+
+**A per-skin gate exists as of #109, and it is narrower than the viewport matrix on purpose.** Most
+of this file's gate still exercises whichever skin the browser opens on (`pitwall`, the cookie's
+default) — tabs, dialogs, state, the stream, a call landing, are not skin-dependent, and asserting
+them four times buys nothing. `apps/web/gate/skin-matrix.gate.ts` is the exception: a **skin matrix**
+that runs only the assertions a skin's own CSS *can* break — cell clipping (marked and unmarked),
+horizontal scroll, vertical scroll at `ipad-11-landscape`, thumb-sized header controls, the header's
+line count, the right pane beside the card at `ipad-11-landscape`, and `/legibility`'s worst 24 — at
+all four skins (`apps/web/gate/room-fixture.ts`'s `forEachSkin`, which seeds the skin cookie rather
+than pressing the Theme button, so it exercises the server-rendered `data-skin` path) and all four
+viewports above. Running the *whole* suite at four skins was estimated at ~576 WebKit tests; the
+matrix is 16 tests instead — see #109's own gate run, below, for the full account of what that
+excludes and why. `docs/adr/0009-skin-css-variable-layer.md` records the decision this gate's shape
+follows from: one React tree across skins is what makes a shared test body reusable at all four in
+the first place.
+
+**Cell and font by skin**, at every viewport, each row sourced from that skin's own gate run
+(#104/#105/#106/#107, cited fully in their own entries below) and re-confirmed rather than assumed by
+#109's own run over the current head:
+
+| Skin | `phone-small` | `phone` | `ipad-11-portrait` | `ipad-11-landscape` |
+| --- | --- | --- | --- | --- |
+| Pit Wall | 70px / 11.0px | 73px / 11.5px | 162px / 24.8px | 108px / 16.7px |
+| Slipstream | 70px / 7.0px | 73px / 7.3px | 162px / 15.7px | 108px / 10.6px |
+| Confetti | 69px / 9.5px | 72px / 9.9px | 160px / 21.5px | 106px / 14.5px |
+| Scorecard | 70px / 6.2px | 73px / 6.5px | 161px / 14.0px | 107px / 9.5px |
+
+Cell width is skin-agnostic geometry (the shared `grid-cols-5` grid, Confetti's own 5px/7px gap
+aside) and varies by a pixel or two only where a skin's own gap or border width moves it; font size
+is each skin's own per-skin label-size token, set against how wide its label face renders — Baloo 2
+(Scorecard) is the widest of the four faces, so its token is the smallest.
 
 ## Surface: web
 
@@ -1609,6 +1638,161 @@ Playwright's own CPU default). See the CI note at the end of this entry for whet
   reset to this skin's one value (Baloo 2 700) in both states — so the rule's premise does not hold
   for this skin specifically, said out loud in `skin-scorecard.gate.ts`'s own test and in this issue's
   PR rather than left as a silent omission.
+
+**#109's gate run** (WebKit with `hasTouch`, all four matrix viewports, one full `pnpm --filter
+@twinion-bingo/web run gate` at default `fullyParallel` concurrency, on top of #107's `773ca28`):
+the visual gate becomes skin-aware. `apps/web/gate/room-fixture.ts` gains `forEachSkin`, seeding the
+`twinion_bingo_skin` cookie before the caller's own `openRoom`/`openLobby`/`page.goto` — the
+server-rendered `data-skin` path, per this issue's own brief, rather than the button. A new file,
+`apps/web/gate/skin-matrix.gate.ts`, holds the matrix itself.
+
+**Two facts about *how* these 16 numbers were taken, added after the entry below was first written
+(it was written at `32e9ccb`; `f7a4554` and `bb165ba` followed) — they are what makes the numbers
+trustworthy rather than incidental:**
+
+- **The matrix settles each skin's fonts before measuring, per #107** (`f7a4554`). Every
+  `forEachSkin` iteration calls `settleSkinFonts` after its own `openRoom`/`page.goto`, and
+  `/legibility`'s bare `page.evaluate(() => document.fonts.ready)` was upgraded to the same helper (a
+  strict superset). Cookie seeding is a fresh navigation, so `openRoom`'s built-in
+  `document.fonts.ready` wait was already correct for the skin being measured — but the header
+  line-count assertion here is the same shape of measurement #107's CI run found broken by font-swap
+  timing, so the call is made defensively and the reasoning is recorded at `skin-matrix.gate.ts:55-71`
+  rather than left for the next agent to re-derive. Every number below was measured with fonts
+  settled.
+- **Every cell asserts its resolved `data-skin`** (`bb165ba`). All 16 cells — including the fourth
+  `test()`, which originally omitted it — assert `<html data-skin>` equals the skin the cookie asked
+  for, *inside* the loop, before measuring. So "the cookie was seeded but the page rendered the
+  default skin, and 12 of 16 cells silently measured `pitwall` four times" is closed by an assertion
+  rather than by argument. Each number below is attributed to a skin the run proved it was in.
+
+- **Test count, listed rather than inferred from passed.** `playwright test --list` reports **460**
+  at the base commit (410 passed / 50 skipped, confirmed independently by running the base commit's
+  own gate: 410 passed, 50 skipped, 40.9s) and **476** at this issue's head (423 passed / 53 skipped,
+  confirmed by an actual run: 423 passed, 53 skipped, 42.1s). Net new: **16 tests**, all in
+  `skin-matrix.gate.ts` — four `test()` blocks × four viewports, matching four `describe`s below
+  exactly. Skips went from 50 to 53: the two-pane test (below) is skipped at the three viewports that
+  are not `ipad-11-landscape`, the same convention `room.gate.ts`'s own `twoPane()` skips use.
+
+- **Wall-clock, full suite, before and after — 40.9s to 42.1s.** The matrix's own 16 tests cost about
+  1.2s of the run, not the ~576-test, multi-minute suite a naive "run everything at four skins" would
+  have been. `skin-matrix.gate.ts` alone (16 tests, `--workers=2`): 13.9–14.2s across three runs.
+
+- **What the matrix actually runs, and why nothing more.** Four `test()` blocks, each looping
+  `forEachSkin` inside a single test body rather than as four separate `test()`s — so the matrix's
+  cost is (assertion groups) × (viewports), not (assertion groups) × (viewports) × (skins):
+
+  1. **`clips no cell, marked or unmarked, at any skin`** — `expectNoCellClipped` and
+     `expectNoHorizontalScroll` at both `start` (all 24 unmarked) and `mid` (earned, inherited and
+     still-open cells together), per skin. Two stages rather than one: #13's own history is a cell
+     fitted for the *marked* weight that only re-fits when a label's text changes, so a defect
+     specific to the marked state is invisible to a run that only ever opens `start`.
+  2. **`keeps every control thumb-sized and the header on one line`** — `expectThumbSized` on the
+     die's, the Theme button's and the Share button's hit elements, plus the header's own line count
+     (the same `h1`/`> p` measurement `room.gate.ts`'s `expectHeaderOnOneLine` makes), at `start`
+     (where the die is offered), per skin.
+  3. **`does not scroll the page, and keeps the right pane beside the card`** —
+     `expectNoVerticalScroll` and `expectBesideTheCard`, `ipad-11-landscape` only, per skin.
+  4. **`carries its own worst 24 labels without a cell clipping`** — `legibility.gate.ts`'s own claim
+     (`expectNoCellClipped` + `expectNoHorizontalScroll` on `/legibility`), swept across all four
+     skins rather than only the default: the per-skin label tokens named in the cell/font table above
+     are exactly what this test exists to catch a future one of breaking.
+
+  **What was deliberately left out, so a silent cap does not read as "covered everything":** colour
+  (`paintedFill`/`deltaE`/`ringColour`) stays gated per-skin in each skin's own file, not swept here —
+  this issue's brief does not ask for a fifth colour instrument, and consolidating the four existing
+  ones is an open FINAL-GATE item (`docs/adr/0009-skin-css-variable-layer.md`). `expectDieMatchesTheme`
+  is not re-swept by cookie: `room.gate.ts`'s own `holds the die and the Theme button beside the room
+  code and Share` already cycles all four skins by *pressing* the button, at all four viewports — the
+  same four-skins-by-four-viewports shape, and adding a cookie-seeded copy of the identical assertion
+  would be the duplicate this issue's own acceptance criteria rule out. Only `mid` and `start` are
+  swept for cell clipping (not `done`) and only `mid` for the two-pane pair — `room.gate.ts` already
+  covers the other stages once, at the default skin, and a skin's CSS cannot re-introduce a
+  stage-specific defect a viewport-only assertion would.
+
+- **The "reaches a skin by pressing the button" criterion is met by an existing test, not a new
+  one — found by reading `room.gate.ts` before writing anything, as the brief asks.**
+  `re-skins across four presses without dropping the stream` (added by #103, `8eee6b7`) already does
+  exactly what this issue's acceptance criterion 3 asks: it presses the Theme button through a full
+  cycle at `phone`, asserts `streams()` is still `1` (no remount), and pushes a `CALL` frame afterwards
+  to prove the timeline still grows. Adding a second test that reaches a skin by cookie and then
+  presses the button once would duplicate an assertion already in the suite — the very thing this
+  issue's own acceptance criteria (`No new assertion duplicates an instrument already in
+  gate/measure.ts`) and this file's own history of near-duplicate instruments argue against. No new
+  test was added for this criterion; the existing one is cited here so its coverage is on the record
+  against this issue rather than only against #103's.
+
+- **A seeded regression, run and reverted, proving the matrix catches a break at one skin only.**
+  `[data-skin='confetti'] .skin-cell { padding: 14px }` (Confetti's cell base rule in `globals.css`,
+  which carries no padding of its own today — the shared `p-1` Tailwind utility is what every skin's
+  cell padding comes from) squeezes Confetti's content box hard enough to clip real labels while
+  leaving the other three skins' cells untouched. Re-run with the seed in place:
+
+  ```
+  4 failed
+    [phone-small] › skin-matrix.gate.ts:67:3  › the card, at every skin › clips no cell, marked or unmarked, at any skin
+    [phone-small] › skin-matrix.gate.ts:148:3 › legibility, at every skin › carries its own worst 24 labels without a cell clipping
+    [phone] › skin-matrix.gate.ts:67:3        › the card, at every skin › clips no cell, marked or unmarked, at any skin
+    [phone] › skin-matrix.gate.ts:148:3       › legibility, at every skin › carries its own worst 24 labels without a cell clipping
+  3 skipped
+  9 passed (14.2s)
+  ```
+
+  Every failure's own `test.step` trace names `confetti`, and — stated precisely, because the loop's
+  shape limits what the run can prove — in those two failing tests `pitwall` and `slipstream` ran and
+  passed *ahead of* `confetti` at the same viewports, while **`scorecard` was never reached at all**:
+  `SKINS` is `['pitwall', 'slipstream', 'confetti', 'scorecard']` (`apps/web/app/skin.ts`), a failing
+  `test.step` throws, and that aborts `forEachSkin`'s loop. So the seed's evidence for "catches it at
+  that skin only" covers `pitwall` and `slipstream` at `phone-small`/`phone`; `scorecard`'s cells were
+  not measured under the seed at those two viewports. (`scorecard` *was* exercised under the seed at
+  `ipad-11-portrait`/`ipad-11-landscape`, where nothing failed ahead of it, and in the header and
+  two-pane tests at every viewport, which passed at all four skins.)
+
+  **The general property, because it is a standing trap for every future slice that adds to this
+  matrix:** `forEachSkin` loops the skins *inside a single `test()`* — the choice that keeps this at
+  16 tests rather than 64 — so a break in an earlier skin **masks every later skin at that viewport**.
+  A green cell means "no skin up to the first failure broke"; only a fully passing cell means all four
+  skins were measured. Anyone reading a failure here must not conclude the un-named skins are clean,
+  and anyone seeding a regression to prove discrimination must re-run with the earlier skins' failures
+  removed if they need evidence about a later one. Confetti's own test labels overflowed by +0.8px to
+  +9.5px depending on the label
+  (`skin-matrix.gate.ts`'s `expectNoCellClipped` output, e.g. `"Championship lead changes (+9.5px)"`
+  at `phone`). Not caught at `ipad-11-portrait`/`ipad-11-landscape` — the wider cells there have
+  enough headroom to absorb 14px of padding on this pool's labels, the same "caught at one viewport
+  out of four, and that is the geometry rather than a weak assertion" shape #14's own stacked-columns
+  seed recorded. Reverted; the full `skin-matrix.gate.ts` run is green again (13 passed, 3 skipped,
+  14.0s).
+
+- **No `scrollWidth` in the diff**, and no new colour or die-sizing instrument duplicating
+  `gate/measure.ts` or an existing `skin-*.gate.ts` file's own. Stated exactly, because the earlier
+  wording here ("every assertion in `skin-matrix.gate.ts` calls an instrument already exported from
+  `measure.ts`") was **false**: every *cell-clipping, scroll, thumb-size and two-pane* assertion calls
+  an instrument exported from `measure.ts` (`expectNoCellClipped`, `expectNoHorizontalScroll`,
+  `expectNoVerticalScroll`, `expectThumbSized`, `expectBesideTheCard`) — but the header line-count
+  block at `apps/web/gate/skin-matrix.gate.ts:127` does not. It is a hand-rolled **third copy** of
+  `room.gate.ts:94`'s `expectHeaderOnOneLine`, which is private to `room.gate.ts` and not exported
+  from `measure.ts` at all: same `getBoundingClientRect().height / parseFloat(lineHeight)`
+  computation, same `1.01` threshold, same `['h1', '> p']` rows — **nothing weakened**, only copied.
+  That makes two copies of one line-count instrument, the same pattern
+  `docs/adr/0009-skin-css-variable-layer.md` already confesses for
+  `paintedFill`/`deltaE`/`ringColour`, extended from colour to line counting. (`skin-scorecard.gate.ts`'s
+  header assertion is *not* a third copy — it is a deliberately different instrument, a px **slack
+  floor** measured off a `Range`, written because #107 showed the line count is a cliff that reads
+  identically at 2px and 20px of spare width. Its own doc comment at `skin-scorecard.gate.ts:510-528`
+  makes that argument. Which means the matrix's own header assertion inherits the cliff shape rather
+  than the slack shape: it catches a header that has already wrapped in some skin, not one a rounding
+  difference away from wrapping. Sweeping the slack floor across four skins is a strictly larger
+  change than this brief asks for, so it is named here rather than done.)
+
+  **FINAL-GATE consolidation item, named rather than quietly left:** export a single
+  `expectHeaderOnOneLine` from `gate/measure.ts` and have both `room.gate.ts:94` and
+  `skin-matrix.gate.ts:127` call it — `room.gate.ts:89`'s own doc
+  comment already states that this helper was lifted out of its test "so that more than one stats line
+  can be counted by the same instrument", so sharing it is the repo's stated intent, not a new idea.
+  It is deliberately **not** done on #109: consolidating a shared instrument touches `measure.ts` and
+  a gate file outside this issue's brief, this late in the batch, and this issue's own criterion
+  (no new assertion duplicating an instrument already in `measure.ts`) is literally satisfied —
+  `expectHeaderOnOneLine` is not in `measure.ts`. It sits beside the four colour instruments as the
+  fifth item on the same FINAL-GATE list.
 
 ## Adding a surface or a screen
 
