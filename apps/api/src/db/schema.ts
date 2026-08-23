@@ -43,7 +43,7 @@ export const prizeKind = bingo.enum('prize_kind', [
 ]);
 
 /**
- * A room is the persistent group: code, theme and roster (ADR-0007 supersedes
+ * A room is the persistent group: code, theme and roster (ADR-0010 supersedes
  * D13's "same code all season" — a room is one session now, and the deck is
  * its character).
  */
@@ -57,7 +57,7 @@ export const rooms = bingo.table('rooms', {
   ),
   /**
    * The ~40-square deck cards are dealt from (D6), moved here from `games` by
-   * ADR-0007: a room now hosts at most one session, so the deck belongs to the
+   * ADR-0010: a room now hosts at most one session, so the deck belongs to the
    * room rather than to a game row it outlived under the old model. Null until
    * the host starts the game.
    */
@@ -82,7 +82,7 @@ export const players = bingo.table('players', {
 });
 
 /**
- * A game is one session within a room: its cards, log and winners (ADR-0007;
+ * A game is one session within a room: its cards, log and winners (ADR-0010;
  * supersedes D13). The deck lives on `rooms` now, not here.
  */
 export const games = bingo.table('games', {

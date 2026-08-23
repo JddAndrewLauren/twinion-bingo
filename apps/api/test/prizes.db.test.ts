@@ -96,7 +96,7 @@ async function prizeRows(code: string) {
 
 /** The 40 square ids the room is playing, in the order the draw put them. */
 async function deckOf(gameId: string): Promise<string[]> {
-  // The deck lives on `rooms` now (ADR-0007), joined here by the game's room.
+  // The deck lives on `rooms` now (ADR-0010), joined here by the game's room.
   const rows = await db.execute<{ deck: string[] }>(
     sql`SELECT r.deck FROM bingo.games g JOIN bingo.rooms r ON r.code = g.room_code WHERE g.id = ${gameId}`,
   );

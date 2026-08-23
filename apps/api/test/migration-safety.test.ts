@@ -57,7 +57,7 @@ describe('emitted migration SQL', () => {
    * the reason for the ban survives the narrowing: drizzle-kit diffs a schema it
    * has been filtered down to, so anything it cannot see reads as absent and is a
    * candidate for a drop. What is safe to permit is therefore the narrowest thing
-   * that admits the migration in front of it: an index, or (ADR-0007's
+   * that admits the migration in front of it: an index, or (ADR-0010's
    * `games.deck` -> `rooms.deck` move) a named column, one at a time, on a
    * schema-qualified `bingo` table. A table, a schema, a type, or an unqualified
    * name is still refused.
@@ -115,7 +115,7 @@ describe('emitted migration SQL', () => {
     expect('DROP INDEX IF EXISTS "bingo"."room_events_call_unique";').toMatch(
       ALLOWED_DROP,
     );
-    // ADR-0007's `games.deck` -> `rooms.deck` move: a named column drop on a
+    // ADR-0010's `games.deck` -> `rooms.deck` move: a named column drop on a
     // schema-qualified `bingo` table, the same narrowness as the index case.
     expect('ALTER TABLE "bingo"."games" DROP COLUMN "deck";').toMatch(
       ALLOWED_DROP,

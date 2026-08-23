@@ -260,7 +260,7 @@ export async function startGame(
   }));
 
   const gameId = await db.transaction(async (tx) => {
-    // The deck is the room's now (ADR-0007), so it is written onto the room
+    // The deck is the room's now (ADR-0010), so it is written onto the room
     // row in the same transaction as the game it seeds — one operation, so a
     // deck without a game (or the reverse) is never observable.
     await tx
@@ -359,7 +359,7 @@ export async function readGame(
   if (game === undefined) return undefined;
 
   // A game row exists only after `startGame` has written the room's deck in
-  // the same transaction (ADR-0007), so a null here means the two have
+  // the same transaction (ADR-0010), so a null here means the two have
   // drifted rather than that the deck was ever optional for a live game.
   if (game.deck === null) {
     throw new Error(`room ${code} has a game but no deck`);
@@ -473,7 +473,7 @@ export async function rerollCard(
     if (game === undefined) throw new CardNotFound();
     if (game.state !== 'live') throw new GameNotLive(game.state);
 
-    // The deck lives on the room now (ADR-0007). Read unlocked: the game row's
+    // The deck lives on the room now (ADR-0010). Read unlocked: the game row's
     // own lock above already serialises this against the only thing that could
     // change it — a new game starting in this room — since that requires the
     // current game to not be live.
