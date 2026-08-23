@@ -9,7 +9,6 @@ import {
   MIN_CERTAIN_PER_CARD,
   SOURCE_QUOTA,
   TIER_QUOTA,
-  cardBoundsShortfalls,
   composeToQuotas,
   feasibleMix,
 } from '../src/games/deck.js';
@@ -75,7 +74,11 @@ function proportionalTierQuota(target: SquareTier, value: number): Record<Square
   } as Record<SquareTier, number>;
 }
 
-/** Whether a deck can actually be drawn and dealt at these quotas, for real. */
+/**
+ * Whether a deck can actually be drawn and dealt at these quotas, for real —
+ * `composeToQuotas` only ever returns a deck that already clears
+ * `cardBoundsShortfalls`, so success/failure to compose is the whole answer.
+ */
 function composesAndDeals(
   pool: Pool,
   tierQuota: Record<SquareTier, number>,
@@ -83,8 +86,8 @@ function composesAndDeals(
   seed: string,
 ): boolean {
   try {
-    const deck = composeToQuotas(pool, tierQuota, sourceQuota, seed);
-    return cardBoundsShortfalls(deck).length === 0;
+    composeToQuotas(pool, tierQuota, sourceQuota, seed);
+    return true;
   } catch {
     return false;
   }

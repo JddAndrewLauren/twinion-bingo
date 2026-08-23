@@ -282,7 +282,7 @@ function attemptDeal(deck: Deck, seed: string): string[] | undefined {
  * their face, with `dealCard`'s reshuffle-and-retry (#122) covering the gap
  * a single flat pass can no longer close by itself.
  */
-export function cardBoundsShortfalls(deck: Deck): string[] {
+function cardBoundsShortfalls(deck: Deck): string[] {
   const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
     new Set(deck.filter(accepts).flatMap((square) => square.exclusivityGroups)).size;
 
@@ -327,8 +327,8 @@ export function cardBoundsShortfalls(deck: Deck): string[] {
 function attemptDraw(
   squares: readonly PoolSquare[],
   random: () => number,
-  tierQuota: Record<SquareTier, number> = TIER_QUOTA,
-  sourceQuota: Record<SquareSource, number> = SOURCE_QUOTA,
+  tierQuota: Record<SquareTier, number>,
+  sourceQuota: Record<SquareSource, number>,
 ): Deck | undefined {
   const tierLeft = { ...tierQuota };
   const sourceLeft = { ...sourceQuota };
@@ -374,14 +374,14 @@ function attemptDraw(
  * so availability is counted under that cap and not as a raw total — that is the
  * constraint that binds first and the one a raw square count hides.
  *
- * Takes the quotas as parameters (defaulting to D6's own) so the feasible-mix
- * range (#119) can reuse this same check against an arbitrary candidate quota,
- * not only the fixed 13/20/7 and 24/16.
+ * Takes the quotas as parameters so the feasible-mix range (#119) can reuse
+ * this same check against an arbitrary candidate quota, not only the fixed
+ * 13/20/7 and 24/16 `composeDeck` itself always passes.
  */
 function assertPoolCanSupply(
   pool: Pool,
-  tierQuota: Record<SquareTier, number> = TIER_QUOTA,
-  sourceQuota: Record<SquareSource, number> = SOURCE_QUOTA,
+  tierQuota: Record<SquareTier, number>,
+  sourceQuota: Record<SquareSource, number>,
 ): void {
   const reasons = poolShortfalls(pool, tierQuota, sourceQuota);
 
@@ -463,13 +463,24 @@ export interface QuotaRange {
 /**
  * The host slider tracks (#114): what `certain`/`medium`/`rare` and
  * `handcrafted`/`generated` can each range over, given the pool a room has
- * already filtered to its session. Every mix inside these ranges composes and
- * deals; every mix one step outside fails `assertPoolCanSupply` or
- * `cardBoundsShortfalls`, which is what keeps a human from ever dragging a
- * slider onto a position ADR-0002 would refuse. A pool too thin to supply
- * D6's own default (the same pool `assertPoolCanSupply` would already refuse)
- * reports a `min` above its `max` for the quotas it cannot reach — the host
- * screen has no sliders to bound in that case, since the room cannot start.
+ * already filtered to its session.
+ *
+ * Each range is **per-quota, not joint**: it is established by holding every
+ * other quota at a single witness value (D6's own ratio for the rest of that
+ * quota's group, the D6 default for the other group) and verifying that one
+ * mix composes and deals for real. A boundary is therefore seed-*verified* —
+ * proven to work under the seed it was searched with — not seed-*proof*, and
+ * the ranges are not a joint-feasibility guarantee: a mix that sits inside
+ * every reported range can still throw `DeckCompositionError` for some seeds,
+ * because nothing here proves *that particular combination* composes, only
+ * that each quota in isolation has a witness that does. Callers that draw a
+ * deck from an in-range mix (#120's confirm path) still have to handle
+ * `DeckCompositionError` rather than assume an in-range mix cannot fail.
+ *
+ * A pool too thin to supply D6's own default (the same pool
+ * `assertPoolCanSupply` would already refuse) reports a `min` above its `max`
+ * for the quotas it cannot reach — the host screen has no sliders to bound in
+ * that case, since the room cannot start.
  */
 export interface FeasibleMix {
   tier: Record<SquareTier, QuotaRange>;
@@ -564,7 +575,7 @@ function tierWitness(
   // are only unreachable through *that* particular split, not through every
   // split summing to `remaining`.
   const weight = TIER_QUOTA[first] + TIER_QUOTA[second];
-  let firstValue = weight === 0 ? Math.round(remaining / 2) : Math.round((remaining * TIER_QUOTA[first]) / weight);
+  let firstValue = Math.round((remaining * TIER_QUOTA[first]) / weight);
 
   firstValue = Math.max(tierFloor(first), Math.min(firstValue, Math.min(selectable[first], tierCeiling(first))));
   let secondValue = remaining - firstValue;
@@ -576,12 +587,10 @@ function tierWitness(
   if (secondValue < secondMin) firstValue -= secondMin - secondValue;
   secondValue = remaining - firstValue;
 
-  return {
-    ...({ [tier]: value, [first]: firstValue, [second]: secondValue } as Record<
-      SquareTier,
-      number
-    >),
-  };
+  return { [tier]: value, [first]: firstValue, [second]: secondValue } as Record<
+    SquareTier,
+    number
+  >;
 }
 
 /** The other source's value, once `source` is fixed at `value`. */
