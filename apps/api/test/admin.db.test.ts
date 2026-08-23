@@ -74,16 +74,22 @@ async function call(
   });
 }
 
+type GameRead = {
+  state: string;
+  marks: { squareId: string }[];
+  prizes: { prizeKind: string; playerId: string }[];
+};
+
 async function readGame(
   app: ReturnType<typeof createApp>,
   code: string,
   token: string,
-): Promise<{ state: string }> {
+): Promise<GameRead> {
   const res = await app.request(`/rooms/${code}/game`, {
     headers: { authorization: `Bearer ${token}` },
   });
 
-  return (await res.json()) as { state: string };
+  return (await res.json()) as GameRead;
 }
 
 describe.skipIf(noTestDatabase)('listing open rooms', () => {
@@ -306,6 +312,16 @@ describe.skipIf(noTestDatabase)('DELETE /admin/rooms/:code', () => {
     const game = (await started.json()) as { id: string; card: { id: string }[] };
     await call(app, game.id, game.card[0]!.id, host.token);
 
+    // The criterion names *finished* games, so actually finish this one before
+    // deleting it, and pin the precondition so the fixture cannot drift back to
+    // deleting a live game.
+    const ended = await app.request(`/admin/rooms/${host.code}/game/end`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${SECRET}` },
+    });
+    expect(ended.status).toBe(204);
+    expect((await readGame(app, host.code, host.token)).state).toBe('done');
+
     const res = await app.request(`/admin/rooms/${host.code}`, {
       method: 'DELETE',
       headers: { authorization: `Bearer ${SECRET}` },
@@ -362,9 +378,22 @@ describe.skipIf(noTestDatabase)('POST /admin/rooms/:code/players/:playerId/kick'
     const bea = (await (await readGameRes(app, host.code, guest.token)).json()) as {
       card: { id: string }[];
     };
-    const guestSquare = bea.card[0]!.id;
-    const guestCall = await call(app, game.id, guestSquare, guest.token);
-    expect(guestCall.status).toBe(201);
+    // Bea completes her top row (card indexes 0-4), which awards her the LINE
+    // prize — so the kick has a real prize and real marks to leave standing.
+    const beaSquares = bea.card.slice(0, 5).map((square) => square.id);
+    for (const squareId of beaSquares) {
+      expect((await call(app, game.id, squareId, guest.token)).status).toBe(201);
+    }
+    // The host marks a square of their own too — a surviving mark we can read
+    // back through the host's view after Bea is gone.
+    const hostSquare = game.card.find((square) => !beaSquares.includes(square.id))!.id;
+    expect((await call(app, game.id, hostSquare, host.token)).status).toBe(201);
+
+    const before = await readGame(app, host.code, host.token);
+    expect(before.marks.map((mark) => mark.squareId)).toContain(hostSquare);
+    expect(before.prizes).toContainEqual(
+      expect.objectContaining({ prizeKind: 'LINE', playerId: guest.player.id }),
+    );
 
     const res = await app.request(`/admin/rooms/${host.code}/players/${guest.player.id}/kick`, {
       method: 'POST',
@@ -373,25 +402,30 @@ describe.skipIf(noTestDatabase)('POST /admin/rooms/:code/players/:playerId/kick'
     expect(res.status).toBe(204);
 
     // The kicked player's token no longer identifies them.
-    const rejected = await call(app, game.id, guestSquare, guest.token);
+    const rejected = await call(app, game.id, beaSquares[0]!, guest.token);
     expect(rejected.status).toBe(401);
 
-    // Their existing call stands, credited to their player row, which stands too.
+    // Their existing calls stand, credited to their player row, which stands too.
     const rows = await db.execute<{ actor_player_id: string }>(
       sql`SELECT actor_player_id FROM bingo.room_events WHERE room_code = ${host.code} AND kind = 'CALL'`,
     );
-    expect([...rows][0]).toMatchObject({ actor_player_id: guest.player.id });
+    expect([...rows].map((row) => row.actor_player_id)).toContain(guest.player.id);
 
     const [player] = await db.execute(
       sql`SELECT id FROM bingo.players WHERE id = ${guest.player.id}::uuid`,
     );
     expect(player).toBeDefined();
 
-    // The host's own read of the game is unaffected — the mark is still there.
-    const hostView = (await readGame(app, host.code, host.token)) as {
-      state: string;
-    };
+    // The host's view after the kick: the host's mark is still there, Bea's LINE
+    // prize is still hers, and neither collection changed at all.
+    const hostView = await readGame(app, host.code, host.token);
     expect(hostView.state).toBe('live');
+    expect(hostView.marks.map((mark) => mark.squareId)).toContain(hostSquare);
+    expect(hostView.prizes).toContainEqual(
+      expect.objectContaining({ prizeKind: 'LINE', playerId: guest.player.id }),
+    );
+    expect(hostView.marks).toEqual(before.marks);
+    expect(hostView.prizes).toEqual(before.prizes);
   });
 
   it('404s a player that does not exist in the room', async () => {
