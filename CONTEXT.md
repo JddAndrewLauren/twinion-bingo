@@ -162,12 +162,12 @@ consequences.
 
 **Skin** — one of four purely-visual treatments (Pit Wall, Slipstream, Confetti, Scorecard), a
 CSS-variable layer keyed on `[data-skin]` with a `@theme inline` bridge into Tailwind utilities — not
-a component per look, so the same React tree renders under all four (ADR-0007). A skin changes
+a component per look, so the same React tree renders under all four (ADR-0009). A skin changes
 nothing about squares, calls, or which theme a room is playing: two players in one room on different
 skins see identical game state. `apps/web/app/skin.ts`.
 
 **"Theme" is content, not visual, and is now this project's word for exactly one thing** — a pool's
-own content pack (`themes/f1`, a `themeId` like `f1.v2`, `themeName()`). Before ADR-0007 "theme" was
+own content pack (`themes/f1`, a `themeId` like `f1.v2`, `themeName()`). Before ADR-0009 "theme" was
 also used loosely for the visual look; it no longer is anywhere in code, tests or docs. The
 user-facing control that cycles a skin is still labelled **Theme** — the handoff's own choice, and
 what a player already calls the F1/IndyCar content pack — but that is copy, not vocabulary: every

@@ -22,7 +22,7 @@ import {
  *
  * Everything else — tabs opening the right panel, a call landing, a dialog's
  * focus trap, the stream surviving a rotation — is skin-independent (an
- * identical React tree across skins is `docs/adr/0007-skin-css-variable-layer.md`'s
+ * identical React tree across skins is `docs/adr/0009-skin-css-variable-layer.md`'s
  * whole argument) and stays gated once, at the default skin, in
  * `room.gate.ts`/`lobby.gate.ts`/`legibility.gate.ts`/`share.gate.ts`.
  *

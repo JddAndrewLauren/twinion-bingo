@@ -42,7 +42,7 @@ all four skins (`apps/web/gate/room-fixture.ts`'s `forEachSkin`, which seeds the
 than pressing the Theme button, so it exercises the server-rendered `data-skin` path) and all four
 viewports above. Running the *whole* suite at four skins was estimated at ~576 WebKit tests; the
 matrix is 16 tests instead — see #109's own gate run, below, for the full account of what that
-excludes and why. `docs/adr/0007-skin-css-variable-layer.md` records the decision this gate's shape
+excludes and why. `docs/adr/0009-skin-css-variable-layer.md` records the decision this gate's shape
 follows from: one React tree across skins is what makes a shared test body reusable at all four in
 the first place.
 
@@ -1681,7 +1681,7 @@ server-rendered `data-skin` path, per this issue's own brief, rather than the bu
   **What was deliberately left out, so a silent cap does not read as "covered everything":** colour
   (`paintedFill`/`deltaE`/`ringColour`) stays gated per-skin in each skin's own file, not swept here —
   this issue's brief does not ask for a fifth colour instrument, and consolidating the four existing
-  ones is an open FINAL-GATE item (`docs/adr/0007-skin-css-variable-layer.md`). `expectDieMatchesTheme`
+  ones is an open FINAL-GATE item (`docs/adr/0009-skin-css-variable-layer.md`). `expectDieMatchesTheme`
   is not re-swept by cookie: `room.gate.ts`'s own `holds the die and the Theme button beside the room
   code and Share` already cycles all four skins by *pressing* the button, at all four viewports — the
   same four-skins-by-four-viewports shape, and adding a cookie-seeded copy of the identical assertion

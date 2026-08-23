@@ -1,4 +1,4 @@
-# ADR-0007: Skins are a CSS-variable layer, not a component per look
+# ADR-0009: Skins are a CSS-variable layer, not a component per look
 
 - **Status:** accepted
 - **Date:** 2026-08-22
