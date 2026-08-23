@@ -114,12 +114,28 @@ export function deckSquares(pool: Pool, deck: readonly string[]): Deck {
  * quotas, which would not fix it.
  */
 export function composeDeck(pool: Pool, seed: string): Deck {
-  assertPoolCanSupply(pool);
+  return composeToQuotas(pool, TIER_QUOTA, SOURCE_QUOTA, seed);
+}
+
+/**
+ * `composeDeck`, generalised to an arbitrary tier/source quota pair rather
+ * than D6's fixed 13/20/7 and 24/16 (#119) — the same draw-and-verify loop,
+ * parameterised so the feasible-mix range below can prove a candidate quota
+ * for real instead of only by arithmetic, and so a future slider-confirm
+ * action has a real composer to call once the host has settled on a mix.
+ */
+export function composeToQuotas(
+  pool: Pool,
+  tierQuota: Record<SquareTier, number>,
+  sourceQuota: Record<SquareSource, number>,
+  seed: string,
+): Deck {
+  assertPoolCanSupply(pool, tierQuota, sourceQuota);
 
   const random = createRandom(seed);
 
   for (let attempt = 0; attempt < DRAW_ATTEMPTS; attempt += 1) {
-    const deck = attemptDraw(pool.squares, random);
+    const deck = attemptDraw(pool.squares, random, tierQuota, sourceQuota);
 
     // A deck no card can be dealt from is not a deck, so the composer is where
     // that is caught — not the deal, mid-game, for one unlucky player. The
@@ -266,7 +282,7 @@ function attemptDeal(deck: Deck, seed: string): string[] | undefined {
  * their face, with `dealCard`'s reshuffle-and-retry (#122) covering the gap
  * a single flat pass can no longer close by itself.
  */
-function cardBoundsShortfalls(deck: Deck): string[] {
+export function cardBoundsShortfalls(deck: Deck): string[] {
   const groupsHolding = (accepts: (square: PoolSquare) => boolean): number =>
     new Set(deck.filter(accepts).flatMap((square) => square.exclusivityGroups)).size;
 
@@ -311,9 +327,11 @@ function cardBoundsShortfalls(deck: Deck): string[] {
 function attemptDraw(
   squares: readonly PoolSquare[],
   random: () => number,
+  tierQuota: Record<SquareTier, number> = TIER_QUOTA,
+  sourceQuota: Record<SquareSource, number> = SOURCE_QUOTA,
 ): Deck | undefined {
-  const tierLeft = { ...TIER_QUOTA };
-  const sourceLeft = { ...SOURCE_QUOTA };
+  const tierLeft = { ...tierQuota };
+  const sourceLeft = { ...sourceQuota };
   const perTemplate = new Map<string, number>();
   const taken = new Set<string>();
   const deck: Deck = [];
@@ -355,37 +373,56 @@ function attemptDraw(
  * A template contributes at most MAX_PER_TEMPLATE squares however many it holds,
  * so availability is counted under that cap and not as a raw total — that is the
  * constraint that binds first and the one a raw square count hides.
+ *
+ * Takes the quotas as parameters (defaulting to D6's own) so the feasible-mix
+ * range (#119) can reuse this same check against an arbitrary candidate quota,
+ * not only the fixed 13/20/7 and 24/16.
  */
-function assertPoolCanSupply(pool: Pool): void {
+function assertPoolCanSupply(
+  pool: Pool,
+  tierQuota: Record<SquareTier, number> = TIER_QUOTA,
+  sourceQuota: Record<SquareSource, number> = SOURCE_QUOTA,
+): void {
+  const reasons = poolShortfalls(pool, tierQuota, sourceQuota);
+
+  if (reasons.length > 0) throw new DeckCompositionError(pool.themeId, reasons);
+}
+
+/** `assertPoolCanSupply`'s check, as a non-throwing list of reasons rather than an assertion. */
+function poolShortfalls(
+  pool: Pool,
+  tierQuota: Record<SquareTier, number>,
+  sourceQuota: Record<SquareSource, number>,
+): string[] {
   const reasons: string[] = [];
 
-  for (const tier of Object.keys(TIER_QUOTA) as SquareTier[]) {
+  for (const tier of Object.keys(tierQuota) as SquareTier[]) {
     const available = selectableCount(
       pool.squares.filter((square) => square.tier === tier),
     );
 
-    if (available < TIER_QUOTA[tier]) {
+    if (available < tierQuota[tier]) {
       reasons.push(
-        `needs ${TIER_QUOTA[tier]} ${tier} squares, and only ${available} are ` +
+        `needs ${tierQuota[tier]} ${tier} squares, and only ${available} are ` +
           `selectable (of ${pool.squares.filter((s) => s.tier === tier).length} in the pool, ` +
           `under the cap of ${MAX_PER_TEMPLATE} per template)`,
       );
     }
   }
 
-  for (const source of Object.keys(SOURCE_QUOTA) as SquareSource[]) {
+  for (const source of Object.keys(sourceQuota) as SquareSource[]) {
     const available = selectableCount(
       pool.squares.filter((square) => square.source === source),
     );
 
-    if (available < SOURCE_QUOTA[source]) {
+    if (available < sourceQuota[source]) {
       reasons.push(
-        `needs ${SOURCE_QUOTA[source]} ${source} squares, and only ${available} are selectable`,
+        `needs ${sourceQuota[source]} ${source} squares, and only ${available} are selectable`,
       );
     }
   }
 
-  if (reasons.length > 0) throw new DeckCompositionError(pool.themeId, reasons);
+  return reasons;
 }
 
 /** How many of these squares a single deck could hold, template cap included. */
@@ -412,4 +449,246 @@ function selectableCount(squares: readonly PoolSquare[]): number {
 
 function distinctGroups(deck: Deck): number {
   return new Set(deck.flatMap((square) => square.exclusivityGroups)).size;
+}
+
+const TIERS = ['certain', 'medium', 'rare'] as const satisfies SquareTier[];
+const SOURCES = ['handcrafted', 'generated'] as const satisfies SquareSource[];
+
+/** The smallest and largest a single quota can be while the deck still composes and deals. */
+export interface QuotaRange {
+  min: number;
+  max: number;
+}
+
+/**
+ * The host slider tracks (#114): what `certain`/`medium`/`rare` and
+ * `handcrafted`/`generated` can each range over, given the pool a room has
+ * already filtered to its session. Every mix inside these ranges composes and
+ * deals; every mix one step outside fails `assertPoolCanSupply` or
+ * `cardBoundsShortfalls`, which is what keeps a human from ever dragging a
+ * slider onto a position ADR-0002 would refuse. A pool too thin to supply
+ * D6's own default (the same pool `assertPoolCanSupply` would already refuse)
+ * reports a `min` above its `max` for the quotas it cannot reach — the host
+ * screen has no sliders to bound in that case, since the room cannot start.
+ */
+export interface FeasibleMix {
+  tier: Record<SquareTier, QuotaRange>;
+  source: Record<SquareSource, QuotaRange>;
+}
+
+/**
+ * The card floor's constants, read as bounds on a whole DECK rather than on
+ * one card (#119). At least `MIN_CERTAIN_PER_CARD` distinct groups on a card
+ * must hold a certain square, so the deck cannot hold fewer certain squares
+ * than that either — a necessary floor, not a sufficient one, since squares
+ * can still share groups; the empirical search below closes that gap. At most
+ * `MAX_RARE_PER_CARD` rare squares reach a card, so the deck's non-rare count
+ * cannot drop below `CARD_SQUARES - MAX_RARE_PER_CARD`, which is the same
+ * thing as a ceiling on rare.
+ */
+const NONRARE_DECK_FLOOR = CARD_SQUARES - MAX_RARE_PER_CARD;
+const RARE_DECK_CEILING = DECK_SIZE - NONRARE_DECK_FLOOR;
+
+function tierFloor(tier: SquareTier): number {
+  return tier === 'certain' ? MIN_CERTAIN_PER_CARD : 0;
+}
+
+function tierCeiling(tier: SquareTier): number {
+  return tier === 'rare' ? RARE_DECK_CEILING : DECK_SIZE;
+}
+
+/**
+ * The arithmetic half of a range: how far one quota can move while the other
+ * members of its group (which must sum to `DECK_SIZE` alongside it) stay
+ * within what the pool can select and what the card floor allows. Necessary,
+ * not sufficient — two quotas can each look fine on their own and still not be
+ * jointly dealable, which is why every candidate this produces is verified for
+ * real below before it is reported.
+ */
+function arithmeticRange(
+  selectable: number,
+  floor: number,
+  ceiling: number,
+  othersMinSum: number,
+  othersMaxSum: number,
+): QuotaRange {
+  return {
+    min: Math.max(floor, DECK_SIZE - othersMaxSum),
+    max: Math.min(selectable, ceiling, DECK_SIZE - othersMinSum),
+  };
+}
+
+/**
+ * Whether some deck drawn to exactly these quotas both composes and deals —
+ * `composeToQuotas`'s own success condition, reused rather than re-run: a
+ * cheap arithmetic pre-check (`poolShortfalls`) skips the draw loop entirely
+ * for a candidate that fails `assertPoolCanSupply`, and the draw loop itself
+ * is `composeToQuotas`'s, caught rather than duplicated.
+ */
+function canComposeAndDeal(
+  pool: Pool,
+  tierQuota: Record<SquareTier, number>,
+  sourceQuota: Record<SquareSource, number>,
+  seed: string,
+): boolean {
+  if (poolShortfalls(pool, tierQuota, sourceQuota).length > 0) return false;
+
+  try {
+    composeToQuotas(pool, tierQuota, sourceQuota, seed);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A concrete witness for testing `tier` at `value`: the other two tiers split
+ * the remainder in D6's own ratio, clipped to what each can actually supply.
+ * Only used to build a candidate to probe with `canComposeAndDeal` — the probe
+ * is what proves feasibility, this only proposes where to look.
+ */
+function tierWitness(
+  tier: SquareTier,
+  value: number,
+  selectable: Record<SquareTier, number>,
+): Record<SquareTier, number> {
+  const [first, second] = TIERS.filter((candidate) => candidate !== tier) as [
+    SquareTier,
+    SquareTier,
+  ];
+  const remaining = DECK_SIZE - value;
+
+  // Split the remainder in D6's own ratio between the two other tiers, rather
+  // than dumping it all on one — a witness that starves `second` to 0 whenever
+  // `first` has room for the whole remainder would spuriously fail decks that
+  // are only unreachable through *that* particular split, not through every
+  // split summing to `remaining`.
+  const weight = TIER_QUOTA[first] + TIER_QUOTA[second];
+  let firstValue = weight === 0 ? Math.round(remaining / 2) : Math.round((remaining * TIER_QUOTA[first]) / weight);
+
+  firstValue = Math.max(tierFloor(first), Math.min(firstValue, Math.min(selectable[first], tierCeiling(first))));
+  let secondValue = remaining - firstValue;
+
+  const secondMax = Math.min(selectable[second], tierCeiling(second));
+  const secondMin = tierFloor(second);
+
+  if (secondValue > secondMax) firstValue += secondValue - secondMax;
+  if (secondValue < secondMin) firstValue -= secondMin - secondValue;
+  secondValue = remaining - firstValue;
+
+  return {
+    ...({ [tier]: value, [first]: firstValue, [second]: secondValue } as Record<
+      SquareTier,
+      number
+    >),
+  };
+}
+
+/** The other source's value, once `source` is fixed at `value`. */
+function sourceWitness(source: SquareSource, value: number): Record<SquareSource, number> {
+  const [other] = SOURCES.filter((candidate) => candidate !== source) as [SquareSource];
+
+  return { [source]: value, [other]: DECK_SIZE - value } as Record<SquareSource, number>;
+}
+
+/** Walks `candidate` down toward `floor` until a witness at that value proves out. */
+function tightenMax(candidate: number, floor: number, test: (value: number) => boolean): number {
+  let value = candidate;
+
+  while (value > floor && !test(value)) value -= 1;
+
+  return value;
+}
+
+/** Walks `candidate` up toward `ceiling` until a witness at that value proves out. */
+function tightenMin(candidate: number, ceiling: number, test: (value: number) => boolean): number {
+  let value = candidate;
+
+  while (value < ceiling && !test(value)) value += 1;
+
+  return value;
+}
+
+/**
+ * The composer, turned into a range query (#119): given a pool already
+ * filtered to a session, what can each of D6's five quotas be while a deck
+ * still composes and still deals a full card? Tier and source are computed
+ * independently, each holding the other group at its own D6 default — the
+ * same simplification `assertPoolCanSupply` already makes by checking tier
+ * and source availability separately, and the host screen only ever moves one
+ * slider group's worth of sliders against the other's fixed default at a time.
+ */
+export function feasibleMix(pool: Pool, seed = 'feasible-mix'): FeasibleMix {
+  const selectableTiers = Object.fromEntries(
+    TIERS.map((tier) => [tier, selectableCount(pool.squares.filter((square) => square.tier === tier))]),
+  ) as Record<SquareTier, number>;
+  const selectableSources = Object.fromEntries(
+    SOURCES.map((source) => [
+      source,
+      selectableCount(pool.squares.filter((square) => square.source === source)),
+    ]),
+  ) as Record<SquareSource, number>;
+
+  const tier = Object.fromEntries(
+    TIERS.map((target) => {
+      const others = TIERS.filter((candidate) => candidate !== target);
+      const othersMinSum = others.reduce((sum, other) => sum + tierFloor(other), 0);
+      const othersMaxSum = others.reduce(
+        (sum, other) => sum + Math.min(selectableTiers[other], tierCeiling(other)),
+        0,
+      );
+      const arithmetic = arithmeticRange(
+        selectableTiers[target],
+        tierFloor(target),
+        tierCeiling(target),
+        othersMinSum,
+        othersMaxSum,
+      );
+      const test = (value: number) =>
+        canComposeAndDeal(
+          pool,
+          tierWitness(target, value, selectableTiers),
+          SOURCE_QUOTA,
+          `${seed}:tier:${target}:${value}`,
+        );
+
+      return [
+        target,
+        {
+          max: tightenMax(arithmetic.max, arithmetic.min, test),
+          min: tightenMin(arithmetic.min, arithmetic.max, test),
+        },
+      ];
+    }),
+  ) as Record<SquareTier, QuotaRange>;
+
+  const source = Object.fromEntries(
+    SOURCES.map((target) => {
+      const [other] = SOURCES.filter((candidate) => candidate !== target) as [SquareSource];
+      const arithmetic = arithmeticRange(
+        selectableSources[target],
+        0,
+        DECK_SIZE,
+        0,
+        Math.min(selectableSources[other], DECK_SIZE),
+      );
+      const test = (value: number) =>
+        canComposeAndDeal(
+          pool,
+          TIER_QUOTA,
+          sourceWitness(target, value),
+          `${seed}:source:${target}:${value}`,
+        );
+
+      return [
+        target,
+        {
+          max: tightenMax(arithmetic.max, arithmetic.min, test),
+          min: tightenMin(arithmetic.min, arithmetic.max, test),
+        },
+      ];
+    }),
+  ) as Record<SquareSource, QuotaRange>;
+
+  return { tier, source };
 }
