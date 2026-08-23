@@ -1,4 +1,5 @@
-import type { Page, Route } from '@playwright/test';
+import { test, type Page, type Route } from '@playwright/test';
+import { SKIN_COOKIE, SKINS, type Skin } from '../app/skin';
 
 /**
  * The room the gate looks at, served by intercepting the API rather than running
@@ -497,6 +498,41 @@ export async function openLobby(page: Page, state: Lobby): Promise<void> {
 
   await page.goto('/r/ABCD');
   await page.evaluate(() => document.fonts.ready);
+}
+
+/**
+ * Run `run` once per skin, seeding the cookie `skin-button.tsx` itself writes
+ * before the caller's own `page.goto` (`openRoom`/`openLobby`, or a bare
+ * `page.goto('/legibility')`) so `layout.tsx`/`current-skin.ts` render
+ * `<html data-skin>` in that skin from the very first response.
+ *
+ * The cookie, not a button press, and deliberately: it is the server-rendered
+ * path that has to be right on first paint (a light skin flashing black before
+ * a click would land is exactly what #103's own README rejects `localStorage`
+ * for), and it is what every existing `skin-*.gate.ts` file already does by
+ * hand (`setSlipstream`/`useConfettiCookie`/`skin-scorecard.gate.ts`'s own
+ * copy) — lifted here rather than left as four near-identical copies. The one
+ * test that has to reach a skin by *pressing* the button instead — proving the
+ * client path too, and that the surface does not remount when it does — is
+ * `room.gate.ts`'s own `re-skins across four presses without dropping the
+ * stream`, already in the suite (#103); this helper is not that path.
+ *
+ * Each skin's run is wrapped in `test.step` so a matrix assertion that only
+ * one skin breaks names that skin in the failure, rather than only which
+ * assertion.
+ */
+export async function forEachSkin(
+  page: Page,
+  run: (skin: Skin) => Promise<void>,
+): Promise<void> {
+  for (const skin of SKINS) {
+    await test.step(skin, async () => {
+      await page.context().addCookies([
+        { name: SKIN_COOKIE, value: skin, url: 'http://127.0.0.1:3210' },
+      ]);
+      await run(skin);
+    });
+  }
 }
 
 export { CARD, GUEST, HOST, LONG_NAME, REROLLED };
