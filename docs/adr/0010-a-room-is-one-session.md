@@ -64,7 +64,9 @@ the deck that seeds those cards is stored, and what a room is *for*.
   `apps/api/src/games/store.ts`, and `dealLateJoinCard` in `apps/api/src/games/late-join.ts`, all
   read the deck off `rooms` now. None of them change *what* deck they read: a live game's deck is
   still exactly the one deck the room currently holds, because starting a second game while one is
-  live was already refused (`GameAlreadyLive`) before this ADR and remains so.
+  live was already refused before this ADR and remains so — and, since a room is one session,
+  a *finished* game now refuses a second start too (`GameAlreadyStarted`, `startGame`), so the
+  room's deck is written exactly once and the cards dealt from it always describe it.
 - `apps/api/test/migration-safety.test.ts`'s drop allowlist is widened, narrowly, to admit a named
   column drop on a schema-qualified `bingo` table — the same precedent ADR-0004 set for a named
   index drop. Still refused: an unqualified name, a non-`bingo` schema, a whole table, a whole

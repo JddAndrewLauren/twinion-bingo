@@ -272,9 +272,9 @@ the 68pt-cell legibility question cannot be settled in a resized desktop browser
 ## Data model (`bingo` schema)
 
 ```
-rooms        code(4) PK, theme_id, host_player_id, created_at
+rooms        code(4) PK, theme_id, host_player_id, deck(square_id[]) NULL, created_at
 players      id PK, room_code, name, token(opaque), join_seq, last_seen_at
-games        id PK, room_code, theme_id, deck(square_id[]), seed,
+games        id PK, room_code, theme_id, seed,
              state(lobby|live|done), started_at, ended_at
 cards        game_id, player_id, square_ids[24], latest_reroll_seq BIGINT NULL, PK(game_id, player_id)
 room_events  seq BIGSERIAL PK, room_code, game_id NULL, actor_player_id, at,

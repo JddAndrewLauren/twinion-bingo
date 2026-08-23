@@ -130,6 +130,8 @@ export function composeToQuotas(
   sourceQuota: Record<SquareSource, number>,
   seed: string,
 ): Deck {
+  assertQuotasDescribeADeck(tierQuota, 'tier');
+  assertQuotasDescribeADeck(sourceQuota, 'source');
   assertPoolCanSupply(pool, tierQuota, sourceQuota);
 
   const random = createRandom(seed);
@@ -362,6 +364,43 @@ function attemptDraw(
   }
 
   return deck;
+}
+
+/**
+ * A quota set that does not sum to `DECK_SIZE` is not a deck description, and
+ * the draw loop cannot say so for itself: it fills 40 slots and stops, so
+ * quotas summing to 41 come back as a 40-square deck with one quota quietly
+ * unmet — the exact "approximate rather than refuse" ADR-0002 rules out. The
+ * draw's own eligibility filter is what handles a sum below 40 (it runs out of
+ * eligible squares and restarts), but that reads as "this pool is too thin"
+ * rather than as the caller error it is, so both directions are named here.
+ *
+ * `composeDeck`'s own quotas are constants that pass this; it is the arbitrary
+ * quotas of the feasible-mix range and #120's slider-confirm path that make it
+ * a real check rather than an assertion about constants.
+ */
+function assertQuotasDescribeADeck(
+  quota: Record<string, number>,
+  kind: string,
+): void {
+  const entries = Object.entries(quota);
+
+  for (const [key, value] of entries) {
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(
+        `the ${kind} quota for ${key} is ${value}, and a quota is a non-negative whole number of squares`,
+      );
+    }
+  }
+
+  const total = entries.reduce((sum, [, value]) => sum + value, 0);
+
+  if (total !== DECK_SIZE) {
+    throw new Error(
+      `the ${kind} quotas sum to ${total}, and a deck is ${DECK_SIZE} squares: ` +
+        entries.map(([key, value]) => `${key} ${value}`).join(', '),
+    );
+  }
 }
 
 /**

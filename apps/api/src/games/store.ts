@@ -36,10 +36,16 @@ export class NotHost extends Error {
   }
 }
 
-export class GameAlreadyLive extends Error {
+/**
+ * A room hosts one game, ever (ADR-0010). Named for the start that was refused
+ * rather than for the state of the game already there: a `done` game refuses a
+ * second start exactly as a `live` one does, so "already live" would be a lie
+ * half the time it is thrown.
+ */
+export class GameAlreadyStarted extends Error {
   constructor(code: string) {
-    super(`room ${code} already has a live game`);
-    this.name = 'GameAlreadyLive';
+    super(`room ${code} has already started its game`);
+    this.name = 'GameAlreadyStarted';
   }
 }
 
@@ -234,12 +240,18 @@ export async function startGame(
   if (room === undefined) throw new RoomNotFound(code);
   if (room.hostPlayerId !== playerId) throw new NotHost();
 
-  const [live] = await db
+  // Any game, not only a live one: a room is one session (ADR-0010), so a
+  // finished game closes the room rather than freeing it for another. Starting
+  // a second one would overwrite `rooms.deck` — the deck the first game's cards
+  // were dealt from — leaving those cards describing squares the room no longer
+  // holds. A new session gets a new code and a fresh join, which is what
+  // ADR-0010 declined "clone this room" in favour of.
+  const [existing] = await db
     .select({ id: games.id })
     .from(games)
-    .where(and(eq(games.roomCode, code), eq(games.state, 'live')));
+    .where(eq(games.roomCode, code));
 
-  if (live !== undefined) throw new GameAlreadyLive(code);
+  if (existing !== undefined) throw new GameAlreadyStarted(code);
 
   const pool = poolFor(pools, room.themeId);
 

@@ -316,6 +316,29 @@ describe.skipIf(noTestDatabase)('starting a game', () => {
     expect([...rows][0]!.count).toBe('1');
   });
 
+  /**
+   * A room is one session (ADR-0010): the finished game does not free the room
+   * for another. The deck is the check that matters — a second start would
+   * overwrite `rooms.deck`, and the first game's cards were dealt from it.
+   */
+  it('refuses to start a second game once the first is done', async () => {
+    const host = await createRoom('Host');
+    const started = (await (await start(host.code, host.token)).json()) as GameView;
+    const before = (await gameRow(host.code)).deck;
+
+    await db.execute(sql`UPDATE bingo.games SET state = 'done' WHERE id = ${started.id}`);
+
+    const again = await start(host.code, host.token);
+    expect(again.status).toBe(409);
+    expect(await again.json()).toEqual({ error: 'this room has already started its game' });
+
+    const rows = await db.execute<{ count: string }>(
+      sql`SELECT count(*) AS count FROM bingo.games WHERE room_code = ${host.code}`,
+    );
+    expect([...rows][0]!.count).toBe('1');
+    expect((await gameRow(host.code)).deck).toEqual(before);
+  });
+
   it('has no game to read before the host starts one', async () => {
     const host = await createRoom('Host');
 

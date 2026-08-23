@@ -378,8 +378,10 @@ describe('starting a game', () => {
   });
 
   /**
-   * #76: a 409 on `/games` means the room already has a live game — a distinct
-   * fact from the deck-composition 503 above, and the sentence says so.
+   * #76: a 409 on `/games` means the room has already started its game — a
+   * distinct fact from the deck-composition 503 above, and the sentence says
+   * so. A room is one session (ADR-0010), so the 409 covers a finished game
+   * as well as a live one; the screen's sentence never named which.
    */
   it('reads a 409 on start as the room already having a game', async () => {
     stubRoom({ you: host });
@@ -388,7 +390,7 @@ describe('starting a game', () => {
       vi.fn(async (url: string) =>
         url.endsWith('/games')
           ? Response.json(
-              { error: 'this room already has a live game' },
+              { error: 'this room has already started its game' },
               { status: 409 },
             )
           : Response.json({

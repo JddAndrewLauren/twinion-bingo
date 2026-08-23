@@ -82,8 +82,10 @@ export const players = bingo.table('players', {
 });
 
 /**
- * A game is one session within a room: its cards, log and winners (ADR-0010;
- * supersedes D13). The deck lives on `rooms` now, not here.
+ * A game is the play a room hosts: its cards, log and winners (ADR-0010;
+ * supersedes D13). Not "one session within a room" — `CONTEXT.md` reserves
+ * *Session* for the broadcast window outside the app (quali, sprint, race),
+ * and a room is one of those. The deck lives on `rooms` now, not here.
  */
 export const games = bingo.table('games', {
   id: uuid('id').primaryKey().defaultRandom(),

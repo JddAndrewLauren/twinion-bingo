@@ -280,6 +280,44 @@ function syntheticPool(seed: string, size = 260): Pool {
   return { themeId: `synthetic-${seed}`, poolVersion: 'v1', freeCentre: 'FREE', squares };
 }
 
+/**
+ * The other half of the sentence `FeasibleMix` documents: a pool too thin to
+ * supply D6's own default reports a `min` above its `max`, which is how "there
+ * are no sliders to bound here, the room cannot start" is said. The exactness
+ * properties below skip such pools deliberately, so without this the empty
+ * result was the one shape nothing asserted.
+ *
+ * Proved against a synthetic all-generated pool rather than against IndyCar,
+ * which is the real instance today (`themes/indycar/pool.generated.json` is 345
+ * squares and none of them hand-crafted, so `SOURCE_QUOTA`'s 24 handcrafted can
+ * never be met). Asserting it there would pin a content gap as expected
+ * behaviour and break the day that pool gains its hand-written squares.
+ */
+describe('the feasible mix of a pool too thin to compose at all', () => {
+  const pool: Pool = (() => {
+    const base = syntheticPool('synth-thin');
+
+    return {
+      ...base,
+      squares: base.squares.map((square) => ({ ...square, source: 'generated' as SquareSource })),
+    };
+  })();
+
+  it("cannot supply D6's default, so there is no mix to report", () => {
+    expect(() => composeToQuotas(pool, TIER_QUOTA, SOURCE_QUOTA, 'synth-thin')).toThrow();
+  });
+
+  it('reports an inverted range for every tier, rather than a range that composes nothing', () => {
+    const mix = feasibleMix(pool, 'synth-thin');
+
+    for (const tier of TIERS) {
+      expect(mix.tier[tier].min, `${tier}: ${JSON.stringify(mix.tier[tier])}`).toBeGreaterThan(
+        mix.tier[tier].max,
+      );
+    }
+  });
+});
+
 describe('the feasible mix of seeded synthetic pools, not just the committed themes', () => {
   const SEEDS = ['synth-a', 'synth-b', 'synth-c', 'synth-d', 'synth-e'];
 
