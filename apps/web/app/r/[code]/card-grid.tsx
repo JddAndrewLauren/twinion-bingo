@@ -201,7 +201,9 @@ function useShrinkToFit(
 /**
  * One player's card. The centre is free and theme-flavoured ("LIGHTS OUT"), and
  * carries no square id because it is not a pool square: nothing has to happen for
- * it to count.
+ * it to count. Anyone in the room may tap it (#124), which appends a room-wide
+ * `LIGHTS_OUT` event rather than a `CALL` — it earns no mark and does not count
+ * towards any line, only re-bases the timeline's elapsed stamps once it lands.
  *
  * `marks` is not this component's state and never becomes it. Marks are derived
  * server-side from the call log and arrive with every read of the game, so the
@@ -249,6 +251,8 @@ export function CardGrid({
   onRetract,
   onPeek,
   finished,
+  lightsOutSeq,
+  onLightsOut,
 }: {
   card: CardSquare[];
   freeCentre: string;
@@ -263,6 +267,15 @@ export function CardGrid({
   onPeek: (square: CardSquare | null) => void;
   /** Whether the game has reached `done`, after which nothing may be called. */
   finished: boolean;
+  /**
+   * The room's `LIGHTS_OUT` `seq`, or null before anyone has tapped it (#124).
+   * First tap wins, so this is what turns the free centre inert once it has
+   * landed — not a local flag, the same derived-state pattern every other cell
+   * on this card already follows.
+   */
+  lightsOutSeq: number | null;
+  /** Taps the free centre. A no-op server-side once `lightsOutSeq` is set. */
+  onLightsOut: () => void;
 }) {
   const marked = new Map(marks.map((mark) => [mark.squareId, mark]));
   const inherited = new Set(inheritedMarks);
@@ -395,12 +408,25 @@ export function CardGrid({
                 // borrowing `raised`/`rule` — in Slipstream and Confetti that
                 // fill is a solid accent, which no surface tier could carry.
                 // Pit Wall's pair is today's exact neutrals, so this is inert.
-                <span
+                //
+                // #124: a button rather than a plain surface, because tapping it
+                // now appends `LIGHTS_OUT` for the whole room — the same gesture
+                // a square's cell offers, minus the hold-for-prose half, since
+                // there is no description to peek at. Once it has landed
+                // (`lightsOutSeq` non-null) or the game is `done`, it goes inert:
+                // first tap wins, so a second tap has nothing to add.
+                <button
+                  type="button"
                   title={freeCentre}
-                  className={`${CELL} skin-cell border-free-rule bg-free-surface font-semibold uppercase`}
+                  data-lit={lightsOutSeq !== null ? 'true' : undefined}
+                  disabled={finished || lightsOutSeq !== null}
+                  onClick={onLightsOut}
+                  className={`${CELL} skin-cell border-free-rule bg-free-surface font-semibold uppercase ${
+                    lightsOutSeq !== null ? 'ring-2 ring-free-rule' : ''
+                  }`}
                 >
                   {index === CENTRE ? freeCentre : null}
-                </span>
+                </button>
               ) : (
                 <button
                   type="button"

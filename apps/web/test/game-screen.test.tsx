@@ -62,6 +62,7 @@ function stubRoom({
   liveFromTheStart = false,
   marks = [],
   inheritedMarks = [],
+  lightsOutSeq = null,
   prizes = [],
   timeline = [],
   gameState = 'live',
@@ -75,6 +76,8 @@ function stubRoom({
   marks?: Mark[];
   /** The square ids among those called before this player joined — greyed. */
   inheritedMarks?: string[];
+  /** The seq of the room's LIGHTS_OUT row, or null before anyone has tapped it (#124). */
+  lightsOutSeq?: number | null;
   prizes?: PrizeAward[];
   timeline?: TimelineEntry[];
   gameState?: string;
@@ -94,7 +97,13 @@ function stubRoom({
 }) {
   // The card is state rather than a constant since #87: a re-roll replaces it, and
   // a `view()` reading the module constant would go on describing the old one.
-  const state = { live: liveFromTheStart, marks: [...marks], done: false, card };
+  const state = {
+    live: liveFromTheStart,
+    marks: [...marks],
+    done: false,
+    card,
+    lightsOutSeq,
+  };
 
   const view = () => ({
     id: 'game-id',
@@ -122,6 +131,7 @@ function stubRoom({
       state.card.some((square) => square.id === mark.squareId),
     ),
     inheritedMarks,
+    lightsOutSeq: state.lightsOutSeq,
     prizes,
     // Raw mark count, which is what the API derives; the stub keeps it in step.
     standings: [
@@ -149,6 +159,25 @@ function stubRoom({
       if (closesOnCall) state.done = true;
 
       return Response.json({ ...called, appended: true }, { status: 201 });
+    }
+
+    // First tap wins (#124): a losing tap is handed the row that already
+    // landed rather than an error, so the stub answers every tap 200/201
+    // off the same `state.lightsOutSeq`.
+    if (url.endsWith('/lights-out')) {
+      if (state.lightsOutSeq === null) {
+        state.lightsOutSeq = (nextSeq += 1);
+
+        return Response.json(
+          { seq: state.lightsOutSeq, actorPlayerId: you!.id, appended: true },
+          { status: 201 },
+        );
+      }
+
+      return Response.json(
+        { seq: state.lightsOutSeq, actorPlayerId: you!.id, appended: false },
+        { status: 200 },
+      );
     }
 
     // A RETRACT supersedes the CALL it names and the derivation stops returning
@@ -207,6 +236,10 @@ function stubRoom({
     /** Somebody else taking a call back, which the stream then announces. */
     retractedElsewhere: (seq: number) => {
       state.marks = state.marks.filter((mark) => mark.seq !== seq);
+    },
+    /** Somebody else tapping the free centre first, which the stream then announces. */
+    lightsOutElsewhere: () => {
+      if (state.lightsOutSeq === null) state.lightsOutSeq = (nextSeq += 1);
     },
     /**
      * The row the log holds for a square — the seq a test needs when it wants to
@@ -508,9 +541,10 @@ describe('the card itself', () => {
       expect(within(grid).getByText(square.label)).toBeDefined();
     }
 
-    // 24 earnable squares are tappable; the free centre is not one of them.
+    // 24 earnable squares are tappable, plus the free centre itself (#124) —
+    // untapped here, so it is still offering its own LIGHTS_OUT tap.
     const buttons = grid.querySelectorAll('button');
-    expect(buttons).toHaveLength(24);
+    expect(buttons).toHaveLength(25);
     // Nothing is checkable state: a mark is what the server derived, and with an
     // empty call log nothing is pressed.
     expect(grid.querySelectorAll('[aria-pressed="true"]')).toHaveLength(0);
@@ -1096,6 +1130,113 @@ describe('calling a square', () => {
     );
 
     expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
+/**
+ * #124: the free centre becomes a room-wide `LIGHTS_OUT` event rather than a
+ * call. Anyone may tap it, first tap wins, and it earns no mark — so these are
+ * about the tap itself and about it landing for a phone that never tapped it.
+ */
+describe('tapping the free centre', () => {
+  it('posts to /lights-out, and goes inert once the server says so', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const centre = await screen.findByRole('button', { name: 'LIGHTS OUT' });
+    expect(centre.hasAttribute('disabled')).toBe(false);
+
+    fireEvent.click(centre);
+
+    const posted = await waitFor(() => {
+      const call = room.fetchMock.mock.calls.find(([url]) =>
+        (url as string).endsWith('/lights-out'),
+      );
+      expect(call).toBeDefined();
+
+      return call!;
+    });
+    expect(posted[0]).toBe('https://api.example/games/game-id/lights-out');
+
+    // Not inert because this tap said so — inert because the re-read of the
+    // game, the same read every other phone takes, now says it landed.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'LIGHTS OUT' }).hasAttribute('disabled'),
+      ).toBe(true),
+    );
+  });
+
+  /**
+   * The criterion from #124's brief: both devices re-base on their next read,
+   * without a reload — this browser never taps it, so the only path to that is
+   * the `LIGHTS_OUT` row arriving on the stream it already holds.
+   */
+  it('goes inert when someone else taps it first, off the stream alone', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your card');
+
+    expect(
+      screen.getByRole('button', { name: 'LIGHTS OUT' }).hasAttribute('disabled'),
+    ).toBe(false);
+
+    room.lightsOutElsewhere();
+    const live = await stream();
+    act(() =>
+      live.emit({ seq: 12, kind: 'LIGHTS_OUT', actorPlayerId: guest.id }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'LIGHTS OUT' }).hasAttribute('disabled'),
+      ).toBe(true),
+    );
+  });
+
+  it('earns no mark, whoever taps it', async () => {
+    const room = stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'LIGHTS OUT' }));
+
+    await waitFor(() => {
+      const call = room.fetchMock.mock.calls.find(([url]) =>
+        (url as string).endsWith('/lights-out'),
+      );
+      expect(call).toBeDefined();
+    });
+
+    // No square on the card picked up an `aria-pressed="true"` from this tap.
+    await waitFor(() =>
+      expect(
+        screen
+          .getByLabelText('Your card')
+          .querySelectorAll('[aria-pressed="true"]'),
+      ).toHaveLength(0),
+    );
+  });
+
+  it('says so when the tap does not land', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+    const passthrough = globalThis.fetch as typeof fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) =>
+        url.endsWith('/lights-out')
+          ? Response.json({ error: 'this game has finished' }, { status: 409 })
+          : passthrough(url, init),
+      ),
+    );
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'LIGHTS OUT' }));
+
+    expect(await screen.findByText('This game has finished.')).toBeDefined();
   });
 });
 
@@ -2031,8 +2172,8 @@ describe('prizes, standings and the timeline', () => {
       liveFromTheStart: true,
       // As the API sends it: newest first, which is also how it is painted.
       timeline: [
-        { seq: 14, squareId: 'f1.v1:t:9', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
-        { seq: 8, squareId: 'f1.v1:t:3', elapsed: '+04:02', playerId: host.id, name: 'Ash' },
+        { kind: 'CALL', seq: 14, squareId: 'f1.v1:t:9', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
+        { kind: 'CALL', seq: 8, squareId: 'f1.v1:t:3', elapsed: '+04:02', playerId: host.id, name: 'Ash' },
       ],
     });
 
@@ -2056,7 +2197,7 @@ describe('prizes, standings and the timeline', () => {
       you: host,
       liveFromTheStart: true,
       timeline: [
-        { seq: 8, squareId: 'f1.v1:t:999', elapsed: '+11:00', playerId: guest.id, name: 'Bea' },
+        { kind: 'CALL', seq: 8, squareId: 'f1.v1:t:999', elapsed: '+11:00', playerId: guest.id, name: 'Bea' },
       ],
     });
 
@@ -2068,6 +2209,34 @@ describe('prizes, standings and the timeline', () => {
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
     ).toEqual(['+11:00Bea spotted a square']);
+  });
+
+  /**
+   * #124: the `LIGHTS_OUT` row itself, rendered as the race-start marker rather
+   * than as a spotted square — it has no `squareId` because it is not one, and
+   * a call from before it lands stamps negative.
+   */
+  it('renders the LIGHTS_OUT row as the race-start marker, not a spotted square', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      lightsOutSeq: 10,
+      // As the API sends it: newest first by seq.
+      timeline: [
+        { kind: 'CALL', seq: 14, squareId: 'f1.v1:t:9', elapsed: '+00:30', playerId: host.id, name: 'Ash' },
+        { kind: 'LIGHTS_OUT', seq: 10, elapsed: '+00:00', playerId: guest.id, name: 'Bea' },
+        { kind: 'CALL', seq: 3, squareId: 'f1.v1:t:3', elapsed: '-02:00', playerId: host.id, name: 'Ash' },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    const panel = await openRace();
+    const list = within(panel).getByRole('heading', { name: 'Timeline' })
+      .parentElement!;
+    expect(
+      [...list.querySelectorAll('li')].map((item) => item.textContent),
+    ).toEqual(['+00:30Ash spotted Square 9', '+00:00Lights out', '-02:00Ash spotted Square 3']);
   });
 });
 
@@ -2154,7 +2323,7 @@ describe('a replayed log', () => {
       streamedThroughSeq: 12,
       prizes: [{ seq: 11, prizeKind: 'LINE', playerId: guest.id, name: 'Bea' }],
       timeline: [
-        { seq: 12, squareId: 'f1.v1:t:7', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
+        { kind: 'CALL', seq: 12, squareId: 'f1.v1:t:7', elapsed: '+42:10', playerId: guest.id, name: 'Bea' },
       ],
     });
 

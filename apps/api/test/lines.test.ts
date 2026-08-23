@@ -68,8 +68,15 @@ describe('the timeline stamp', () => {
     expect(elapsedStamp(started, at(124 * 60 + 3))).toBe('+124:03');
   });
 
-  it('never goes backwards, whatever the clock says', () => {
-    expect(elapsedStamp(started, at(-30))).toBe('+00:00');
+  /**
+   * #124: a call from before the base reads negative rather than clamping to
+   * zero, so a call made before `LIGHTS_OUT` lands stamps as pre-race
+   * (`-04:12`) once it does. A `null` base — no game started yet — still reads
+   * `+00:00`, since there is nothing to be negative relative to.
+   */
+  it('reads negative for a moment before the base, rather than clamping to zero', () => {
+    expect(elapsedStamp(started, at(-30))).toBe('-00:30');
+    expect(elapsedStamp(started, at(-4 * 60 - 12))).toBe('-04:12');
     expect(elapsedStamp(null, at(90))).toBe('+00:00');
   });
 });

@@ -43,6 +43,13 @@
       "when": 1787457251423,
       "tag": "0005_lyrical_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787502249654,
+      "tag": "0006_lazy_sphinx",
+      "breakpoints": true
     }
   ]
 }

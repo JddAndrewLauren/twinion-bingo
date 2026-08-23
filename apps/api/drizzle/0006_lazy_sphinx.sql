@@ -1,0 +1,1 @@
+ALTER TYPE "bingo"."room_event_kind" ADD VALUE 'LIGHTS_OUT';

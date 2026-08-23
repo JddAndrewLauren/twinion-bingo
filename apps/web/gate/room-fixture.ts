@@ -174,6 +174,7 @@ function gameFor(stage: Stage, calls: Mark[], dealt: CardSquare[]): Game {
   // Newest first, as the API sends it — the stamps still climb with the call.
   const timeline: TimelineEntry[] = calls
     .map((call, index) => ({
+      kind: 'CALL' as const,
       seq: call.seq,
       squareId: call.squareId,
       elapsed: `+${String(index * 7).padStart(2, '0')}:${String((index * 13) % 60).padStart(2, '0')}`,
@@ -201,6 +202,7 @@ function gameFor(stage: Stage, calls: Mark[], dealt: CardSquare[]): Game {
     // A late joiner's greyed marks, which have to read as distinct from earned ones.
     inheritedMarks:
       stage === 'mid' ? onTheCard.slice(0, 2).map((square) => square.id) : [],
+    lightsOutSeq: stage === 'start' ? null : 10,
     prizes,
     standings: ROSTER.players.map((player, index) => ({
       playerId: player.id,

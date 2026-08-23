@@ -168,6 +168,40 @@ export function markedSquares(
   return squareIds.filter((id) => called.has(id));
 }
 
+/** The room-wide `LIGHTS_OUT` row, and when it landed. */
+export type LightsOut = {
+  seq: number;
+  actorPlayerId: string;
+  at: Date;
+};
+
+/**
+ * The game's `LIGHTS_OUT` row, if anyone has tapped it yet — first tap wins
+ * (#124), so there is at most one under the game-row lock `triggerLightsOut`
+ * takes. Ordered by `seq` and taking the first anyway, for the same reason
+ * `callsBySquare` does: an application invariant is not a constraint, so this
+ * says out loud what the earliest row would mean if it were ever broken.
+ */
+export async function lightsOutFor(
+  db: Db | Tx,
+  gameId: string,
+): Promise<LightsOut | undefined> {
+  const [row] = await db
+    .select({
+      seq: roomEvents.seq,
+      actorPlayerId: roomEvents.actorPlayerId,
+      at: roomEvents.at,
+    })
+    .from(roomEvents)
+    .where(and(eq(roomEvents.gameId, gameId), eq(roomEvents.kind, 'LIGHTS_OUT')))
+    .orderBy(asc(roomEvents.seq))
+    .limit(1);
+
+  return row === undefined
+    ? undefined
+    : { seq: Number(row.seq), actorPlayerId: row.actorPlayerId, at: row.at };
+}
+
 /**
  * The squares that count towards this player's win claims: the marks whose call
  * landed at or after their current claim boundary.
