@@ -1,4 +1,5 @@
-import type { Page, Route } from '@playwright/test';
+import { test, type Page, type Route } from '@playwright/test';
+import { SKIN_COOKIE, SKINS, type Skin } from '../app/skin';
 
 /**
  * The room the gate looks at, served by intercepting the API rather than running
@@ -212,6 +213,56 @@ function gameFor(stage: Stage, calls: Mark[], dealt: CardSquare[]): Game {
 }
 
 /**
+ * Wait until the faces the page is *currently* painting with have actually
+ * arrived, and only then let a caller measure.
+ *
+ * `document.fonts.ready` alone is not this. It resolves once the faces requested
+ * *so far* have settled, so awaiting it right after `page.goto` (which both
+ * `openRoom` and `openLobby` do below) is correct for the skin the document
+ * loaded in — the default, pitwall/JetBrains Mono — and says nothing at all
+ * about a skin the test switches to afterwards. Every `.skin-*` face is declared
+ * with `display: 'swap'`, so a measurement taken between the skin change and
+ * that skin's face arriving grades the layout on the *fallback* face. Locally
+ * the face is already in the HTTP cache from a previous test and the swap
+ * happens within the same task, so it looks deterministic; on a cold CI runner
+ * it is a genuine race. `room.gate.ts`'s four-skin cycle
+ * (`expectHeaderOnOneLine` after each `theme.tap()`) is exactly that pattern,
+ * and #107's CI failure at `phone-small` is what surfaced it.
+ *
+ * `document.fonts.ready` on its own still would not close it, because after a
+ * skin change there may be nothing pending *yet* — the request is kicked off by
+ * layout, which may not have run. So this first names the faces it wants:
+ * `document.fonts.load()` with each element's own computed `font` shorthand
+ * forces the matching faces to be requested and resolves when they are loaded,
+ * and the `ready` await afterwards covers anything else still in flight.
+ *
+ * This is a correction to the *instrument*, not a loosening of anything: it
+ * changes no assertion, no threshold and no viewport, it only makes the state
+ * being measured the state the assertion is written about.
+ */
+export async function settleSkinFonts(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const wanted = new Set<string>();
+    for (const node of document.querySelectorAll(
+      'h1, h2, p, span, button, [data-label]',
+    )) {
+      const style = getComputedStyle(node);
+      // The CSS `font` shorthand's own order: style, weight, size, family.
+      wanted.add(
+        `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
+      );
+    }
+
+    await Promise.all(
+      // A shorthand `document.fonts.load` cannot parse rejects rather than
+      // hanging; one unreadable element must not take the whole wait down.
+      [...wanted].map((font) => document.fonts.load(font).catch(() => [])),
+    );
+    await document.fonts.ready;
+  });
+}
+
+/**
  * Put a room on screen at a given stage and hand back the two things a test needs to
  * drive it. Everything the app asks the API for is answered here; nothing leaves the
  * machine.
@@ -351,9 +402,36 @@ export async function openRoom(page: Page, stage: Stage): Promise<Fixture> {
   await page.evaluate(() => document.fonts.ready);
 
   return {
-    emit: (event) => page.evaluate((payload) => {
-      (window as unknown as { __gateEmit: (p: unknown) => void }).__gateEmit(payload);
-    }, event),
+    /**
+     * A frame does not arrive out of nowhere: the API appended the call to the room's
+     * log and *then* broadcast it, so anything that re-reads `/game` after the frame
+     * sees the new row. This fixture used to broadcast without appending, which made
+     * the two disagree — the frame drove the toast, but a re-read handed back the log
+     * as it was before, so the timeline could never grow no matter how healthy the
+     * stream was. #103's acceptance criterion asks for exactly that growth, so the
+     * log is written first here, in the same order the server writes it.
+     *
+     * Only `CALL` and only a square the log does not already carry: the same
+     * one-square-one-live-call rule the `/call` route enforces, so a frame for an
+     * already-called square stays the no-op it is server-side.
+     */
+    emit: async (event) => {
+      if (
+        event.kind === 'CALL' &&
+        event.squareId !== undefined &&
+        !calls.some((call) => call.squareId === event.squareId)
+      ) {
+        calls.push({
+          squareId: event.squareId,
+          seq: event.seq,
+          actorPlayerId: event.actorPlayerId ?? GUEST.id,
+        });
+      }
+
+      await page.evaluate((payload) => {
+        (window as unknown as { __gateEmit: (p: unknown) => void }).__gateEmit(payload);
+      }, event);
+    },
     square: (index) => CARD[index]!,
     streams: () =>
       page.evaluate(
@@ -420,6 +498,41 @@ export async function openLobby(page: Page, state: Lobby): Promise<void> {
 
   await page.goto('/r/ABCD');
   await page.evaluate(() => document.fonts.ready);
+}
+
+/**
+ * Run `run` once per skin, seeding the cookie `skin-button.tsx` itself writes
+ * before the caller's own `page.goto` (`openRoom`/`openLobby`, or a bare
+ * `page.goto('/legibility')`) so `layout.tsx`/`current-skin.ts` render
+ * `<html data-skin>` in that skin from the very first response.
+ *
+ * The cookie, not a button press, and deliberately: it is the server-rendered
+ * path that has to be right on first paint (a light skin flashing black before
+ * a click would land is exactly what #103's own README rejects `localStorage`
+ * for), and it is what every existing `skin-*.gate.ts` file already does by
+ * hand (`setSlipstream`/`useConfettiCookie`/`skin-scorecard.gate.ts`'s own
+ * copy) — lifted here rather than left as four near-identical copies. The one
+ * test that has to reach a skin by *pressing* the button instead — proving the
+ * client path too, and that the surface does not remount when it does — is
+ * `room.gate.ts`'s own `re-skins across four presses without dropping the
+ * stream`, already in the suite (#103); this helper is not that path.
+ *
+ * Each skin's run is wrapped in `test.step` so a matrix assertion that only
+ * one skin breaks names that skin in the failure, rather than only which
+ * assertion.
+ */
+export async function forEachSkin(
+  page: Page,
+  run: (skin: Skin) => Promise<void>,
+): Promise<void> {
+  for (const skin of SKINS) {
+    await test.step(skin, async () => {
+      await page.context().addCookies([
+        { name: SKIN_COOKIE, value: skin, url: 'http://127.0.0.1:3210' },
+      ]);
+      await run(skin);
+    });
+  }
 }
 
 export { CARD, GUEST, HOST, LONG_NAME, REROLLED };

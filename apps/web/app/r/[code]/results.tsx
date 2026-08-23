@@ -51,6 +51,7 @@ export function Results({ game }: { game: Game }) {
           <ol className="flex flex-col gap-1">
             {game.prizes.map((prize) => (
               <li key={`${prize.seq}:${prize.playerId}`}>
+                {/* Same "won" green as a marked cell — left literal, #102's carve-out. */}
                 <span className="font-semibold text-emerald-300">
                   {PRIZE_NAMES[prize.prizeKind] ?? prize.prizeKind}
                 </span>
@@ -67,10 +68,25 @@ export function Results({ game }: { game: Game }) {
           {finished ? 'Final standings' : 'Standings'}
         </h2>
         <ol className="flex flex-col gap-1">
-          {game.standings.map((standing) => (
-            <li key={standing.playerId} className="flex justify-between gap-3">
-              <span className="truncate">{standing.name}</span>
-              <span className="tabular-nums text-neutral-400">
+          {/*
+            #106: `skin-standing-rank` is an unconditional hook for Confetti's
+            own "Standings (desktop left rail): each rank sits in a 20px filled
+            circle" — a structural piece no skin before this had a place to
+            render into, same pattern as `roster-preview.tsx`'s `+N` row. Every
+            other skin renders it and paints nothing against it.
+          */}
+          {game.standings.map((standing, index) => (
+            <li
+              key={standing.playerId}
+              className="flex items-center justify-between gap-3"
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <span aria-hidden className="skin-standing-rank shrink-0 tabular-nums">
+                  {index + 1}
+                </span>
+                <span className="truncate">{standing.name}</span>
+              </span>
+              <span className="tabular-nums text-muted">
                 {standing.marks}
               </span>
             </li>
@@ -81,7 +97,7 @@ export function Results({ game }: { game: Game }) {
       <section className="flex flex-col gap-1">
         <h2 className="font-semibold">Timeline</h2>
         {game.timeline.length === 0 ? (
-          <p className="text-neutral-400">Nothing called yet.</p>
+          <p className="text-muted">Nothing called yet.</p>
         ) : (
           <ol className="flex flex-col gap-1">
             {game.timeline.map((entry) => (
@@ -91,7 +107,7 @@ export function Results({ game }: { game: Game }) {
                   and on a recording this is wall-clock since the host started,
                   pauses included. Fixed-width so the column reads as a column.
                 */}
-                <span className="w-14 shrink-0 tabular-nums text-neutral-400">
+                <span className="w-14 shrink-0 tabular-nums text-muted">
                   {entry.elapsed}
                 </span>
                 <span className="min-w-0">

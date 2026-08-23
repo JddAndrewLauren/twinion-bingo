@@ -1,1 +1,2282 @@
 @import 'tailwindcss';
+
+/*
+ * The token layer #102 builds. Every skin-aware surface names a *role*
+ * (`--skin-surface`, `--skin-raised`, …) rather than a colour, and each of the
+ * four blocks below is the one place that role resolves to a real value for
+ * that skin — selected purely by `[data-skin]` on `<html>`, which
+ * `app/layout.tsx` server-renders from the `twinion_bingo_skin` cookie so the
+ * right block is already active on the very first paint.
+ *
+ * `@theme inline` bridges the roles into Tailwind v4 utilities, which is what
+ * makes `bg-surface`, `border-rule`, `text-muted` and `rounded-skin` exist as
+ * classes at all: a component names the role once in its JSX and every skin's
+ * block re-resolves it, so no component carries a per-skin class map.
+ *
+ * `pitwall`'s block carried **today's exact app colours** (Tailwind's own
+ * `neutral-*`/`emerald-400`) rather than the handoff's real Pit Wall design
+ * through #102 and #103 — the handoff and #102's own brief both said Pit
+ * Wall's real look ships in its own slice, which is what #104 is. Its block
+ * below is now the handoff's real numbers (`docs/design/README.md` § *Design
+ * tokens* → **Pit Wall**), the same as the other three skins' always were.
+ *
+ * **Why three surface tiers, three rules, three muted tiers and two inks
+ * rather than one of each.** This slice is a rename, not a repaint: the app it
+ * converts already distinguishes shades inside each role, and a role with one
+ * value per skin would have silently repainted about fifteen elements — a
+ * hairline is `neutral-800` while a field border is `neutral-700`, an inactive
+ * switcher label is `neutral-500` while ordinary secondary text is
+ * `neutral-400` and the peek panel's prose is `neutral-300`. Folding those
+ * together would have weakened the switcher's selected/unselected contrast in
+ * both directions at once, and would have handed slices 3–6 a set of deltas
+ * that look like their skin but are actually this slice's plumbing. So each
+ * role carries the tiers the app really uses, named by how much contrast they
+ * carry against their own surface (`-soft` less, `-strong` more) in every skin,
+ * light or dark. Every Pit Wall value below is the exact Tailwind neutral the
+ * class it replaced resolved to, so the swap renders byte-identically.
+ *
+ * The other three skins do not need that ladder yet: the handoff gives them one
+ * rule and one muted each, sometimes as a range. Where it gives a range the
+ * tiers take its endpoints; where it gives a single value the tiers collapse
+ * onto it, and each skin's own slice differentiates them if its design asks
+ * for it. Nothing is invented here.
+ */
+@theme inline {
+  --color-surface: var(--skin-surface);
+  --color-raised: var(--skin-raised);
+  --color-elevated: var(--skin-elevated);
+  --color-ink: var(--skin-ink);
+  --color-ink-strong: var(--skin-ink-strong);
+  --color-muted: var(--skin-muted);
+  --color-muted-soft: var(--skin-muted-soft);
+  --color-muted-strong: var(--skin-muted-strong);
+  --color-rule: var(--skin-rule);
+  --color-rule-soft: var(--skin-rule-soft);
+  --color-rule-strong: var(--skin-rule-strong);
+  --color-free-surface: var(--skin-free-surface);
+  --color-free-rule: var(--skin-free-rule);
+  --color-accent: var(--skin-accent);
+  --color-marked: var(--skin-marked);
+  --radius-skin: var(--skin-radius);
+}
+
+/*
+ * Pit Wall's real values, from `docs/design/README.md` § *Design tokens* →
+ * **Pit Wall** (#104). Surface/raised/banner map to the three surface tiers in
+ * the order the handoff lists them; ink is the one text colour it names, so
+ * `ink`/`ink-strong` collapse onto it plus a touch brighter for the tier the app
+ * already needed (the selected switcher segment, the share dialog). Muted is
+ * given as a single range (`rgba(232,232,234,.4–.55)`), so the three tiers take
+ * its two ends and its midpoint, the same pattern #102 used for the other three
+ * skins' own single-range values.
+ *
+ * Rules are four numbers, not three (`.06` row separators, `.09` rules, `.1`
+ * cell borders, `.14` field borders), one more than this layer's tiers. `rule`
+ * takes `.1` rather than `.09` so the token driving both a hairline *and* a
+ * card cell's border (`card-grid.tsx`'s `border-rule bg-raised`) matches the
+ * cell exactly; `.09` and `.1` are a hundredth of full white apart, which nothing
+ * in this app can tell apart by eye.
+ */
+:root,
+[data-skin='pitwall'] {
+  /* Surfaces, page upward: the page, a panel/field/dialog/unmarked cell, and
+     the one step above that — a selected switcher segment and the peek panel. */
+  --skin-surface: #0a0a0b;
+  --skin-raised: #121214;
+  --skin-elevated: #141416; /* the handoff's "banner" tier */
+
+  /* Body text. The handoff names one ink; `-strong` is the same colour pushed a
+     touch brighter, for the tier the app already needed (a selected switcher
+     segment, the share dialog) and that no skin before this one had to give a
+     real second value. */
+  --skin-ink: #e8e8ea;
+  --skin-ink-strong: #f5f5f6;
+
+  /* Secondary text — the handoff's one range (`rgba(232,232,234,.4–.55)`), its
+     two ends and its midpoint. */
+  --skin-muted-soft: rgba(232, 232, 234, 0.4);
+  --skin-muted: rgba(232, 232, 234, 0.475);
+  --skin-muted-strong: rgba(232, 232, 234, 0.55);
+
+  /* Rules: hairlines/row separators (`.06`), the general rule (`.1`, doubling as
+     every cell border), and a field border (`.14`). */
+  --skin-rule-soft: rgba(255, 255, 255, 0.06);
+  --skin-rule: rgba(255, 255, 255, 0.1);
+  --skin-rule-strong: rgba(255, 255, 255, 0.14);
+
+  /* The free centre (§ *Square cell per theme*, "Center (free)"): the handoff's
+     `rgba(255,46,46,.18)` wash over a `#ff2e2e` border. */
+  --skin-free-surface: rgba(255, 46, 46, 0.18);
+  --skin-free-rule: #ff2e2e;
+
+  /* Accent, unchanged from #102 — it was already the handoff's real number,
+     since no component read it before this slice. */
+  --skin-accent: #ff2e2e;
+  /* Marked, retuned from the app's old literal emerald to the handoff's real
+     cyan. The marked *cell*'s own fill/border stay literal in `card-grid.tsx`
+     (they need a second, invented colour for the inherited state that no
+     single token could also carry — see that file's own comment), but this
+     token now carries Pit Wall's real number for whatever else names `marked`. */
+  --skin-marked: #00e0c8;
+  --skin-radius: 0px; /* "Radius 0 everywhere" */
+}
+
+[data-skin='slipstream'] {
+  --skin-surface: #0e0e12;
+  /* Raised is a range in the handoff (`rgba(255,255,255,.06–.07)`); the two
+     tiers take its ends. */
+  --skin-raised: rgba(255, 255, 255, 0.065);
+  --skin-elevated: rgba(255, 255, 255, 0.07);
+  --skin-ink: #ffffff;
+  --skin-ink-strong: #ffffff;
+  /* Muted is `rgba(255,255,255,.4–.45)`. */
+  --skin-muted-soft: rgba(255, 255, 255, 0.4);
+  --skin-muted: rgba(255, 255, 255, 0.425);
+  --skin-muted-strong: rgba(255, 255, 255, 0.45);
+  /* One rule value for this skin (`rgba(255,255,255,.1)`); the pill outline at
+     `.18` belongs to the roster pills, not to rules in general. */
+  --skin-rule-soft: rgba(255, 255, 255, 0.1);
+  --skin-rule: rgba(255, 255, 255, 0.1);
+  --skin-rule-strong: rgba(255, 255, 255, 0.1);
+  /* "solid `#ff1f4b`, label white". */
+  --skin-free-surface: #ff1f4b;
+  --skin-free-rule: #ff1f4b;
+  --skin-accent: #f2ff00;
+  /* Marked squares are a solid fill of the same yellow as the accent. */
+  --skin-marked: #f2ff00;
+  --skin-radius: 0;
+}
+
+[data-skin='confetti'] {
+  --skin-surface: #fffbf2;
+  --skin-raised: #ffffff;
+  --skin-elevated: #ffffff;
+  --skin-ink: #20180f;
+  --skin-ink-strong: #20180f;
+  /* Muted is `rgba(32,24,15,.4–.55)`. */
+  --skin-muted-soft: rgba(32, 24, 15, 0.4);
+  --skin-muted: rgba(32, 24, 15, 0.475);
+  --skin-muted-strong: rgba(32, 24, 15, 0.55);
+  /* Borders are `rgba(32,24,15,.08–.14)`. */
+  --skin-rule-soft: rgba(32, 24, 15, 0.08);
+  --skin-rule: rgba(32, 24, 15, 0.11);
+  --skin-rule-strong: rgba(32, 24, 15, 0.14);
+  /* "solid `#ffd23f`, label dark". */
+  --skin-free-surface: #ffd23f;
+  --skin-free-rule: #ffd23f;
+  --skin-accent: #ff5c39;
+  --skin-marked: #16a34a;
+  --skin-radius: 1rem;
+}
+
+[data-skin='scorecard'] {
+  --skin-surface: #f7f1e4;
+  --skin-raised: #fffdf7;
+  --skin-elevated: #fffdf7;
+  --skin-ink: #2b2118;
+  --skin-ink-strong: #2b2118;
+  /* Muted ink is `rgba(43,33,24,.45–.6)`. */
+  --skin-muted-soft: rgba(43, 33, 24, 0.45);
+  --skin-muted: rgba(43, 33, 24, 0.525);
+  --skin-muted-strong: rgba(43, 33, 24, 0.6);
+  /* One rule value for this skin (`rgba(43,33,24,.15)`); the dashed `.3` is for
+     section and column folds, which are structure rather than a rule tier. */
+  --skin-rule-soft: rgba(43, 33, 24, 0.15);
+  --skin-rule: rgba(43, 33, 24, 0.15);
+  --skin-rule-strong: rgba(43, 33, 24, 0.15);
+  /* "`rgba(31,122,107,.16)` wash", inside this skin's 2px ink cell border. */
+  --skin-free-surface: rgba(31, 122, 107, 0.16);
+  --skin-free-rule: #2b2118;
+  --skin-accent: #e5502a;
+  /* The ink ring around a marked square is this same orange, semi-transparent. */
+  --skin-marked: rgba(229, 80, 42, 0.72);
+  --skin-radius: 0.75rem;
+}
+
+/*
+ * The skin-change cross-fade (README's *Theme change*: "Cross-fade the surface
+ * 180ms ease"). Declared once, on `body`, rather than per skin — a skin switch
+ * is a `[data-skin]` attribute swap, and the surface/ink colours it repaints
+ * are exactly `body`'s own `bg-surface`/`text-ink`, so a plain transition on
+ * both is the cross-fade without animating anything per-skin.
+ */
+body {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+/*
+ * The theme button's `↻` glyph rotating 360° over the same 180ms, on press
+ * (README's *Theme change*). Skin-agnostic — every skin's button reuses this
+ * one keyframe — so it lives here rather than in any per-skin block; the four
+ * skins' own borders, fills and shapes for the button are a later slice's
+ * component CSS, not this one's tokens.
+ */
+@keyframes skin-glyph-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skin-glyph-spin {
+  animation: skin-glyph-rotate 180ms linear;
+}
+
+/*
+ * #106's roster "+N" row (`roster-preview.tsx`) is unconditionally rendered —
+ * the "one React tree for every skin" rule this file's other hooks follow —
+ * so it needs a skin-agnostic default of hidden, the same way a plain
+ * unstyled `.skin-roster-tag` would otherwise show through on a skin that has
+ * not claimed it. Only `[data-skin='confetti']`'s own rule below shows it, at
+ * `phone`/`phone-small` only.
+ */
+[data-roster-more] {
+  display: none;
+}
+
+/*
+ * The dice's colour (`die-button.tsx`), per docs/design/README.md's "Header
+ * controls" section — chosen per **surface**, not per skin, so it stays scoped
+ * to `[data-die-surface]` rather than joining the token layer above. One
+ * literal value per skin, matching the muted label text beside the die in that
+ * bar. These are the handoff's real numbers for the surfaces that exist today —
+ * see the note below the Confetti rule for the one surface the handoff draws
+ * and this build does not have yet.
+ */
+[data-skin='pitwall'] svg[data-die-surface] {
+  color: rgba(232, 232, 234, 0.6);
+}
+[data-skin='slipstream'] svg[data-die-surface] {
+  color: rgba(255, 255, 255, 0.55);
+}
+[data-skin='scorecard'] svg[data-die-surface] {
+  color: #2b2118;
+}
+[data-skin='confetti'] svg[data-die-surface] {
+  color: rgba(32, 24, 15, 0.55);
+}
+/*
+ * #106 lands the second surface the comment above used to describe as
+ * missing: the card screen's header is now Confetti's own blue `#2f6bff`
+ * (`.skin-card-header`, below), so the die sitting on it gets the handoff's
+ * second value — `rgba(255, 255, 255, 0.85)` — matching the muted stat text
+ * beside it in that same bar. The join/lobby headers stay cream, so
+ * `svg[data-die-surface='join']` is untouched above.
+ */
+[data-skin='confetti'] svg[data-die-surface='card'] {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/*
+ * #104 — Pit Wall's *structure*, everything the "Where per-skin styling lives"
+ * section of this issue's brief says is not token-shaped: hairline rules,
+ * letter-spacing on uppercase labels, the segmented progress bar, and JetBrains
+ * Mono for UI and data (square labels stay Roboto Condensed — `card-font.ts`
+ * is untouched). Every rule below is scoped to `[data-skin='pitwall']`, so the
+ * other three skins render exactly as they did before this issue; each of
+ * `card-grid.tsx`, `room-code.tsx`, `roster-preview.tsx` and `progress-readout.tsx`
+ * renders the same class names for every skin, and it is only these selectors
+ * that turn them into Pit Wall's real look.
+ *
+ * One React tree, four skins — the reason every one of these is a class
+ * (`.skin-code`, `.skin-field`, `.skin-cell`, `.skin-roster`, `.skin-progress-*`,
+ * `.skin-banner*`) rather than a per-skin component.
+ */
+/*
+ * **The UI face is set on the skin root, not per component.** The handoff's own
+ * pitwall screens put `font-family:'JetBrains Mono',ui-monospace,monospace` on
+ * the *whole* screen container — join and card alike — and the README defines
+ * Pit Wall as "monospace data type". Setting it on six selectors (which is what
+ * this block did at review round 1) left the headings, the field labels, the
+ * slim bar, "looking for", the dialogs and the entire home screen in the default
+ * sans on the default skin.
+ *
+ * `[data-skin]` is on `<html>` (`layout.tsx`), so this inherits everywhere. It
+ * does *not* reach the card's square labels: `card-grid.tsx` puts
+ * `cardFont.className` on the grid itself, and a descendant's own declaration
+ * beats an inherited value regardless of specificity — which is exactly how the
+ * handoff draws it (the grid and the "looking for" label are the two places its
+ * pitwall screens switch to Roboto Condensed).
+ */
+[data-skin='pitwall'] {
+  --skin-font-ui: var(--font-jetbrains-mono), ui-monospace, monospace;
+  /* The handoff's square-label face, reachable from a rule rather than only from
+     `card-font.ts` — "looking for" asks for it too. */
+  --skin-font-label: var(--font-roboto-condensed), sans-serif;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * Room code: four boxed characters (README's "Room code treatment per theme").
+ * `font-size` is the handoff's own 38px phone / 52px iPad, on both of which the
+ * README and `Bingo Screens.dc.html` agree. The corner comes from
+ * `rounded-skin` at the call site now (`--skin-radius: 0`), so there is no
+ * `border-radius` here.
+ */
+[data-skin='pitwall'] .skin-code span {
+  aspect-ratio: 1 / 1.15;
+  background-color: var(--skin-raised);
+  border-color: var(--skin-rule-strong);
+  font-size: 38px;
+  font-weight: 700;
+}
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-code span {
+    font-size: 52px;
+  }
+}
+
+/*
+ * Name field: ruled box with the red caret bar at the right edge. The handoff's
+ * padding (14px) and text size (17px) rather than the unskinned `p-2`/16px —
+ * globals.css is unlayered, so these beat the utilities without `!important`.
+ */
+[data-skin='pitwall'] .skin-field {
+  position: relative;
+  background-color: var(--skin-raised);
+  border-color: var(--skin-rule-strong);
+  border-bottom: 2px solid var(--skin-accent);
+  padding: 14px;
+  font-size: 17px;
+}
+[data-skin='pitwall'] .skin-field::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 1px;
+  height: 20px;
+  background-color: var(--skin-accent);
+  transform: translateY(-50%);
+}
+
+/*
+ * The join screen's primary action — **that one button**, not every
+ * `ACTION_BUTTON` user. Round 1 hung this on a bare `action-button` hook carried
+ * by the shared constant, which also red-filled the home screen's two co-equal
+ * submits and the card screen's *Re-roll card* and *Start game*; no mock in
+ * `docs/design/` shows an accent-filled button on either screen, and on the card
+ * screen red is spoken for by the free centre and the banner's top rule. So the
+ * class sits at the single call site in `room-screen.tsx` and the shared
+ * constant carries only the 44px minimum it always did.
+ */
+[data-skin='pitwall'] .skin-action-primary {
+  background-color: var(--skin-accent);
+  border: none;
+  color: var(--skin-surface);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+[data-skin='pitwall'] .skin-action-primary:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+
+/* Roster: indexed rows, a cyan HOST/YOU tag, hairline row separators. The 9px
+   vertical padding is the handoff's own; the unskinned class is `py-1.5`. */
+[data-skin='pitwall'] .skin-roster-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+[data-skin='pitwall'] .skin-roster li {
+  border-top: 1px solid var(--skin-rule-soft);
+  padding-block: 9px;
+}
+[data-skin='pitwall'] .skin-roster-index {
+  opacity: 0.35;
+}
+[data-skin='pitwall'] .skin-roster-tag {
+  color: var(--skin-marked);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Progress readout: a 12-segment bar plus a numeral, driven from existing
+   `marks`/`total` state — see `progress-readout.tsx`. */
+[data-skin='pitwall'] .skin-progress-track {
+  gap: 1px;
+}
+[data-skin='pitwall'] .skin-progress-segment {
+  background-color: rgba(255, 255, 255, 0.12);
+  height: 3px;
+}
+[data-skin='pitwall'] .skin-progress-segment[data-filled='true'] {
+  background-color: var(--skin-marked);
+}
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-progress-segment {
+    height: 4px;
+  }
+}
+/*
+ * The numeral is the *iPad* half of this region, and only that.
+ * `Bingo Screens.dc.html` — which wins over the README — draws the phone card
+ * screen as the 12-segment bar alone, with the count carried by the slim bar's
+ * own `8/24 · L34`; the large numeral (34px/700) appears only on the desktop
+ * screen's left column, where there is a column to put it in. Reading "a large
+ * numeral below" as unconditional put a second copy of the header's own number
+ * on a phone and cost 40px of a 667px viewport, which is what tipped the re-roll
+ * consequence off the bottom of `phone-small`.
+ *
+ * `display: none` costs nothing to a reader: the `<p>` is already `aria-hidden`,
+ * and the count is on the `role="progressbar"` above it as both `aria-label` and
+ * `aria-valuenow`.
+ */
+[data-skin='pitwall'] .skin-progress-number {
+  display: none;
+}
+@media (min-width: 834px) {
+  [data-skin='pitwall'] .skin-progress-number {
+    display: block;
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+/*
+ * Secondary explanatory prose sitting beside a control — Pit Wall's own body
+ * size, 12px, not the app's default 14px.
+ *
+ * This is the one place the UI face has a *measurable* consequence rather than
+ * only a visual one. JetBrains Mono is materially wider than the default sans at
+ * the same size, which is why the handoff's pitwall screens set body copy at
+ * 10-12px where this app's unskinned default is 14-16px. At 14px monospace the
+ * re-roll consequence gains a line and pushes itself 8px off the bottom of
+ * `phone-small` (`room.gate.ts`'s "states the consequence without clipping a
+ * line of it"). 12px is the handoff's number for exactly this kind of copy, and
+ * fixing the *type scale* is the honest fix; trimming the paragraph or capping
+ * the column would be fixing the measurement instead.
+ */
+[data-skin='pitwall'] .skin-note {
+  font-size: 12px;
+}
+
+/*
+ * "Looking for" (one of this issue's *Regions to build*, and missed entirely at
+ * review round 1): hairline separators, a bold condensed label over a smaller,
+ * dimmer description. The separators the component already draws are
+ * `divide-rule-soft`/`border-rule-soft`, which is this skin's own `.06` hairline,
+ * so only the type pair needs saying here.
+ */
+[data-skin='pitwall'] .skin-looking {
+  border-color: var(--skin-rule);
+}
+[data-skin='pitwall'] .skin-looking-label {
+  font-family: var(--skin-font-label);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+[data-skin='pitwall'] .skin-looking-desc {
+  color: var(--skin-muted-soft);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+/*
+ * Call banner: the docked bottom slot in `room-screen.tsx` (the spotter-credit
+ * toast and the undo row), restyled in place rather than pinned — this issue's
+ * "the banner stays docked" — so `expectClearOfTheCard` keeps holding by
+ * construction rather than by re-measuring a `fixed` layer.
+ */
+/*
+ * Both the spotter-credit toast and the undo row carry their sentence as one
+ * text node (`Bea spotted Square 7`, `Called Square 5`) that `apps/web/test/`
+ * and `apps/web/gate/` match verbatim — so this restyles the row rather than
+ * splitting its text into a label span plus a name span, which the handoff's
+ * own "CALLED · 2s AGO" plus a separate square name would otherwise call for.
+ */
+/*
+ * `border-top` in full rather than `border-color` alone: the undo row carries a
+ * `border-t` utility and so picked up a bare colour, but the spotter-credit
+ * `<p role="status">` has no border utility at all — so the handoff's red top
+ * rule was simply absent from half the banner, including the very element the
+ * gate measures.
+ *
+ * No `!important`: globals.css sits outside Tailwind's `@layer utilities`, so
+ * every rule in this block already beats a utility on the same element. The three
+ * that were here would have fought slices 4-6 for nothing.
+ */
+[data-skin='pitwall'] .skin-banner {
+  background-color: var(--skin-elevated);
+  border-top: 1px solid var(--skin-accent);
+  color: var(--skin-ink);
+}
+
+/*
+ * Card cell. The base state is already token-driven (`border-rule bg-raised`
+ * in `card-grid.tsx`) and needs no rule here — `--skin-rule`/`--skin-raised`
+ * above are this skin's real numbers now. Earned and inherited are the two
+ * `markedStyle()` still renders as literal Tailwind colours (see that
+ * function's own comment for why), so they are overridden here by the
+ * `data-mark` attribute the button also carries, at higher specificity than
+ * the single utility classes they replace.
+ */
+[data-skin='pitwall'] .skin-cell {
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+[data-skin='pitwall'] .skin-cell[data-mark='earned'] {
+  background-color: rgba(0, 224, 200, 0.16);
+  border-color: var(--skin-marked);
+  color: var(--skin-ink);
+}
+/*
+ * Inherited — invented for #104, since the mocks show only base/marked/free.
+ *
+ * **A materially heavier white wash, and the label left at full ink.** Round 1
+ * used `rgba(255,255,255,.06)` with the label dimmed to `--skin-muted-soft`, and
+ * that was two mistakes in one rule. The fill composited over `--skin-surface` to
+ * `rgb(25,25,26)` against an unmarked cell's `rgb(18,18,20)` — CIE ΔE 3.3, at the
+ * threshold of a just-noticeable difference for a patch this size, so the whole
+ * three-way distinction rested on the label; and that label then sat at 3.35:1 on
+ * its own cell at 11px, under AA, in an app that runs a `/legibility` gate for
+ * exactly this.
+ *
+ * `.20` composites to `rgb(59,59,60)`: ΔE 19.4 from unmarked and 16.6 from
+ * earned, both at or above the ΔE 17.1 that separates earned from unmarked — the
+ * step the mocks themselves ship, and therefore the honest yardstick. With the
+ * fill carrying the state, the label has no work to do and stays at full ink
+ * (9.14:1), so nothing here is legible only by being distinguishable.
+ *
+ * Why *lighter grey* and not a dimmer cyan: cyan means "you called it" in this
+ * skin (the marked fill, the `HOST` tag, the progress bar), and an inherited mark
+ * is precisely the one a late joiner did *not* call. A cell filled in flat grey
+ * reads as already answered rather than as claimable — "a line already complete
+ * at the boundary must not look claimable" (`CONTEXT.md`) — while staying inside
+ * Pit Wall's own neutral rule family. `skin-pitwall.gate.ts` measures all three
+ * pairwise, composited to opaque sRGB, so this is a number the gate holds rather
+ * than a claim in a comment.
+ */
+[data-skin='pitwall'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--skin-ink);
+}
+/* Hover (pointer only, README's *Hover (desktop)*): border brightens. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='pitwall'] .skin-cell:not(:disabled):hover {
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+}
+
+/*
+ * Focus: every interactive element gets a 2px accent ring, offset 2px
+ * (README's *Focus*). One selector rather than a class per component is what
+ * makes "every interactive element" true by construction instead of by
+ * remembering to add a class to each one built for this issue and every one
+ * built before it.
+ */
+[data-skin='pitwall'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * #105 — Slipstream's structure: sheared italic display type, a diagonal line
+ * field, marked squares as solid yellow blocks. Same pattern #104 set for Pit
+ * Wall — every rule below is scoped to `[data-skin='slipstream']`, so the other
+ * three skins are untouched, and every hook (`.skin-code`, `.skin-field`,
+ * `.skin-cell`, `.skin-roster`, `.skin-progress-*`, `.skin-banner`,
+ * `.skin-theme-*`, `.skin-action-primary*`) is a class the shared component
+ * tree already renders for every skin rather than a per-skin component.
+ *
+ * Breakpoints follow the two conventions already in this file: `834px` for a
+ * phone → iPad *type-scale* swap (`.skin-code span`'s own precedent), and
+ * `1024px` — Tailwind's stock `lg`, the same number `room-screen.tsx` switches
+ * the join screen's one/two-column layout at — for the roster's truncated →
+ * full swap, since that is the same layout boundary the handoff's "on mobile
+ * these truncate ... on desktop show all nine" is drawn against.
+ *
+ * **Letter-spacing on the room code is `-.06em` at both viewports, not the
+ * mobile artboard's own `-.05em`.** Per this issue's spec-precedence rule (an
+ * HTML value outside the brief's stated point takes the brief's value, with
+ * the deviation disclosed): the brief's *Room code treatment* and *Design
+ * tokens* sections both give one number, `-.06em`, with no per-viewport range;
+ * the desktop artboard agrees; only the mobile artboard's inline style differs,
+ * by a single hundredth of an em. Read as an artboard rounding rather than a
+ * deliberate per-viewport value.
+ */
+[data-skin='slipstream'] {
+  --skin-font-ui: var(--font-archivo), system-ui, sans-serif;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * The diagonal line field (README's *Background field*), on `body` rather than
+ * per screen: every Slipstream surface is the same dark ground, and `body`
+ * already carries `bg-surface` as a plain `background-color` — a
+ * `background-image` on the same element composites over it with no extra
+ * wrapper. `background-attachment: fixed` keeps the lines from visibly
+ * scrolling past static content on the one screen that scrolls (the phone
+ * layout's card column).
+ */
+[data-skin='slipstream'] body {
+  background-image: repeating-linear-gradient(
+    72deg,
+    rgba(255, 255, 255, 0.045) 0 2px,
+    transparent 2px 26px
+  );
+  background-attachment: fixed;
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] body {
+    background-image: repeating-linear-gradient(
+      72deg,
+      rgba(255, 255, 255, 0.045) 0 2px,
+      transparent 2px 34px
+    );
+  }
+}
+
+/*
+ * Room code: one word, italic 900, gradient-clipped, with a sheared bar under
+ * it — the opposite structure from Pit Wall's four boxed cells, on the same
+ * four `<span>`s `room-code.tsx` already renders unconditionally.
+ *
+ * **The gradient reads as one continuous sweep across four separate elements**
+ * rather than four independent copies of the same gradient, which is what a
+ * naive `background: linear-gradient(...); background-clip: text` on each span
+ * would paint. `background-size: 400% 100%` stretches the gradient image to
+ * four span-widths, and each span's own `background-position-x` — `0%`, then
+ * `33.3333%`, `66.6667%`, `100%` — is the CSS percentage-position formula
+ * (`position% × (bgSize − boxSize)`) working out to exactly one, two and three
+ * box-widths of leftward shift, i.e. exactly where that span's slice of a
+ * continuous four-span-wide gradient would fall. Requires the four spans to be
+ * equal width, which `flex flex-1` (room-code.tsx's own class) already
+ * guarantees.
+ *
+ * **Degrades to a solid fill, not an image, where `background-clip: text` is
+ * unavailable** (this issue's own trap): `color: #f2ff00` is the base
+ * declaration, so a browser with no support for the clip paints ordinary solid
+ * yellow text — still real, still selectable — and only a
+ * `@supports` block upgrades it to the gradient.
+ */
+[data-skin='slipstream'] .skin-code {
+  gap: 0;
+}
+[data-skin='slipstream'] .skin-code span {
+  aspect-ratio: auto;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 96px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  color: var(--skin-accent);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  [data-skin='slipstream'] .skin-code span {
+    background-image: linear-gradient(92deg, #f2ff00, #ff1f4b);
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(1) {
+    background-position-x: 0%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(2) {
+    background-position-x: 33.3333%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(3) {
+    background-position-x: 66.6667%;
+  }
+  [data-skin='slipstream'] .skin-code span:nth-child(4) {
+    background-position-x: 100%;
+  }
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-code span {
+    font-size: 188px;
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+  }
+}
+/* The sheared bar under the code — a sibling of `.skin-code`'s own `<p>`. */
+[data-skin='slipstream'] .skin-code-bar {
+  display: block;
+  height: 5px;
+  width: 74%;
+  margin-top: 12px;
+  background-color: var(--skin-accent);
+  transform: skewX(-24deg);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-code-bar {
+    height: 7px;
+    width: 62%;
+  }
+}
+
+/* Name field: a left accent bar rather than Pit Wall's ruled box. */
+[data-skin='slipstream'] .skin-field {
+  background-color: var(--skin-raised);
+  border: none;
+  border-left: 4px solid var(--skin-accent);
+  border-radius: 0;
+  padding: 15px 16px;
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-field {
+    padding: 16px 18px;
+    font-size: 24px;
+  }
+}
+
+/*
+ * #106 — Confetti's *structure*, the app's first light surface and the
+ * per-region work `docs/design/README.md`'s Confetti column asks for, same
+ * "keep it in CSS, not in TSX" rule #104 established: every rule below is
+ * scoped to `[data-skin='confetti']`, so the other three skins are untouched.
+ *
+ * Two breakpoints are used throughout, matching #104's own convention:
+ * unprefixed for phone (`phone-small`/`phone`), `@media (min-width: 834px)`
+ * for iPad (`ipad-11-portrait`/`ipad-11-landscape`).
+ */
+
+/*
+ * Card-screen header: the blue `#2f6bff` card the handoff draws
+ * ("Card screen ... Header (room code + run status)"), which is also the
+ * surface `svg[data-die-surface='card']` above now matches. Padding/line
+ * layout are left exactly as the header's own utilities set them
+ * (`px-2 py-2`, `items-center`, `justify-between`) — this issue restyles the
+ * existing docked header rather than rebuilding its layout.
+ *
+ * **The header re-points the skin's own text/rule/accent tokens, it does not
+ * just set `color`.** Painting this ground blue is what makes the slice own the
+ * legibility of everything standing on it: the header's children each re-set
+ * their own colour from the light-skin tokens (`text-muted` on the stats line,
+ * `text-ink`/`border-rule` on the Theme button, `--skin-accent` in the focus
+ * rule), so `color: #fff` on the parent alone is overridden three times over
+ * and leaves dark ink and an orange ring on blue. Redefining the *tokens*
+ * inside this scope is one declaration per role instead of one selector per
+ * child, and it reaches every later control mounted here without a fourth.
+ *
+ * The values are the HTML's own: white for ink, white at `.85` (phone, line
+ * 664) / `.9` (iPad, line 317) for the muted run status, a white-alpha rule
+ * where the light skin's near-black one would vanish, and white for the ring —
+ * `#fff` on `#2f6bff` is 4.50:1, where the skin's `#ff5c39` accent would be
+ * 1.47:1 and effectively no focus indicator at all.
+ *
+ * **The re-point is on the header's children, not on the header — and `dialog`
+ * is excluded.** The paint (`background-color`/`color`/`border-bottom`) stays
+ * on the `<header>`; only the token block moved down one level. The reason is
+ * that a token re-point inherits into *everything* inside the scope, and the
+ * share dialog is inside it: `<ShareRoom>` returns a fragment, so its
+ * `<button>` **and** its always-mounted `<dialog>` are both direct children of
+ * this header (`room-screen.tsx`). The dialog is `bg-raised … text-ink-strong
+ * border-rule`, and `@theme inline` compiles those to `var(--skin-*)` — the
+ * very mechanism this re-point relies on — so the header's white ink landed on
+ * the dialog's white `--skin-raised` panel: room code, share link and both
+ * buttons at 1.00:1, with white focus rings, measured in Chromium. Scoping to
+ * `> :not(dialog)` is the smallest fix that keeps the mechanism: every control
+ * that stands on the blue still inherits the white roles (the token block sits
+ * on each direct child, and custom properties inherit down its subtree), while
+ * the dialog — which stands on its own raised panel and not on the blue at all
+ * — keeps the skin's root values. Gated by `keeps the share dialog on the
+ * light skin's own ink inside the blue header`, which fails at 1.0000:1
+ * without the `> :not(dialog)`.
+ */
+[data-skin='confetti'] .skin-card-header {
+  background-color: #2f6bff;
+  color: #fff;
+  border-bottom: none;
+}
+[data-skin='confetti'] .skin-card-header > :not(dialog) {
+  --skin-ink: #fff;
+  --skin-ink-strong: #fff;
+  --skin-muted-soft: rgba(255, 255, 255, 0.75);
+  --skin-muted: rgba(255, 255, 255, 0.85);
+  --skin-muted-strong: rgba(255, 255, 255, 0.95);
+  --skin-rule-soft: rgba(255, 255, 255, 0.22);
+  --skin-rule: rgba(255, 255, 255, 0.35);
+  --skin-rule-strong: rgba(255, 255, 255, 0.45);
+  --skin-accent: #fff;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-header > :not(dialog) {
+    --skin-muted: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/*
+ * The Theme button as the handoff's own pill: `#ffd23f` fill, `#20180f` text,
+ * `border-radius: 999px`, padding 7px 15px, 12px/600 mixed case
+ * (`docs/design/README.md` § *Theme button per theme* → `confetti`, and the
+ * HTML draws exactly that pill in both card headers — lines 664 and 317).
+ *
+ * Skin-scoped and surface-agnostic on purpose. The pill is the handoff's value
+ * for this control in *every* Confetti surface, not a patch for the blue
+ * header, and it happens to be the fix for the header too: `text-ink` on blue
+ * was 3.89:1 with an invisible `rgba(32,24,15,.11)` border, while dark ink on
+ * `#ffd23f` is 12.13:1 on both the cream join bar and this header.
+ *
+ * **On `.skin-theme-fill`, not on the `<button>` — #105's hook.** This rule
+ * originally used `button[aria-label='Theme']`, since at the time the border,
+ * padding and type all sat on the button itself. #105 moved them onto the one
+ * inner `.skin-theme-fill` span (so a sheared skin cannot deform
+ * `[data-hit-expand]`), which made the attribute selector the wrong element
+ * twice over: the span's own `border border-rule` and `rounded-skin` would
+ * keep painting over a yellow button, and any padding would land on a box
+ * that no longer owns the pill's geometry. Routed through the hook the base
+ * now provides — the same element Slipstream paints — so the pill is one box
+ * again.
+ *
+ * **The handoff's `padding: 7px 15px` is still *not* applied — the disclosed
+ * deviation stands, and now it is measured rather than argued.** Routing onto
+ * `.skin-theme-fill` made the padding *reachable* (the base ships a per-skin
+ * size on this very hook — Slipstream's `7px 13px`), so it was applied and the
+ * gate was run: `room.gate.ts`'s `expectHeaderOnOneLine` fails at
+ * `phone-small` in the Confetti leg of the skin cycle, `the slim bar's > p
+ * holds one line` receiving **1.998** — the run-status paragraph wraps to two
+ * lines, because `7px 15px` over the incumbent `px-2 py-1` is +14px of width
+ * in the tightest row in the app (#103's own arithmetic, quoted in
+ * `room-screen.tsx`, is what forced that line down from ~200px to under ~110px
+ * to fit this button at `phone-small` in the first place). Reverted rather
+ * than forced: buying those 14px means relitigating #103's header budget, and
+ * #108 sizes the die off this button's rendered height on top of that — both
+ * out of scope for a skin slice. The incumbent `px-2 py-1` (8px/4px) is kept,
+ * so this rule changes colour, corner radius and weight — no padding, no
+ * border width, no font size. `font-weight: 600` (the handoff's own value) does
+ * re-flow the label's advance width slightly, so "no layout change" is a claim
+ * about the box model rather than an absolute one; the header's own
+ * `expectHeaderOnOneLine`/`expectDieMatchesTheme`/`expectNoHorizontalScroll`
+ * checks cover it at all four viewports.
+ * The legibility defect it exists for is carried entirely by the fill and the
+ * ink, both of which are the handoff's own values.
+ */
+[data-skin='confetti'] .skin-theme-fill {
+  background-color: #ffd23f;
+  color: #20180f;
+  border-color: transparent;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/*
+ * Room code: one card, one string — not Pit Wall's four boxed characters.
+ * The four `<span>`s stay in the DOM (`room-code.tsx` is unconditional across
+ * skins), but here they sit flush in a row with a generated "Room code"
+ * label above them, using the same `flex-wrap` + `flex-basis: 100%`
+ * technique as a "label row, then content row" layout without a second
+ * wrapping element — the pseudo-element becomes the room code `<p>`'s first
+ * flex item and `flex: 0 0 100%` forces it, and only it, onto its own line.
+ */
+[data-skin='confetti'] .skin-code {
+  flex-wrap: wrap;
+  gap: 0;
+  background-color: #2f6bff;
+  color: #fff;
+  border-radius: 26px;
+  padding: 20px;
+}
+[data-skin='confetti'] .skin-code::before {
+  content: 'Room code';
+  flex: 0 0 100%;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+[data-skin='confetti'] .skin-code span {
+  flex: none;
+  aspect-ratio: unset;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  justify-content: flex-start;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-code {
+    border-radius: 32px;
+    padding: 30px;
+  }
+  [data-skin='confetti'] .skin-code span {
+    font-size: 88px;
+  }
+}
+
+/*
+ * The join screen's primary action. The button itself stays a plain, unsheared
+ * rectangle (`room-screen.tsx`'s own note on why); this skin's fill and
+ * transform land on `.skin-action-primary-fill` instead, with the label
+ * counter-skewed inside that.
+ */
+[data-skin='slipstream'] .skin-action-primary {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: var(--skin-surface);
+}
+[data-skin='slipstream'] .skin-action-primary-fill {
+  background-color: var(--skin-accent);
+  transform: skewX(-8deg);
+  font-size: 16px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+[data-skin='slipstream'] .skin-action-primary-label {
+  display: inline-block;
+  transform: skewX(8deg);
+}
+[data-skin='slipstream'] .skin-action-primary:disabled .skin-action-primary-fill {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-action-primary-fill {
+    font-size: 17px;
+  }
+}
+
+/* The Theme button (`skin-button.tsx`): same "shear the fill, not the hit box"
+   pattern as the primary action above. */
+[data-skin='slipstream'] .skin-theme-fill {
+  background-color: var(--skin-accent);
+  border: none;
+  border-radius: 0;
+  padding: 7px 13px;
+  font-size: 11px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--skin-surface);
+  transform: skewX(-10deg);
+}
+[data-skin='slipstream'] .skin-theme-label {
+  transform: skewX(10deg);
+}
+
+/*
+ * Roster: a wrapping pill row rather than Pit Wall's indexed table, truncated
+ * to four names plus an overflow chip below `1024px` and shown in full at and
+ * above it (README's "on mobile these truncate to four names plus a `+N`
+ * chip ... on desktop show all nine").
+ *
+ * **No host/you tag on a pill.** The handoff's own mock (`Bingo Screens.dc.html`
+ * #1b/#2b) draws every pill identically — plain names, no host mark — which
+ * the spec-precedence rule takes over the README's screen-level "roster ...
+ * with host marked": `you` is always `null` on this screen regardless (a
+ * player has not yet joined), so only the host half of that sentence could
+ * ever apply here, and the mock the HTML wins over simply does not draw it.
+ * Disclosed on the issue rather than invented.
+ */
+[data-skin='slipstream'] .skin-roster-heading {
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--skin-muted-strong);
+}
+[data-skin='slipstream'] .skin-roster ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+/*
+ * `:not([data-overflow-chip])` on purpose — the chip's own `display` is
+ * controlled *only* by the narrow-width media query below, layered on top of
+ * its own `hidden` (Tailwind, `display: none`) default in `roster-preview.tsx`.
+ * A plain `.skin-roster li` rule here would set `display: inline-flex`
+ * unconditionally on the chip too — higher specificity than `.hidden` — which
+ * is exactly the bug this comment is here to stop someone reintroducing: the
+ * chip showed at every viewport, `ipad-11-landscape` included, because this
+ * rule alone decided its display before the media query ever got a say.
+ */
+[data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]) {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+[data-skin='slipstream'] .skin-roster-index,
+[data-skin='slipstream'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+  align-items: center;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--skin-ink);
+  border-color: transparent;
+  background-color: var(--skin-free-rule);
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-roster ul {
+    gap: 9px;
+  }
+  [data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]) {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  [data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 1023.98px) {
+  [data-skin='slipstream'] .skin-roster li:not([data-overflow-chip]):nth-child(n + 5) {
+    display: none;
+  }
+  [data-skin='slipstream'] .skin-roster li[data-overflow-chip] {
+    display: inline-flex;
+  }
+}
+
+/*
+ * Progress readout: a bare numeral rather than Pit Wall's 12-segment bar
+ * (README's *Progress readout per theme*: "numeral only ... with `/ 24 MARKED`
+ * beneath"). The literal word "MARKED" is a `::after` on the total span rather
+ * than DOM text, since this whole paragraph is `aria-hidden` — the accessible
+ * text is the `role="progressbar"` label above it — so there is no accessible
+ * name for a generated string to be missing from.
+ */
+[data-skin='slipstream'] .skin-progress-track {
+  display: none;
+}
+[data-skin='slipstream'] .skin-progress-number {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-skin='slipstream'] .skin-progress-count {
+  font-size: 52px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: var(--skin-accent);
+}
+[data-skin='slipstream'] .skin-progress-of {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--skin-muted);
+}
+[data-skin='slipstream'] .skin-progress-of::after {
+  content: ' MARKED';
+}
+@media (min-width: 834px) {
+  [data-skin='slipstream'] .skin-progress-count {
+    font-size: 82px;
+    letter-spacing: -0.06em;
+  }
+  [data-skin='slipstream'] .skin-progress-of {
+    letter-spacing: 0.16em;
+  }
+}
+
+/*
+ * Card cell. The base state (`border-rule bg-raised`) is already token-driven
+ * from #102/this issue's own token block, so only the two `markedStyle()`
+ * literal overrides need a rule here — the same `[data-mark]` cascade #104
+ * introduced for Pit Wall.
+ *
+ * **The label face is switched to Archivo 900 uppercase here, at the grid
+ * itself, rather than by touching `card-font.ts`** — that module's own comment
+ * says its shared instance is pinned to the un-weighted `100 900` axis
+ * specifically so `card-grid.tsx`'s `font-semibold` (600) resolves correctly
+ * for the *Pit Wall/default* face, and repointing it would move every skin's
+ * card at once. `[data-label]` sits inside `.skin-cell`, so this reaches every
+ * label (and the free centre's own un-labelled span) without touching
+ * `card-grid.tsx` or `card-font.ts`.
+ *
+ * **The label size is this skin's own per-skin token, not a `SHRINK_FLOOR`
+ * change** (this issue's own trap): the shared `text-[3cqw]` in `card-grid.tsx`
+ * is calibrated for Roboto Condensed's width, and Archivo 900 is
+ * *substantially* wider at the same size — measured, the shared base clipped
+ * multiple worst-case labels even after the existing shrink-to-fit algorithm
+ * ran to its floor. `1.9cqw` is the fix: a smaller *starting*
+ * size for this skin only, so the same algorithm — untouched, `SHRINK_FLOOR`
+ * untouched — has enough headroom to fit Archivo's extra width without
+ * reaching the floor on the pool's real worst labels.
+ *
+ * **This undershoots the artboards' own label size, and does so knowingly.**
+ * The Slipstream artboards give `9.5px` (mobile, `padding:4px;line-height:1.08`)
+ * and `13px` (desktop, `padding:8px`); this renders ~7.0/7.3/15.7/10.6px across
+ * the matrix — about 26% under at `phone`, 18% under at `ipad-11-landscape`.
+ * The artboard size is *not reachable* with the real pool: seeding the token to
+ * `2.4cqw` (roughly the artboard size) fails all four card tests at all four
+ * viewports on `expectNoCellClipped`'s 7px budget. So this is a spec-vs-reality
+ * finding, not a styling choice — the mock was drawn with short placeholder
+ * labels and the shipped pool's worst cases are longer. The brief's escalation
+ * path (reword in `themes/f1/overrides.json` + `pnpm pool:build`) is a separate
+ * issue, per the brief's own instruction.
+ *
+ * **Second-order effect, recorded deliberately:** `SHRINK_FLOOR` is a
+ * *relative* 0.8 factor, not an absolute px floor, so dropping the base from
+ * `3cqw` to `1.9cqw` moves the effective absolute minimum at `phone-small`
+ * from about 8.8px to about 5.6px. The constant itself is untouched, exactly as
+ * the criterion requires, but the floor is ~37% weaker in absolute terms. Flagged
+ * for a batch follow-up rather than fixed here, since an absolute floor would
+ * change every skin's shrink behaviour at once.
+ *
+ * Applied to the grid `<ul>` itself (which
+ * `card-grid.tsx` already gives an `aria-label` to measure against) rather than
+ * to `[data-label]` directly, so it cascades to the free centre's label too.
+ */
+[data-skin='slipstream'] ul[aria-label='Your card'] {
+  font-size: 1.9cqw;
+}
+[data-skin='slipstream'] .skin-cell {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  border-radius: 0;
+  transition: background-color 140ms ease-out;
+}
+[data-skin='slipstream'] .skin-cell[data-mark='earned'] {
+  background-color: var(--skin-accent);
+  border-color: var(--skin-accent);
+  color: var(--skin-surface);
+}
+/*
+ * Inherited — invented for this issue, since the mocks show only base/marked/
+ * free (the same gap #104 records for Pit Wall). A heavier, hue-neutral white
+ * wash over the base `rgba(255,255,255,.06)` fill: distinct from the unmarked
+ * cell by weight alone and from the solid-yellow earned fill by both hue and
+ * lightness, so it reads as "already filled in" rather than as a dimmer copy
+ * of either — the same "must not look claimable" requirement `CONTEXT.md`
+ * states and `gate/skin-slipstream.gate.ts` measures with the same
+ * `paintedFill()`/`deltaE()` instrument #104's own gate introduced.
+ */
+[data-skin='slipstream'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--skin-ink);
+}
+/* Hover (pointer only, README's *Hover (desktop)*): the fill raises. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='slipstream'] .skin-cell:not(:disabled):hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Call banner: full accent fill, dark text. */
+[data-skin='slipstream'] .skin-banner {
+  background-color: var(--skin-accent);
+  border: none;
+  color: var(--skin-surface);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+}
+
+/* Focus: every interactive element gets a 2px accent ring, offset 2px. */
+[data-skin='slipstream'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * Name field: white fill (already `--skin-raised`, so no rule needed for it),
+ * a 2px ink border and a decorative "edit" affordance at the right edge.
+ * `pointer-events: none` on the affordance so it never steals a tap or a
+ * click from the input sitting under it.
+ */
+[data-skin='confetti'] .skin-field {
+  position: relative;
+  border-width: 2px;
+  border-color: #20180f;
+  border-radius: 22px;
+  padding: 16px 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+[data-skin='confetti'] .skin-field::after {
+  content: 'edit';
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.4;
+  pointer-events: none;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-field {
+    border-radius: 24px;
+    padding: 17px 22px;
+    font-size: 21px;
+  }
+}
+
+/*
+ * Primary action: the accent fill and the hard offset ledge
+ * (`box-shadow: 0 4px 0 #c93c1e`, `0 5px 0` at iPad — README's "no blur
+ * shadows anywhere"). The handoff's own copy for this button is "Let's
+ * play", but the DOM text stays "Enter room"/"Entering…" across every skin —
+ * #104's own disclosed precedent (`docs/SURFACES.md`'s "A disclosed copy
+ * change"): the accessible name is shared by `lobby.gate.ts` and
+ * `test/room-screen.test.tsx` across all four skins, so only the visual
+ * treatment is per-skin and the wording is not.
+ */
+[data-skin='confetti'] .skin-action-primary {
+  background-color: var(--skin-accent);
+  border: none;
+  color: #fff;
+  border-radius: 22px;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #c93c1e;
+}
+[data-skin='confetti'] .skin-action-primary:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+  box-shadow: none;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-action-primary {
+    border-radius: 24px;
+    font-size: 20px;
+    box-shadow: 0 5px 0 #c93c1e;
+  }
+}
+
+/*
+ * Roster: a wrapping pill row rather than Pit Wall's indexed table. The index
+ * and the `Host` tag are Pit Wall's own devices (README's roster table is
+ * per-theme), so both are hidden here; `roster-preview.tsx`'s "+N" row
+ * (#106) is shown only at phone widths, where the row also truncates to four
+ * names — both driven by `data-roster-overflow`/`data-roster-more`, which
+ * that component renders unconditionally for every skin.
+ */
+[data-skin='confetti'] .skin-roster-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-skin='confetti'] .skin-roster-row {
+  background-color: #ffd23f;
+  border-radius: 999px;
+  padding: 7px 14px;
+  gap: 0;
+}
+[data-skin='confetti'] .skin-roster-index,
+[data-skin='confetti'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='confetti'] .skin-roster-row[data-roster-overflow='true'] {
+  display: none;
+}
+[data-skin='confetti'] [data-roster-more] {
+  display: flex;
+  background-color: var(--skin-marked);
+  color: #fff;
+  font-weight: 600;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-roster-row[data-roster-overflow='true'] {
+    display: flex;
+  }
+  [data-skin='confetti'] [data-roster-more] {
+    display: none;
+  }
+}
+
+/*
+ * Card grid face: Fredoka 600 mixed case (README's "Labels Fredoka 600 mixed
+ * case — not uppercase"), overriding `card-grid.tsx`'s shared
+ * `cardFont.className` (Roboto Condensed, #12's face for every skin before
+ * this issue). `.skin-card-grid` is unconditional across skins, same pattern
+ * as every other hook in this file.
+ *
+ * **The size is a class, not an inline style — this issue's own "Traps"
+ * section.** `card-grid.tsx`'s `CARD_TEXT` (`text-[3cqw]`) is a class for
+ * exactly the reason stated there: jsdom cannot resolve `cqw` and throws out
+ * of `getComputedStyle`, which would take every role query in `apps/web/test/`
+ * down with it if this were a `style` prop instead. Fredoka is a wide face —
+ * this issue's other named trap — so the fraction is reduced from the shared
+ * 3cqw rather than left to `SHRINK_FLOOR`, which `card-grid.tsx`'s own gate
+ * (`legibility.gate.ts`, and this issue's own confetti run of it) exists to
+ * keep unreached rather than routinely hit.
+ */
+[data-skin='confetti'] .skin-card-grid {
+  font-family: var(--font-fredoka), sans-serif;
+  font-weight: 600;
+  font-size: 2.6cqw;
+  /*
+   * The handoff's own grid gap — `docs/design/README.md`:85 ("gap ... 5px
+   * (`confetti`)" phone, "gaps 3/4/7/5px per the theme order" desktop) and the
+   * HTML at line 670 (`gap:5px`, phone artboard) and line 337 (`gap:7px`,
+   * desktop artboard). Both sources agree, so there is no precedence question.
+   *
+   * **Skin-scoped, deliberately.** `card-grid.tsx`'s shared `gap-1` (4px) is
+   * left exactly as it was for the other three skins: this selector is
+   * `[data-skin] .class` (0,2,0) and beats the utility's single class (0,1,0),
+   * so Pit Wall, Slipstream and Scorecard keep the 4px their own slices are
+   * measured against. Changing the utility itself would have moved the
+   * available cell width under every skin at once — including #105's label
+   * token, tuned against today's 4px in a review round running concurrently
+   * with this one.
+   */
+  gap: 5px;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-card-grid {
+    gap: 7px;
+  }
+}
+
+/*
+ * Card cell. Unmarked is already token-driven (`--skin-raised`/`--skin-rule`
+ * resolve to Confetti's white/`.11` numbers), so only the border weight and
+ * the per-viewport radius need saying — `rounded-skin` alone would give every
+ * cell the flat 1rem token rather than the handoff's 14px phone / 20px iPad.
+ */
+[data-skin='confetti'] .skin-cell {
+  position: relative;
+  border-width: 2px;
+  border-radius: 14px;
+  transition:
+    background-color 140ms ease-out,
+    transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-cell {
+    border-radius: 20px;
+  }
+}
+/*
+ * The label rides above the earned overlay below, matching the HTML's own
+ * z-index stack (`<span style="position:relative;z-index:2">` over the marked
+ * overlay at line 674 / line 341). Without this the overlay would simply cover
+ * the text it is supposed to sit behind.
+ */
+[data-skin='confetti'] .skin-cell > [data-label] {
+  position: relative;
+  z-index: 1;
+}
+/*
+ * Earned: a solid green fill that bleeds past the cell's own border (README's
+ * "Card cell" table, "marked solid `#16a34a` bleeding 2px past the border").
+ *
+ * **An overlay layer, `inset: -2px`, exactly as the handoff renders it** — the
+ * HTML draws the marked state as `position:absolute; inset:-2px;
+ * background:#16a34a; border-radius:14px/20px` behind a re-drawn white label
+ * (line 674 phone, line 341 iPad), and a `::before` is that span without
+ * asking `card-grid.tsx` for a second element per cell. The full 2px is the
+ * handoff's number: at this skin's own 5px gap (above), 2px of bleed on each of
+ * two neighbours still leaves 1px clear, so the geometry the mocks draw is
+ * self-consistent and needs no deviation. `skin-confetti.gate.ts` measures that
+ * clearance rather than asserting it by eye.
+ *
+ * **The overlay is what makes the handoff's mark motion expressible**, which is
+ * the other reason it is a layer and not a `background-color`: "scales the fill
+ * from 0.85 to 1 with a slight overshoot (`cubic-bezier(.34,1.56,.64,1)`,
+ * 220ms)" (README:142) is a `transform` on the fill, and a `background-color`
+ * cannot be scaled. The pseudo-element exists on every marked-or-not cell so
+ * there is something to transition *from*; the base rule's plain `ease-out` is
+ * what "unmarking reverses without the overshoot" means, since a transition
+ * takes its timing function from the state it is going *to*.
+ *
+ * `overflow: hidden` on `.CELL` (`card-grid.tsx`) is what the shrink-to-fit
+ * backstop needs for a long label, so `overflow: visible` stays scoped to the
+ * earned state alone.
+ */
+[data-skin='confetti'] .skin-cell[data-mark]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: 0;
+  border-radius: inherit;
+  background-color: var(--skin-marked);
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+[data-skin='confetti'] .skin-cell[data-mark='earned']::before {
+  opacity: 1;
+  transform: scale(1);
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+[data-skin='confetti'] .skin-cell[data-mark='earned'] {
+  overflow: visible;
+  /*
+   * The cell keeps its own white fill under the overlay, exactly as the HTML
+   * does (`background:#fff` on the cell, the green as a layer above it). It
+   * also neutralises `card-grid.tsx`'s `bg-emerald-800` fallback class, which
+   * would otherwise be the colour showing around the overlay's edge for the
+   * 220ms it scales up from 0.85.
+   */
+  background-color: var(--skin-raised);
+  border-color: transparent;
+  color: #fff;
+}
+/*
+ * Inherited — invented for #106, since the mocks show only base/marked/free
+ * (the same gap #104 found in Pit Wall). Against a *white* cell rather than
+ * Pit Wall's near-black one, so the fill has to carry real weight rather than
+ * a faint wash: a solid ink-tinted grey, composited well clear of both white
+ * (unmarked) and the earned green — `gate/skin-confetti.gate.ts` measures all
+ * three pairwise the same way `skin-pitwall.gate.ts` does, reusing that
+ * file's `paintedFill`/`deltaE` technique rather than a new one. The label
+ * stays dark ink rather than being dimmed further, for the same reason
+ * #104's own inherited rule keeps its label at full contrast: the fill alone
+ * carries the state, so the text does not also have to.
+ */
+[data-skin='confetti'] .skin-cell[data-mark='inherited'] {
+  background-color: rgba(32, 24, 15, 0.32);
+  border-color: rgba(32, 24, 15, 0.32);
+  color: #20180f;
+}
+/* Hover (pointer only, README's *Hover (desktop)*): the cell scales up. */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='confetti'] .skin-cell:not(:disabled):hover {
+    transform: scale(1.03);
+  }
+}
+
+/*
+ * Progress readout: a numeral beside a single rounded track rather than Pit
+ * Wall's numeral-under-segments. The 12 segments stay in the DOM
+ * (`progress-readout.tsx` is unconditional), flush against each other with no
+ * gap and `overflow: hidden` on the rounded track — so a contiguous run of
+ * filled segments from the left reads as one continuous fill rather than as
+ * 12 blocks, the same approximation `Math.round(marks/total * 12)` already
+ * makes for the numeral above it.
+ */
+[data-skin='confetti'] .skin-progress {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+[data-skin='confetti'] .skin-progress-track {
+  order: 1;
+  flex: 1;
+  gap: 0;
+  height: 9px;
+  border-radius: 999px;
+  background-color: rgba(32, 24, 15, 0.1);
+  overflow: hidden;
+}
+[data-skin='confetti'] .skin-progress-segment {
+  height: 100%;
+  background-color: transparent;
+}
+[data-skin='confetti'] .skin-progress-segment[data-filled='true'] {
+  background-color: var(--skin-marked);
+}
+[data-skin='confetti'] .skin-progress-number {
+  order: 0;
+  color: var(--skin-accent);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-progress-track {
+    height: 11px;
+  }
+  [data-skin='confetti'] .skin-progress-number {
+    font-size: 52px;
+  }
+}
+
+/*
+ * Standings (desktop left rail): each rank in a 20px filled circle
+ * (`results.tsx`'s `.skin-standing-rank`, #106).
+ */
+[data-skin='confetti'] .skin-standing-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background-color: var(--skin-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/*
+ * "Looking for": individual rounded cards rather than Pit Wall's hairline
+ * rows. `divide-rule-soft`/`border-t` are the accordion's own utilities
+ * (`looking-for.tsx`); overriding the row's own border to `none` here is what
+ * lets each `<li>` read as its own card instead of a divided list.
+ */
+[data-skin='confetti'] .skin-looking li {
+  background-color: var(--skin-raised);
+  border: 2px solid rgba(32, 24, 15, 0.1);
+  border-top: 2px solid rgba(32, 24, 15, 0.1);
+  border-radius: 16px;
+  margin-bottom: 9px;
+}
+[data-skin='confetti'] .skin-looking-label {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+[data-skin='confetti'] .skin-looking-desc {
+  font-size: 12px;
+  line-height: 1.35;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-looking li {
+    border-radius: 18px;
+  }
+}
+
+/*
+ * Call banner: the docked bottom slot, restyled in place — same "the banner
+ * stays docked" rule #104 used. A decorative "!" badge is added as a
+ * `::before` rather than in `room-screen.tsx`'s markup, so the text node
+ * both the toast and the undo row carry (matched verbatim by
+ * `apps/web/test/` and `apps/web/gate/`) is untouched; `aria-hidden` is not
+ * needed on a `::before` since generated content is already outside the
+ * accessibility tree.
+ */
+[data-skin='confetti'] .skin-banner {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background-color: #ffd23f;
+  border-top: none;
+  color: #20180f;
+}
+[data-skin='confetti'] .skin-banner::before {
+  content: '!';
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background-color: #20180f;
+  color: #ffd23f;
+  font-size: 17px;
+  font-weight: 700;
+}
+@media (min-width: 834px) {
+  [data-skin='confetti'] .skin-banner::before {
+    width: 38px;
+    height: 38px;
+    font-size: 19px;
+  }
+}
+
+/*
+ * Focus: the accent ring on the cream/white surfaces (README's *Focus*), same
+ * one-selector-for-every-interactive-element rule as Pit Wall's.
+ */
+[data-skin='confetti'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * #107 — Scorecard's *structure*: ruled cream stock, 2px ink borders, dashed
+ * folds, and the ink ring that marks a square without touching its label. Same
+ * pattern #104/#105/#106 set — every rule below is scoped to
+ * `[data-skin='scorecard']`, so the other three skins are untouched, and every
+ * hook (`.skin-code`, `.skin-code-bar`, `.skin-field`, `.skin-cell`,
+ * `.skin-roster*`, `.skin-progress-*`, `.skin-banner`, `.skin-looking*`,
+ * `.skin-theme-fill`, `.skin-action-primary`) is a class the shared component
+ * tree already renders for every skin. Two new hooks this issue adds
+ * (`.skin-field-label` on the name field's own `<label>`, `.skin-join-divider`
+ * on the join screen's two-column wrapper) — see `room-screen.tsx`'s own
+ * comments at each call site for why a class was needed there and nowhere else.
+ *
+ * Breakpoints follow the file's own convention: unprefixed for phone,
+ * `@media (min-width: 834px)` for iPad.
+ */
+[data-skin='scorecard'] {
+  --skin-font-ui: var(--font-baloo-2), sans-serif;
+  --skin-font-label: var(--font-baloo-2), sans-serif;
+  font-family: var(--skin-font-ui);
+}
+
+/*
+ * Ruled paper (README's *Design tokens* → Scorecard, and both artboards): a
+ * hairline rule every 22px (phone) / 26px (iPad). On `body`, the same technique
+ * Slipstream's diagonal field uses — every Scorecard surface is the same ruled
+ * ground, and a `background-image` composites over `body`'s own `bg-surface`
+ * with no extra wrapper. `background-attachment: fixed` for the same reason
+ * Slipstream sets it: so the rule lines do not visibly scroll past the one
+ * column that scrolls (the phone card).
+ *
+ * This does not "sit under the card cells in a way that shows through
+ * `#fffdf7`" (this issue's own trap): a card cell's own `background-color:
+ * var(--skin-raised)` (`#fffdf7`) is opaque and painted in the normal flow
+ * above `body`'s background, which is the deepest layer in the stack — the
+ * ruled paper is a plain page background, not an overlay riding above the
+ * grid.
+ */
+[data-skin='scorecard'] body {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(43, 33, 24, 0.045) 0 1px,
+    transparent 1px 22px
+  );
+  background-attachment: fixed;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] body {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(43, 33, 24, 0.045) 0 1px,
+      transparent 1px 26px
+    );
+  }
+}
+
+/*
+ * Room code: a rotated ticket box around the four characters, with a plain
+ * (unrotated) "Admit one to room" label above it — the opposite of Confetti's
+ * single card, which is why Confetti's own `::before`-inside-the-flex-row trick
+ * cannot be reused here: rotating `.skin-code` would rotate a `::before` label
+ * riding inside it too.
+ *
+ * **`.skin-code-bar` repurposed as the label, not a new element.** That span
+ * already exists, unconditional, as `<RoomCode>`'s own sibling to `.skin-code`
+ * (Slipstream's sheared bar, #105) — a Fragment, so both are direct children of
+ * the same flex column `room-screen.tsx` already renders (`RoomCode`, the name
+ * field, the primary action). `order: -1` moves it before `.skin-code` in that
+ * one flex container without moving it in the DOM, which is what lets it stay
+ * a plain, unrotated, ungenerated-content-conflicting label: it is already
+ * `aria-hidden` (Slipstream's own precedent), so a decorative `::before`
+ * string on it duplicates no accessible name, unlike the real `<label>` the
+ * name field owns (see that field's own comment below).
+ */
+[data-skin='scorecard'] .skin-code-bar {
+  display: block;
+  order: -1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--skin-muted);
+}
+[data-skin='scorecard'] .skin-code-bar::before {
+  content: 'Admit one to room';
+}
+[data-skin='scorecard'] .skin-code {
+  order: 0;
+  justify-content: center;
+  gap: 0;
+  width: fit-content;
+  margin: 0 auto;
+  border: 3px solid #e5502a;
+  border-radius: 14px;
+  padding: 8px 22px;
+  transform: rotate(-2.5deg);
+}
+[data-skin='scorecard'] .skin-code span {
+  aspect-ratio: unset;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+  color: #e5502a;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-code-bar {
+    font-size: 13px;
+    letter-spacing: 0.24em;
+  }
+  [data-skin='scorecard'] .skin-code {
+    border-width: 4px;
+    border-radius: 18px;
+    padding: 10px 34px;
+  }
+  [data-skin='scorecard'] .skin-code span {
+    font-size: 96px;
+  }
+}
+
+/*
+ * Name field: no box, a 2px ink bottom rule. `.skin-field-label` is this
+ * issue's own hook, added to the `<label>` in `room-screen.tsx` — the handoff's
+ * copy is "SIGN HERE", but the DOM text stays "Your name", so only the visual
+ * weight (small, bold, spaced, uppercase, muted) is this skin's to set.
+ *
+ * **Not a settled precedent.** `docs/SURFACES.md`:1234-1250 explicitly rejected
+ * the framing that #104's `Join` → `Enter room` rename was precedent for this,
+ * and recorded the real justification — a cross-skin accessible-name contract —
+ * as an **open FINAL-GATE question**, not an established practice. Keeping
+ * "Your name" here is the same unresolved call applied to a second control, and
+ * it is recorded as such in this skin's own SURFACES entry rather than claimed
+ * as settled. The reason it is not decided inside this slice: `apps/web/test/`
+ * and every gate query one accessible name per control across all four skins,
+ * so a per-skin rename is a cross-slice retarget, not a CSS change.
+ */
+[data-skin='scorecard'] .skin-field-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--skin-muted);
+}
+[data-skin='scorecard'] .skin-field {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 2px solid #2b2118;
+  padding: 6px 2px;
+  font-size: 26px;
+  font-weight: 700;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-field-label {
+    letter-spacing: 0.16em;
+  }
+  [data-skin='scorecard'] .skin-field {
+    padding: 8px 2px;
+    font-size: 30px;
+  }
+}
+
+/* The join screen's primary action: a plain teal fill, no shear, no shadow. */
+[data-skin='scorecard'] .skin-action-primary {
+  background-color: #1f7a6b;
+  border: none;
+  color: #f7f1e4;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+[data-skin='scorecard'] .skin-action-primary:disabled {
+  background-color: var(--skin-raised);
+  color: var(--skin-muted-soft);
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-action-primary {
+    border-radius: 14px;
+    font-size: 19px;
+  }
+}
+
+/*
+ * The desktop divider (README's "Desktop layout ... a divider separates them —
+ * hairline in `pitwall`, dashed rule in `scorecard`"). `.skin-join-divider` is
+ * this issue's own hook on the join screen's two-column wrapper — see that
+ * element's own comment in `room-screen.tsx`. `1024px` matches the wrapper's
+ * own `lg:` breakpoint (Tailwind's stock `lg`, the same number the two-column
+ * layout itself switches on), so this only ever repaints a border that is
+ * already there rather than adding one at a width where the columns have not
+ * split yet.
+ */
+@media (min-width: 1024px) {
+  [data-skin='scorecard'] .skin-join-divider {
+    border-right-style: dashed;
+    border-right-color: rgba(43, 33, 24, 0.3);
+  }
+}
+
+/*
+ * Roster: `2px solid #2b2118` outline pills, the same wrapping-row structure
+ * Slipstream/Confetti already use on this component (`roster-preview.tsx`).
+ * The overflow chip borrows the accent orange rather than the base ink border,
+ * so it reads as "there is more" rather than as one more name.
+ */
+[data-skin='scorecard'] .skin-roster-heading {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+[data-skin='scorecard'] .skin-roster-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-skin='scorecard'] .skin-roster-row {
+  border: 2px solid #2b2118;
+  border-radius: 999px;
+  padding: 4px 12px;
+  gap: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-roster-index,
+[data-skin='scorecard'] .skin-roster-tag {
+  display: none;
+}
+[data-skin='scorecard'] .skin-roster-row[data-roster-overflow='true'] {
+  display: none;
+}
+[data-skin='scorecard'] [data-roster-more] {
+  display: flex;
+  border-color: #e5502a;
+  color: #e5502a;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-roster-list {
+    gap: 9px;
+  }
+  [data-skin='scorecard'] .skin-roster-row {
+    padding: 5px 14px;
+    font-size: 14px;
+  }
+  [data-skin='scorecard'] .skin-roster-row[data-roster-overflow='true'] {
+    display: flex;
+  }
+  [data-skin='scorecard'] [data-roster-more] {
+    display: none;
+  }
+}
+
+/*
+ * Card grid face: Baloo 2 700 mixed case, overriding `card-grid.tsx`'s shared
+ * `cardFont.className` (Roboto Condensed) — same `.skin-card-grid` hook and
+ * same "size is a class, not an inline style" rule Confetti's own comment
+ * explains (jsdom cannot resolve `cqw`). Baloo 2 is, per the handoff's own
+ * README note (§ *Header controls*), the widest of the five faces, so this
+ * issue's own fraction is reduced further than Confetti's `2.6cqw` rather than
+ * left at the shared `3cqw` or Confetti's own value — measured against the
+ * pool's real worst 24 at every viewport (`/legibility`, this issue's own
+ * acceptance criterion), the same way #105/#106 tuned theirs.
+ */
+[data-skin='scorecard'] .skin-card-grid {
+  font-family: var(--font-baloo-2), sans-serif;
+  font-weight: 700;
+  font-size: 1.7cqw;
+  gap: 4px;
+}
+/*
+ * Baloo 2's glyph metrics need a taller line box than `leading-tight` gives —
+ * see the `line-height` note on `.skin-cell` below for the measured sweep, the
+ * mechanism, and the disclosed deviation from the artboard's own value.
+ *
+ * `gap: 4px` at phone is HTML:747's own value; `5px` at iPad is the desktop
+ * artboard's own grid gap (HTML:433 — `grid-template-columns:repeat(5,1fr);
+ * gap:5px`). `docs/design/README.md`:85 tabulates only the mobile 4px, which is
+ * why this pair reads as unsourced against the README alone.
+ */
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-card-grid {
+    gap: 5px;
+  }
+}
+
+/*
+ * Card cell: `#fffdf7`, 2px ink, square (no radius — the one place this skin's
+ * own `--skin-radius: 0.75rem` token, tuned for boxes/fields/pills, is
+ * deliberately overridden, per the handoff's own "Radius ... 999px on pills
+ * and the ink ring" naming cells apart from that ladder).
+ *
+ * **`line-height: 1.62` is a disclosed spec-vs-reality deviation, and the spec
+ * range is not reachable at all.** The handoff gives the cell
+ * `line-height: 1.12` (mobile, HTML:749) and `1.15` (desktop, HTML:436);
+ * `docs/design/README.md`:104 gives `1.08–1.15`. Those values clip real labels,
+ * measured against the pool's own worst 24 at `/legibility` at all four matrix
+ * viewports (the binding one is `ipad-11-portrait`):
+ *
+ *     line-height   1.12    1.15    1.25    1.40    1.50    1.54    1.60    1.62
+ *     worst over   +3.40   +3.19   +2.48   +1.43   +0.72   +0.45   +0.03   +0.00
+ *
+ * `gate/measure.ts`'s budget is 0.5px, so everything at or below 1.52 fails the
+ * gate outright and 1.54 clears it only by 0.05px — inside the rounding
+ * tolerance, not clear of the metrics. **1.62 is the measured minimum at which
+ * the overflow is actually zero**, and it is what ships: the mechanism is that
+ * `[data-label]` is a block span, so its height is line-box driven, while
+ * `overflow()` compares that box against `Range.getClientRects()`, which
+ * returns *font-content-area* rects. Baloo 2's ascent+descent is ~1.6em, so any
+ * line box shorter than that overflows by a constant no narrower `cqw` can
+ * touch. (The shipped 1.65 was 0.03 above this minimum, not 43% above a
+ * reachable one.)
+ *
+ * Why the artboard can afford 1.12 and this cannot: the artboard's cells are
+ * static divs holding hand-picked short labels under `overflow: hidden`, while
+ * these hold the pool's real worst 24 under shrink-to-fit. Raising the line
+ * height does reduce text per cell and so pushes `fitLabel`'s shrink lower —
+ * the same second-order cost #105 disclosed for its own token.
+ *
+ * Set on `.skin-cell` rather than `.skin-card-grid` for the reason the block
+ * above this one gives: `leading-tight` is `card-grid.tsx`'s own class on the
+ * button itself, and an inherited value cannot beat it.
+ */
+[data-skin='scorecard'] .skin-cell {
+  position: relative;
+  border-width: 2px;
+  border-radius: 0;
+  line-height: 1.62;
+  transition: background-color 140ms ease-out;
+}
+/*
+ * **The label really is untouched, including its weight.** `card-grid.tsx`'s
+ * `markedStyle()` is the fallback every skin without its own `[data-mark]`
+ * override still renders — literal Tailwind colours *and* `font-semibold` —
+ * so without this rule a marked Scorecard cell would flip to
+ * `bg-emerald-800`/`bg-neutral-700` and bold text the moment it was called,
+ * which is exactly the opposite of this issue's own "leaves the label
+ * untouched" design. Both mark states are reset to the cell's own base
+ * fill/border/ink and this skin's one label weight (Baloo 2 700, the same
+ * weight every unmarked label already carries), at higher specificity
+ * (`[data-skin] .skin-cell[data-mark=…]`, 0,3,0) than the single-class
+ * Tailwind utilities it replaces (0,1,0).
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='earned'],
+[data-skin='scorecard'] .skin-cell[data-mark='inherited'] {
+  background-color: var(--skin-raised);
+  border-color: #2b2118;
+  color: var(--skin-ink);
+  font-weight: 700;
+}
+/*
+ * Hover (pointer only, README's *Hover (desktop)*): the fill shifts to white.
+ *
+ * `[data-mark='none']` rather than a bare `:hover`: README:148 scopes the hover
+ * lift to *unmarked* squares, and a retractable marked cell is not disabled, so
+ * a bare `:not(:disabled):hover` also repainted marked cells — at equal
+ * specificity to the `[data-mark]` rule above and later in the file, so hover
+ * won and a stamped square lost its own fill under the pointer.
+ */
+@media (hover: hover) and (pointer: fine) {
+  [data-skin='scorecard'] .skin-cell[data-mark='none']:not(:disabled):hover {
+    background-color: #fff;
+  }
+}
+
+/*
+ * The ink ring — this issue's own centrepiece. **An overlay, not a fill**: the
+ * label stays exactly as `card-grid.tsx` renders it, and the mark is a
+ * `border`-only `::after` positioned `inset: 6%` over the cell, `border-radius:
+ * 999px` — this issue's own "the ring is an overlay, so it must not enter the
+ * cell's text flow or the `Range`-based `overflow()` measurement in
+ * `card-grid.tsx`". A generated pseudo-element is never part of the `[data-label]`
+ * span's own text nodes, so `overflows()`'s `Range` over that span's content
+ * never sees it — the label is measured exactly as if the ring did not exist,
+ * which is the literal truth of how it is painted.
+ *
+ * **`::after`, not `::before`, and no `z-index` needed on the label.** The ring
+ * has to sit visually *above* the label (the handoff's own worst cases —
+ * `Track Limits Lap Deleted`, `Kid With Ear Defenders` — show it cutting
+ * through text) and — separately — has to be the thing
+ * `gate/skin-scorecard.gate.ts`'s copy of `paintedFill()` sees as topmost, since
+ * that instrument (inherited from `skin-confetti.gate.ts`) always treats a
+ * queried pseudo-element as the top of the paint stack regardless of real
+ * z-index or DOM order (its own documented blind spot). Putting the ring
+ * behind the label, or at `z-index: -1`, would make the instrument report a
+ * colour that is not really on top. A `position: absolute` pseudo-element with
+ * no explicit `z-index` is a "positioned descendant with `z-index: auto`",
+ * which CSS's painting order puts *after* the cell's in-flow, non-positioned
+ * content — the `[data-label]` span never receives a `position`, so it never
+ * competes for a stacking level at all and simply paints first. So the ring is
+ * both visually topmost and instrument-correct with no extra rule on the label.
+ *
+ * **Sized from the token, not literally 4/5px, for one reason only:
+ * `deviceScaleFactor: 2`, the factor this repo's gate runs at** (this issue's
+ * own trap about the ruled paper applies equally here) — a hairline `border`
+ * at a non-integer *device* pixel can round away or double under DPR scaling.
+ * `--skin-marked` already carries the handoff's exact ring colour
+ * (`rgba(229,80,42,.72)`, `globals.css`'s own token block), so the *earned*
+ * ring reads directly off it; nothing new is invented for that half.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark]::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 999px;
+  border-style: solid;
+  border-width: 4px;
+  border-color: transparent;
+  pointer-events: none;
+  transform: scale(1.15);
+  opacity: 0;
+  transition:
+    transform 160ms ease-out,
+    opacity 160ms ease-out;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-cell[data-mark]::after {
+    border-width: 5px;
+  }
+}
+/*
+ * Earned: the handoff's own orange ring, from the token.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='earned']::after {
+  opacity: 1;
+  transform: scale(1);
+  border-color: var(--skin-marked);
+}
+/*
+ * Inherited — invented for this issue, since the mocks show only base/marked/
+ * free (the same gap #104/#105/#106 each record for their own skin). **A
+ * second ink colour, not an unclosed ring** (the brief's own two options): this
+ * skin's own teal (`#1f7a6b`, already named in the *Design tokens* palette and
+ * already carrying the meaning "this happened, but you are not the one holding
+ * it" — it is the primary action's own fill and the call banner's own fill,
+ * both "something the room is doing", not "something you earned"). Reusing a
+ * ring the same *shape* as earned but a different *hue* keeps the "a mark is a
+ * stamp" reading intact while the colour alone carries "you did not call this
+ * one" — the same "must not look claimable" requirement `CONTEXT.md` states,
+ * satisfied by hue rather than by weight since the fill is not available to
+ * this skin's marked state at all (the label-untouched design is the whole
+ * point of this issue). `skin-scorecard.gate.ts` measures the ring's own
+ * rendered border colour for all three states, pairwise — see that file's own
+ * comment for why `paintedFill()` cannot be the instrument for a border-only
+ * overlay.
+ */
+[data-skin='scorecard'] .skin-cell[data-mark='inherited']::after {
+  opacity: 1;
+  transform: scale(1);
+  border-color: #1f7a6b;
+}
+
+/*
+ * Progress readout: plain text rather than Pit Wall's segments or Confetti's
+ * track — the segmented `<div>` stays in the DOM (`progress-readout.tsx` is
+ * unconditional) but is hidden, the same technique Slipstream's own numeral-
+ * only treatment uses.
+ *
+ * **Two real sizes, not one, and both are the handoff's own — this issue's
+ * spec-precedence case.** The mobile artboard (HTML `#1d`) folds this region
+ * into a compact 13px/700 baseline row beside the "Your card" label; the
+ * desktop artboard (`#2d`) draws a distinct 44px/800 numeral in the left rail,
+ * exactly as `docs/design/README.md`'s own *Progress readout per theme* table
+ * states ("44px/800 numeral"). Both are read directly off their own artboard
+ * rather than one being assumed to be a rounding of the other — the same
+ * per-viewport-artboard reading this issue's own brief calls out, and the same
+ * shape Pit Wall's own `.skin-progress-number` split already uses ("the
+ * numeral is the iPad half of this region, and only that").
+ *
+ * The literal wording differs between the two artboards too (mobile "8 of 24
+ * stamped", desktop "8 / 24 stamped") — both are decorative (`aria-hidden`,
+ * per `progress-readout.tsx`'s own comment), and the DOM's own `/{total}`
+ * (shared by every skin, in `progress-readout.tsx`) is kept rather than edited
+ * per skin, so only the word "stamped" is added via `::after`.
+ */
+[data-skin='scorecard'] .skin-progress-track {
+  display: none;
+}
+[data-skin='scorecard'] .skin-progress {
+  flex-direction: row;
+}
+[data-skin='scorecard'] .skin-progress-number {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+[data-skin='scorecard'] .skin-progress-count {
+  font-size: 13px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-progress-of {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--skin-ink);
+}
+[data-skin='scorecard'] .skin-progress-of::after {
+  content: ' stamped';
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-progress {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  [data-skin='scorecard'] .skin-progress-number {
+    display: block;
+    width: auto;
+  }
+  [data-skin='scorecard'] .skin-progress-count {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  [data-skin='scorecard'] .skin-progress-of {
+    margin-left: 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--skin-muted);
+  }
+}
+
+/*
+ * "Looking for": 1px rules under a dashed section head — the accordion's own
+ * `rounded-skin border border-rule-soft` box is replaced by a plain dashed top
+ * rule, and the rows underneath keep the accordion's own `divide-rule-soft` /
+ * `border-rule-soft` utilities (`looking-for.tsx`), which already render this
+ * skin's exact `rgba(43,33,24,.15)` — no override needed for the rows
+ * themselves.
+ */
+[data-skin='scorecard'] .skin-looking {
+  border-radius: 0;
+  border-color: transparent;
+  border-top: 2px dashed rgba(43, 33, 24, 0.3);
+}
+[data-skin='scorecard'] .skin-looking-label {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+[data-skin='scorecard'] .skin-looking-desc {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-looking-label {
+    font-size: 14px;
+  }
+  [data-skin='scorecard'] .skin-looking-desc {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+}
+
+/* Call banner: teal fill, cream text, a dark top rule — same "restyle the
+   docked slot in place" rule #104/#105/#106 all use. */
+[data-skin='scorecard'] .skin-banner {
+  background-color: #1f7a6b;
+  border-top: 2px solid #2b2118;
+  color: #f7f1e4;
+  /* The brief's and README:115's own tracking for the "CALLED · 2s" label. */
+  letter-spacing: 0.18em;
+}
+
+/*
+ * The card screen's header: plain text room code (no ticket box — that
+ * treatment is the join screen's own) at the handoff's own size, and the
+ * header's hairline promoted to this skin's 2px ink rule.
+ */
+[data-skin='scorecard'] .skin-card-header {
+  border-bottom-width: 2px;
+  border-bottom-color: #2b2118;
+  padding: 13px 16px;
+}
+/*
+ * **`letter-spacing: 0.08em` (HTML:740) is a disclosed deviation at phone
+ * widths, and the reason is that the artboard's header is not this header.**
+ * HTML:740 carries a bare 4-character code (`K4V2`), one stat (`Lap 34`), the
+ * die and the Theme button. The real header carries `Room ABCD` (9 characters),
+ * `0/24 · 6 here` *and* a Share button — so the artboard's tracking was never
+ * budgeted against this row's actual contents.
+ *
+ * Measured at `phone-small` (375px), with the header's own `13px 16px` padding
+ * and `gap-2`: the `<p>` is the row's only `flex-1` child, so it gets exactly
+ * the leftover width and nothing more. With `.08em` the h1 measured 96.26px,
+ * leaving the `<p>` a 62.70px box for 60.53px of text — **2.17px of slack**,
+ * which is what shipped and what CI run 32603690712 broke at `phone-small`
+ * (`1.9985` line boxes). Reclaiming the tracking takes the h1 to 84.75px and
+ * the `<p>`'s box to 74.22px against the same 60.53px of text — **13.69px of
+ * slack, 22.6%**. For scale: the *fallback* face renders that same string at
+ * 67.52px, so the row now holds one line even in the swap state that caused the
+ * CI failure (see `settleSkinFonts` in `gate/room-fixture.ts`, which removes
+ * that race outright). Both halves are deliberate: real slack, and a measuring
+ * instrument that can see the state it grades.
+ *
+ * The iPad block below restores the handoff's `.08em` — the deviation is
+ * confined to the one viewport class whose budget is real. `docs/SURFACES.md`
+ * records the measured numbers.
+ */
+[data-skin='scorecard'] .skin-card-header h1 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: normal;
+}
+/*
+ * The run-status line (`room-screen.tsx`'s own `p.text-xs.tabular-nums`, no
+ * class hook of its own — an element selector is enough since it is the
+ * header's only `<p>`). Pit Wall's own comment on `.skin-note` records the
+ * same defect for JetBrains Mono; Baloo 2 is wider still (this issue's own
+ * brief: "Re-check the header's single line at `phone-small` in this skin
+ * specifically — slice 2's arithmetic was done at the smaller height"), and
+ * the unmodified `text-xs` (12px) wraps this line to two at `phone-small`
+ * once the whole skin root switches to it — measured, `room.gate.ts`'s
+ * `expectHeaderOnOneLine` failing at 1.998 lines before this rule existed.
+ * `11px` is this skin's own fix, the same kind of type-scale correction Pit
+ * Wall's own comment describes rather than a copy or layout change.
+ */
+[data-skin='scorecard'] .skin-card-header > p {
+  font-size: 11px;
+}
+@media (min-width: 834px) {
+  [data-skin='scorecard'] .skin-card-header {
+    padding: 15px 28px;
+  }
+  [data-skin='scorecard'] .skin-card-header h1 {
+    font-size: 19px;
+    /* The handoff's own tracking (HTML:414), restored where the row can afford
+       it — see the phone rule above for why it is dropped at phone widths. */
+    letter-spacing: 0.08em;
+  }
+  /* The desktop artboard's own value (HTML:414 gives the stats row `12px`); the
+     `11px` above is the *mobile* artboard's (HTML:741). Both are real, and the
+     iPad row has the width for the larger one. */
+  [data-skin='scorecard'] .skin-card-header > p {
+    font-size: 12px;
+  }
+}
+
+/*
+ * The Theme button (`skin-button.tsx`): a plain ink-outlined pill, no fill —
+ * the handoff's own "no radius" boxes elsewhere in this skin do not apply
+ * here, since the Theme button's own entry names `border-radius: 10px`
+ * explicitly.
+ *
+ * **The handoff's own `padding: 5px 12px` is a disclosed deviation, not
+ * applied — the same "the button's own budget" trap #106's own comment on
+ * this exact hook records for Confetti's `7px 15px`.** Baloo 2 is the widest
+ * of the five faces, so this button (already carrying a 2px border for the
+ * first time — every other skin's own `.skin-theme-fill` is 1px or borderless)
+ * plus the handoff's fuller padding pushed the header's run-status `<p>` down
+ * to ~53px of available width at `phone-small`, which no font size that stays
+ * legible fits into — measured, `room.gate.ts`'s `expectHeaderOnOneLine`
+ * failing at 1.999 lines with the handoff's own padding applied. The
+ * incumbent `px-2 py-1` (8px/4px, from `skin-button.tsx`'s own base classes)
+ * is kept, so this rule changes colour, corner radius and weight — no padding,
+ * no border width beyond the ink outline itself, no font size relative to the
+ * incumbent `text-xs`. `docs/SURFACES.md` records the measured consequence.
+ */
+[data-skin='scorecard'] .skin-theme-fill {
+  background-color: transparent;
+  border-width: 2px;
+  border-color: #2b2118;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--skin-ink);
+}
+
+/*
+ * Focus: the accent ring on the cream/paper surfaces, same
+ * one-selector-for-every-interactive-element rule as the other three skins'.
+ */
+[data-skin='scorecard'] :is(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--skin-accent);
+  outline-offset: 2px;
+}

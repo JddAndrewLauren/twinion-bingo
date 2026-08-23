@@ -158,6 +158,25 @@ Both layouts' markup is in the document at every width — the price of a CSS-on
 rotating mid-game cannot remount the screen and drop the stream. `docs/SURFACES.md` carries the
 consequences.
 
+## Skin
+
+**Skin** — one of four purely-visual treatments (Pit Wall, Slipstream, Confetti, Scorecard), a
+CSS-variable layer keyed on `[data-skin]` with a `@theme inline` bridge into Tailwind utilities — not
+a component per look, so the same React tree renders under all four (ADR-0009). A skin changes
+nothing about squares, calls, or which theme a room is playing: two players in one room on different
+skins see identical game state. `apps/web/app/skin.ts`.
+
+**"Theme" is content, not visual, and is now this project's word for exactly one thing** — a pool's
+own content pack (`themes/f1`, a `themeId` like `f1.v2`, `themeName()`). Before ADR-0009 "theme" was
+also used loosely for the visual look; it no longer is anywhere in code, tests or docs. The
+user-facing control that cycles a skin is still labelled **Theme** — the handoff's own choice, and
+what a player already calls the F1/IndyCar content pack — but that is copy, not vocabulary: every
+identifier, file, selector and test name says `skin`.
+
+The skin a browser is on is client state persisted in a **cookie** (`twinion_bingo_skin`), read
+server-side so `<html data-skin>` and `themeColor` are right on the very first paint — never sent to
+the server as part of room state, and never part of the *Room* or *Game* this file defines above.
+
 ## Identity
 
 **Player** — a display name plus a server-issued token held in `localStorage`, per browser. No

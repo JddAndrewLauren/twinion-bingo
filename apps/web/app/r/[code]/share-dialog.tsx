@@ -74,7 +74,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
           setCopied('idle');
           dialog.current?.showModal();
         }}
-        className="min-h-11 shrink-0 rounded border border-neutral-700 px-2 text-sm font-semibold"
+        className="min-h-11 shrink-0 rounded-skin border border-rule px-2 text-sm font-semibold"
       >
         Share
       </button>
@@ -104,7 +104,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
           setCopied('idle');
           trigger.current?.focus();
         }}
-        className="m-auto w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded border border-neutral-700 bg-neutral-900 p-4 text-neutral-50 backdrop:bg-black/70"
+        className="m-auto w-[min(20rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-skin border border-rule bg-raised p-4 text-ink-strong backdrop:bg-black/70"
       >
         <div className="flex flex-col gap-3">
           {/*
@@ -116,7 +116,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
             renders an SVG `<title>`, which is both the accessible name and the only
             honest way to assert the encoded value without a test-only attribute.
           */}
-          <div className="rounded bg-white p-2">
+          <div className="rounded-skin bg-white p-2">
             <QRCodeSVG
               value={shareLink}
               title={shareLink}
@@ -144,7 +144,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
             type="button"
             onClick={copy}
             {...AUTOFOCUS}
-            className="min-h-11 rounded border border-neutral-700 font-semibold"
+            className="min-h-11 rounded-skin border border-rule font-semibold"
           >
             Copy link
           </button>
@@ -158,7 +158,7 @@ export function ShareRoom({ code, shareLink }: { code: string; shareLink: string
           <button
             type="button"
             onClick={() => dialog.current?.close()}
-            className="min-h-11 rounded border border-neutral-600 font-semibold"
+            className="min-h-11 rounded-skin border border-rule-strong font-semibold"
           >
             Close
           </button>

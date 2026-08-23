@@ -40,7 +40,7 @@ export function LookingFor({ game }: { game: Game }) {
   const open = openSquares(game);
 
   return (
-    <section className="rounded border border-neutral-800">
+    <section className="skin-looking rounded-skin border border-rule-soft">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -49,9 +49,9 @@ export function LookingFor({ game }: { game: Game }) {
       >
         <span>
           What am I looking for{' '}
-          <span className="font-normal text-neutral-400">({open.length})</span>
+          <span className="font-normal text-muted">({open.length})</span>
         </span>
-        <span aria-hidden className="shrink-0 text-neutral-400">
+        <span aria-hidden className="shrink-0 text-muted">
           {expanded ? '▾' : '▸'}
         </span>
       </button>
@@ -59,7 +59,7 @@ export function LookingFor({ game }: { game: Game }) {
       {expanded && (
         <ul
           aria-label="Squares still open"
-          className="flex flex-col divide-y divide-neutral-800 border-t border-neutral-800"
+          className="flex flex-col divide-y divide-rule-soft border-t border-rule-soft"
         >
           {open.map((square) => (
             <Row key={square.id} square={square} />
@@ -87,7 +87,7 @@ export function LookingForPanel({ game }: { game: Game }) {
   const open = openSquares(game);
 
   return (
-    <section aria-label="Looking for">
+    <section aria-label="Looking for" className="skin-looking">
       {open.length === 0 ? (
         /*
           A pane needs an empty state where the accordion does not: the accordion is
@@ -95,11 +95,11 @@ export function LookingForPanel({ game }: { game: Game }) {
           opens by default, so at a full house it was a blank half of the screen with
           the final standings behind an unhinted tab.
         */
-        <p className="px-3 py-2 text-sm text-neutral-400">
+        <p className="px-3 py-2 text-sm text-muted">
           Nothing left to look for — every square on your card is marked.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-neutral-800">
+        <ul className="flex flex-col divide-y divide-rule-soft">
           {open.map((square) => (
             <Row key={square.id} square={square} />
           ))}
@@ -109,12 +109,19 @@ export function LookingForPanel({ game }: { game: Game }) {
   );
 }
 
-/** One open square: the label as it reads on the card, then the prose that settles it. */
+/**
+ * One open square: the label as it reads on the card, then the prose that settles it.
+ *
+ * The two class hooks are #104's, and carry no rules outside a skin block: the
+ * handoff gives this region a per-theme type pair (Pit Wall's is the card's own
+ * condensed face for the label over a smaller, dimmer description) and the region
+ * had no hook at all to hang one on. Same React tree for every skin.
+ */
 function Row({ square }: { square: CardSquare }) {
   return (
     <li className="px-3 py-2">
-      <p className="text-sm font-semibold">{square.label}</p>
-      <p className="text-sm text-neutral-400">{square.description}</p>
+      <p className="skin-looking-label text-sm font-semibold">{square.label}</p>
+      <p className="skin-looking-desc text-sm text-muted">{square.description}</p>
     </li>
   );
 }

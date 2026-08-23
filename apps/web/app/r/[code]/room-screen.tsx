@@ -3,7 +3,10 @@
 import confetti from 'canvas-confetti';
 import { useEffect, useRef, useState } from 'react';
 import { ACTION_BUTTON } from '../../action-button';
+import { DieButton } from '../../die-button';
 import { readToken, storeToken } from '../../player-token';
+import { DEFAULT_SKIN, type Skin } from '../../skin';
+import { SkinButton } from '../../skin-button';
 import {
   ApiError,
   callSquare,
@@ -23,7 +26,10 @@ import {
 import { CardGrid } from './card-grid';
 import { DeckSheet } from './deck-sheet';
 import { LookingFor, LookingForPanel, openSquares } from './looking-for';
+import { ProgressReadout } from './progress-readout';
 import { Results, nextPrizeName } from './results';
+import { RoomCode } from './room-code';
+import { RosterPreview } from './roster-preview';
 import { ShareRoom } from './share-dialog';
 import { useWakeLock } from './use-wake-lock';
 
@@ -207,13 +213,27 @@ function labelFor(game: Game, squareId: string): string {
  * - **Reduced motion.** Checked here rather than left to the library's own
  *   `disableForReducedMotion`, so the criterion is this app's and can be
  *   asserted rather than delegated.
+ *
+ * **#106's addition: an explicit palette on the Confetti skin.** The library's own
+ * default mix leans on pale pastels (its own README's example swatches run light),
+ * which is precisely what disappears against this skin's `#fffbf2` ground — the
+ * one skin this app draws with a light surface at all. Read straight off `<html
+ * data-skin>` rather than plumbed through props: `celebrate` is a module-level
+ * function with no access to `RoomScreen`'s `initialSkin` (which is only ever the
+ * *server-rendered* skin besides), and `SkinButton` already writes the live skin to
+ * that same attribute on every press, so this reads the one place a press actually
+ * lands. The other three skins are untouched — dark grounds are what the library's
+ * default mix was already tuned against.
  */
+const CONFETTI_SKIN_PALETTE = ['#ff5c39', '#2f6bff', '#ffd23f', '#16a34a', '#20180f'];
+
 function celebrate(prizeKind: string): void {
   if (document.visibilityState !== 'visible') return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   // A full house is D5's one-way door and the end of the session, not a cheer.
   const finale = prizeKind === 'FULL_HOUSE';
+  const skin = document.documentElement.dataset.skin;
 
   void confetti({
     particleCount: finale ? 220 : 80,
@@ -221,6 +241,7 @@ function celebrate(prizeKind: string): void {
     startVelocity: finale ? 55 : 40,
     // Fired from below the card so the burst travels up past it.
     origin: { y: 0.9 },
+    ...(skin === 'confetti' ? { colors: CONFETTI_SKIN_PALETTE } : {}),
   });
 }
 
@@ -228,10 +249,16 @@ export function RoomScreen({
   apiUrl,
   code,
   shareLink,
+  // Defaults to `pitwall` rather than being required, so every existing
+  // `<RoomScreen>` call site in `test/` — none of which know about #103 — keeps
+  // rendering exactly what it did. The real callers (`r/[code]/page.tsx`) always
+  // pass the request's actual skin.
+  initialSkin = DEFAULT_SKIN,
 }: {
   apiUrl: string;
   code: string;
   shareLink: string;
+  initialSkin?: Skin;
 }) {
   const [load, setLoad] = useState<Load>('loading');
   const [roster, setRoster] = useState<Roster | null>(null);
@@ -319,6 +346,14 @@ export function RoomScreen({
    * and D13 keeps this same room and stream for the next one.
    */
   const celebrated = useRef(new Set<string>());
+
+  /**
+   * #108: the Theme button of whichever header is on screen, so the die beside
+   * it can measure and match its height. One ref rather than one per header —
+   * the three headers are mutually exclusive branches of this same render, so
+   * only one `SkinButton` is ever mounted against it at a time.
+   */
+  const themeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -631,32 +666,140 @@ export function RoomScreen({
 
   if (roster.you === null) {
     return (
-      <form onSubmit={submitName} className={COLUMN}>
-        <h1 className="text-2xl font-semibold">Join room {code}</h1>
-        <label className="flex flex-col gap-1">
-          Your name
-          <input
-            name="name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            maxLength={24}
-            required
-            className="rounded border border-neutral-700 bg-neutral-900 p-2"
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={joining || name.trim() === ''}
-          className={ACTION_BUTTON}
-        >
-          {joining ? 'Joining…' : 'Join'}
-        </button>
-        {joinFailed !== null && <p role="alert">{joinFailed}</p>}
+      /*
+        #104: the room code, the ruled name field and the roster are structural
+        pieces the app did not have before this issue — see `room-code.tsx` and
+        `roster-preview.tsx`. `lg:max-w-3xl` and the two-column row below only
+        take effect at `lg` (1024px), which is `ipad-11-landscape` in
+        `docs/SURFACES.md`'s matrix and nothing narrower — `ipad-11-portrait`
+        (834) and both phone widths keep the single `max-w-md` column.
+      */
+      <form onSubmit={submitName} className={`${COLUMN} lg:max-w-3xl`}>
         {/*
-          Below Join, so the form's own primary action keeps its place: somebody who
-          followed a link here is joining, not re-sharing.
+          #103's brand bar: this state had no top bar at all before, just the
+          bare `<h1>` — the Theme button needed somewhere to hang, so this row
+          is it.
         */}
-        <ShareRoom code={code} shareLink={shareLink} />
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-semibold">Join room {code}</h1>
+          {/*
+            #108: the die belongs on every header per the handoff ("join and
+            card alike"), but there is no card to re-roll here — disabled with
+            no reason text, the same convention a plain `disabled` attribute
+            already carries on every other button in this screen.
+          */}
+          <div className="flex items-stretch gap-[10px]">
+            <DieButton
+              disabled
+              pending={false}
+              surface="join"
+              matchHeightOf={themeButtonRef}
+            />
+            <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-10">
+          {/*
+            The left column at `lg` (README's "Left column (≈55–60%) holds room
+            code, name field, and primary action"); the divider is a hairline in
+            Pit Wall and nothing in this issue's other three skins — except
+            Scorecard (#107), which draws a dashed rule here (README's
+            "Desktop divider ... dashed rule in `scorecard`"). `skin-join-divider`
+            is the hook rather than a bare `border-rule` override, so only
+            Scorecard's own `[data-skin='scorecard'] .skin-join-divider` rule in
+            `globals.css` touches it and Pit Wall's hairline is untouched.
+          */}
+          <div className="skin-join-divider flex flex-1 flex-col gap-4 lg:border-r lg:border-rule lg:pr-10">
+            <RoomCode code={code} />
+            <div className="flex flex-col gap-1">
+              {/*
+                `skin-field-label` (#107): Scorecard's own "SIGN HERE" label is a
+                visual weight change only — the DOM text stays "Your name", so
+                `apps/web/test/` and every gate keep querying one accessible name
+                across all four skins.
+
+                This is **not** settled precedent. `docs/SURFACES.md`:1234-1250
+                rejected the claim that #104's `Join` → `Enter room` rename
+                justified it, and recorded the cross-skin accessible-name
+                contract as an *open FINAL-GATE question*. Keeping "Your name"
+                applies that unresolved call to a second control; #107's own
+                SURFACES entry lists it, and the roster heading, under the same
+                open question rather than as an established practice.
+              */}
+              <label htmlFor="join-name" className="skin-field-label">
+                Your name
+              </label>
+              {/*
+                The bordered box is `.skin-field` rather than the `<label>`
+                itself, so "Your name" sits above the box (README's per-theme
+                description) rather than inside it.
+              */}
+              <div className="skin-field rounded-skin border border-rule bg-raised p-2">
+                <input
+                  id="join-name"
+                  name="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={24}
+                  required
+                  className="w-full bg-transparent outline-none"
+                />
+              </div>
+            </div>
+            {/*
+              `skin-action-primary` is the accent-fill hook, and it is *here*
+              rather than on `ACTION_BUTTON` deliberately. The handoff gives the
+              filled treatment to this screen's single primary action; no mock
+              puts an accent-filled button on the card screen (where red is the
+              free centre and the call banner's rule) or on the home screen,
+              whose two forms are co-equal and would end up with two competing
+              full-red primaries. `ACTION_BUTTON` still supplies the 44px
+              minimum, the border and the padding every submit button shares.
+            */}
+            <button
+              type="submit"
+              disabled={joining || name.trim() === ''}
+              className={`${ACTION_BUTTON} skin-action-primary`}
+            >
+              {/*
+                #105 (Slipstream): the button itself stays an unsheared rectangle
+                — its own bounding box is what `expectThumbSized` measures — and
+                the `skewX(-8deg)` the handoff draws lands on this inner fill
+                span instead, with the label counter-skewed inside *that*, the
+                same "shear an inner element, not the hit box" pattern
+                `skin-button.tsx`'s own `.skin-theme-fill` uses. A no-op wrapper
+                for the three skins with no shear: `.skin-action-primary-fill`
+                and `.skin-action-primary-label` carry no rules of their own
+                outside `[data-skin='slipstream']`.
+              */}
+              <span className="skin-action-primary-fill flex h-full w-full items-center justify-center">
+                <span className="skin-action-primary-label">
+                  {/*
+                    "Enter room" rather than the handoff's literal "ENTER ROOM":
+                    `lobby.gate.ts` and `test/room-screen.test.tsx` name this
+                    button by its accessible text, and #104 keeps that text in
+                    sentence case and lets `[data-skin='pitwall']
+                    .skin-action-primary`'s `text-transform: uppercase` carry
+                    the visual, the same pattern the roster's `HOST` tag uses —
+                    rather than baking upper case into the DOM text every skin
+                    and every screen reader gets.
+                  */}
+                  {joining ? 'Entering…' : 'Enter room'}
+                </span>
+              </span>
+            </button>
+            {joinFailed !== null && <p role="alert">{joinFailed}</p>}
+            {/*
+              Below the primary action, so the form's own primary action keeps
+              its place: somebody who followed a link here is joining, not
+              re-sharing.
+            */}
+            <ShareRoom code={code} shareLink={shareLink} />
+          </div>
+          <div className="flex-1">
+            <RosterPreview roster={roster} />
+          </div>
+        </div>
       </form>
     );
   }
@@ -753,26 +896,86 @@ export function RoomScreen({
           here. `tabular-nums` because the mark count changes under your eyes and a
           number that shifts width as it does reads as the layout twitching.
         */}
-        <header className="flex shrink-0 items-baseline justify-between gap-2 border-b border-neutral-800 px-2 py-2">
-          <h1 className="text-sm font-semibold">Room {code}</h1>
-          <p className="min-w-0 text-xs tabular-nums text-neutral-400">
-            {game.marks.length} mark{game.marks.length === 1 ? '' : 's'}
-            {nextPrize !== undefined && ` · ${nextPrize} next`} ·{' '}
+        {/*
+          #106: `.skin-card-header` is the hook for Confetti's own blue
+          `#2f6bff` card-screen header (README's "Card header" background) — the
+          surface `globals.css`'s die-surface comment names as not yet painted
+          by any component. Unconditional, same as every other `.skin-*` hook
+          in this file: the other three skins render no rule against it and
+          this header stays exactly as it was for them.
+        */}
+        <header className="skin-card-header flex shrink-0 items-center justify-between gap-2 border-b border-rule-soft px-2 py-2">
+          <h1 className="shrink-0 text-sm font-semibold">Room {code}</h1>
+          {/*
+            #103 shortened this from "24 marks · full house next · 12 here" (once
+            199.7px at 375 CSS px) to your mark count over the card's own 24, plus
+            who is here — `· <rung> next` moves into a `hidden lg:inline` span so
+            it survives only at `ipad-11-landscape`, which is the one viewport with
+            the width to spare for it. Mounting the dice's reserved slot and the
+            Theme button beside the room code and Share left no other way to hold
+            this on one line at `phone-small` — see the header row's own note below
+            for the arithmetic.
+          */}
+          <p className="min-w-0 flex-1 text-xs tabular-nums text-muted">
+            {game.marks.length}/{game.card.length}
+            {nextPrize !== undefined && (
+              <span className="hidden lg:inline"> · {nextPrize} next</span>
+            )}
+            {' · '}
             {roster.players.length} here
           </p>
           {/*
             The bar is the one node both layouts and both game states share, so a
             latecomer can be pulled into a race already running from anywhere.
 
-            It is also the tightest row in the app, and the third item is what made it
+            It is also the tightest row in the app, and this group is what made it
             tight: `px-2` and `gap-2` here rather than `px-3`/`gap-3` are what buy it
-            back. Measured at 375 CSS px against the *worst* line rather than the one
-            on screen — "24 marks · full house next · 12 here" is 199.7px, the room
-            code is 81.7px and the trigger is 55.2px, inside the 343px the row has —
-            about 6px of slack. Wrapping is the failure and it is silent: a second line
-            is not clipped, does not scroll the page and takes 25px out of the card. So
-            `room.gate.ts` counts the lines.
+            back, same as before #103. What changed is what has to fit beside the
+            stats line — the room code (~82px), the die and the Theme button, and
+            Share (~55px) — which is why the stats line itself had to come down
+            from ~200px to under ~110px rather than the other way around. The two
+            controls lay out at their *visible* widths (#108 measures the die at
+            ~26px square, the Theme button at ~60px), each with a 44px hit element
+            that adds no layout width; the `gap-[10px]` rather than `gap-2` is what
+            keeps those two hit boxes from overlapping. `room.gate.ts` still counts
+            the lines, and now measures both.
+
+            The row also went `items-baseline` -> `items-center`: the control group
+            below is `items-stretch` for the Theme button's own box, and a
+            baseline-aligned parent gives a stretched child nothing to align to.
+            `legibility/page.tsx`, which stands in for this header, was moved with
+            it so the two do not drift.
           */}
+          <div className="flex shrink-0 items-stretch gap-[10px]">
+            {/*
+              #108: the real die, in the slot #103 reserved. It carries no
+              hardcoded side, but not by the CSS route #103's placeholder used:
+              `aspect-square` against `items-stretch` measures a 0px width in
+              the WebKit build this project gates against, so `die-button.tsx`
+              sets its box in pixels from a `ResizeObserver` on the Theme button
+              beside it instead. See that file's doc block for the measurement.
+
+              Mounted only while `canReroll` holds *and* the deck sheet is down,
+              exactly like #112's button it replaces: both of those are #112's
+              decisions, kept rather than reopened, per this issue's brief. A
+              card with a mark does not get the offer back later, so a
+              disabled-forever die would be furniture; and behind the sheet there
+              is no card on screen to re-roll — which is also what keeps the
+              `aria-describedby` target below in the document whenever the die
+              is offered.
+            */}
+            {canReroll && !sheetOpen && (
+              <DieButton
+                onClick={() => void reroll()}
+                disabled={rerolling}
+                pending={rerolling}
+                surface="card"
+                describedById="reroll-consequence"
+                matchHeightOf={themeButtonRef}
+              />
+            )}
+            <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
+          </div>
           <ShareRoom code={code} shareLink={shareLink} />
         </header>
 
@@ -804,10 +1007,8 @@ export function RoomScreen({
               // `min-h-11` is 44px, Apple's documented minimum. #12 shipped a
               // prototype whose own switcher was 24px tall and unreachable by
               // thumb, which is the kind of thing only a device finds.
-              className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                tab === which
-                  ? 'bg-neutral-800 text-neutral-50'
-                  : 'text-neutral-500'
+              className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
+                tab === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
               }`}
             >
               {caption}
@@ -848,14 +1049,15 @@ export function RoomScreen({
               Capping on `dvh` keeps the whole card on screen instead of letting it
               run off the bottom of its own column.
 
-              `12rem` rather than `8rem` since #87: the re-roll slot beneath the grid
-              is reserved permanently, so its 56px (44 plus the `gap-3`) is chrome
-              at every moment of a game rather than only while the offer stands.
-              At all four matrix viewports this is a no-op — width binds at each of
-              them — and it only does work on a rotated phone, which is the short
-              viewport the cap exists for.
+              Back to `8rem` since #108: #87/#112's re-roll slot beneath the grid
+              was reserved permanently, which is what pushed this to `12rem`, but
+              #108 moves the control into the header — there is no longer a
+              reserved row in this column for the cap to hold room for. At all
+              four matrix viewports this is a no-op — width binds at each of
+              them — and it only ever did work on a rotated phone, which is the
+              short viewport the cap exists for.
             */}
-            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_12rem)] flex-col gap-3">
+            <div className="mx-auto flex w-full max-w-[min(100%,100dvh_-_8rem)] flex-col gap-3">
               {deck !== null && sheetOpen ? (
                 <DeckSheet
                   deck={deck}
@@ -865,6 +1067,13 @@ export function RoomScreen({
                 />
               ) : (
                 <>
+                  {/*
+                    #104's progress readout: a structural region the app did not
+                    have, above the grid rather than replacing the header's own
+                    `n/24` line. Pure props, no state of its own — see
+                    `progress-readout.tsx`.
+                  */}
+                  <ProgressReadout marks={game.marks.length} total={game.card.length} />
                   <CardGrid
                     card={game.card}
                     freeCentre={game.freeCentre}
@@ -876,39 +1085,30 @@ export function RoomScreen({
                     onPeek={setPeek}
                     finished={finished}
                   />
-                  {/*
-                    Directly beneath the card it re-rolls (#87), and reserved whether
-                    or not the offer stands, so nothing below jumps when the first
-                    call marks the card and withdraws the button. Hidden rather than
-                    shown-disabled because a card with a mark is not one that becomes
-                    re-rollable again later: the offer is over, and a permanently dead
-                    button is furniture.
-
-                    Immediate, with no confirmation step — #87 asks for the action to
-                    be one tap. The consequence ADR-0006 attaches to it is stated
-                    beside the button instead of gating it.
-                  */}
-                  <div className="min-h-11">
-                    {canReroll && (
-                      <button
-                        type="button"
-                        onClick={() => void reroll()}
-                        disabled={rerolling}
-                        aria-describedby="reroll-consequence"
-                        className={ACTION_BUTTON}
-                      >
-                        {rerolling ? 'Re-rolling…' : 'Re-roll card'}
-                      </button>
-                    )}
-                  </div>
                   {canReroll && (
                     /*
+                      #108: the button that used to sit here (and its permanently
+                      reserved `min-h-11` slot) moved into the header as the die —
+                      the design handoff's placement, and the slot has nothing left
+                      to reserve now that the control is gone from this column.
+
+                      The consequence stays here rather than following the button
+                      into the header: there is "~6px of slack" up there for a
+                      whole sentence, and this column has room. `aria-describedby`
+                      on the header's die button still points at this id — that
+                      attribute is a document-wide id reference, not a DOM-adjacency
+                      one, so it reaches here exactly as it reached the button
+                      immediately above it before.
+
                       Careful not to over-claim in either direction. ADR-0006 rejects
                       only a replacement whose membership set is unchanged, so the
                       promise is "a different 24", not 24 different squares. And it is
                       only the calls that land on the *new* card that arrive grey.
                     */
-                    <p id="reroll-consequence" className="text-sm text-neutral-400">
+                    <p
+                      id="reroll-consequence"
+                      className="skin-note text-sm text-muted"
+                    >
                       A different 24 from the same deck. Any square already called
                       that lands on the new card arrives grey: it still counts in the
                       standings, but it can never win you a prize.
@@ -925,10 +1125,13 @@ export function RoomScreen({
                 </>
               )}
               {deck !== null && (
+                // The amber chrome is the host-only affordance's own colour
+                // (matches `deck-sheet.tsx`'s "amber-chromed" sheet), left
+                // literal per #102's carve-out for semantic host colours.
                 <button
                   type="button"
                   onClick={() => setSheetOpen(!sheetOpen)}
-                  className="min-h-11 rounded border border-amber-700 px-3 text-sm font-semibold text-amber-200"
+                  className="min-h-11 rounded-skin border border-amber-700 px-3 text-sm font-semibold text-amber-200"
                 >
                   {sheetOpen ? 'Back to your card' : 'Host deck sheet'}
                 </button>
@@ -936,7 +1139,17 @@ export function RoomScreen({
               {callFailed !== null && <p role="alert">{callFailed}</p>}
               {retractFailed !== null && <p role="alert">{retractFailed}</p>}
               {rerollFailed !== null && <p role="alert">{rerollFailed}</p>}
-              {rerolled && <p role="status">New card dealt.</p>}
+              {/*
+                #108: the die is icon-only, so this is now the only way its
+                success state reaches a screen reader — `sr-only` rather than
+                dropped, since the acceptance criterion is "announced without
+                visible text", not "not announced".
+              */}
+              {rerolled && (
+                <p role="status" className="sr-only">
+                  New card dealt.
+                </p>
+              )}
             </div>
           </section>
 
@@ -948,7 +1161,7 @@ export function RoomScreen({
             role="tabpanel"
             id="panel-race"
             aria-labelledby="tab-race"
-            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-neutral-800 ${
+            className={`min-w-0 flex-1 overflow-y-auto p-3 lg:flex lg:flex-col lg:gap-3 lg:border-l lg:border-rule-soft ${
               tab === 'race' ? 'block' : 'hidden'
             }`}
           >
@@ -980,10 +1193,8 @@ export function RoomScreen({
                   aria-selected={pane === which}
                   aria-controls={`pane-${which}`}
                   onClick={() => setPane(which)}
-                  className={`min-h-11 flex-1 rounded px-3 text-sm font-semibold ${
-                    pane === which
-                      ? 'bg-neutral-800 text-neutral-50'
-                      : 'text-neutral-500'
+                  className={`min-h-11 flex-1 rounded-skin px-3 text-sm font-semibold ${
+                    pane === which ? 'bg-elevated text-ink-strong' : 'text-muted-soft'
                   }`}
                 >
                   {caption}
@@ -1055,20 +1266,26 @@ export function RoomScreen({
               // panel never renders at all, which would make "a tap is not a peek"
               // true for the wrong reason.
               data-prose
-              className="border-t border-neutral-700 bg-neutral-800 px-3 py-2 text-sm"
+              className="border-t border-rule bg-elevated px-3 py-2 text-sm"
             >
               <p className="font-semibold">{peek.label}</p>
-              <p className="text-neutral-300">{peek.description}</p>
+              <p className="text-muted-strong">{peek.description}</p>
             </div>
           )}
           {toast !== null && toast.id !== undo?.seq && (
             /**
              * `status` rather than `alert`: a call is news, not a problem, and an
              * assertive live region would interrupt a screen reader mid-square.
+             *
+             * The emerald chrome here and on the undo row below is left literal
+             * (#102's "semantic mark/host colours may stay literal" carve-out):
+             * it is the same "a call landed" green as a marked cell, and its
+             * real per-skin colour is structure for a later slice, not this
+             * one's surface/rule/body-text tokens.
              */
             <p
               role="status"
-              className="bg-emerald-800 p-3 text-center text-sm text-emerald-50"
+              className="skin-banner bg-emerald-800 p-3 text-center text-sm text-emerald-50"
             >
               {toast.text}
             </p>
@@ -1076,7 +1293,7 @@ export function RoomScreen({
           {undo !== null && !finished && (
             <div
               role="status"
-              className="flex items-center justify-between gap-3 border-t border-emerald-700 bg-emerald-800 p-3 text-sm text-emerald-50"
+              className="skin-banner flex items-center justify-between gap-3 border-t border-emerald-700 bg-emerald-800 p-3 text-sm text-emerald-50"
             >
               <span className="min-w-0">
                 Called {labelFor(game, undo.squareId)}
@@ -1084,7 +1301,7 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(undo)}
-                className="min-h-11 shrink-0 rounded border border-emerald-200 px-3 font-semibold"
+                className="min-h-11 shrink-0 rounded-skin border border-emerald-200 px-3 font-semibold"
               >
                 Undo
               </button>
@@ -1103,7 +1320,7 @@ export function RoomScreen({
             aria-label="Take back this call"
             className="fixed inset-0 flex items-center justify-center bg-black/70 p-4"
           >
-            <div className="flex w-full max-w-xs flex-col gap-3 rounded border border-neutral-700 bg-neutral-900 p-4">
+            <div className="flex w-full max-w-xs flex-col gap-3 rounded-skin border border-rule bg-raised p-4">
               <p>
                 Take back {labelFor(game, confirming.squareId)}? It unmarks for
                 everyone holding it.
@@ -1118,14 +1335,14 @@ export function RoomScreen({
               <button
                 type="button"
                 onClick={() => void retract(confirming)}
-                className="min-h-11 rounded border border-neutral-600 font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Take it back
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-11 rounded border border-neutral-600 font-semibold"
+                className="min-h-11 rounded-skin border border-rule-strong font-semibold"
               >
                 Keep it
               </button>
@@ -1138,7 +1355,20 @@ export function RoomScreen({
 
   return (
     <div className={COLUMN}>
-      <h1 className="text-2xl font-semibold">Room {code}</h1>
+      {/* #103's brand bar — same reasoning as the join form's above. */}
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Room {code}</h1>
+        {/* #108: same "disabled, no card yet" reasoning as the join form's die. */}
+        <div className="flex items-stretch gap-[10px]">
+          <DieButton
+            disabled
+            pending={false}
+            surface="join"
+            matchHeightOf={themeButtonRef}
+          />
+          <SkinButton initialSkin={initialSkin} ref={themeButtonRef} />
+        </div>
+      </div>
       <ShareRoom code={code} shareLink={shareLink} />
       <h2 className="font-semibold">Players</h2>
       <ul>

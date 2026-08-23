@@ -24,9 +24,24 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Themed multiplayer bingo where the squares are events.',
     start_url: '/',
     display: 'standalone',
-    // `neutral-950`, and dark is the only theme this project has — see the note
-    // in `docs/SURFACES.md`. So the splash matches the app rather than flashing
-    // white on the way in.
+    /*
+      `neutral-950`: the *default* skin's surface, which is no longer the same
+      claim as "the only one". #102 gave the app four skins, two of them light,
+      and `layout.tsx`'s `generateViewport()` now varies `themeColor` per skin
+      from a cookie. A web manifest cannot: it is one static document for the
+      installed app, so it cannot follow a per-request cookie the way a viewport
+      tag can.
+
+      So the invariant `layout.tsx` used to record — an installed launch and a
+      browser tab tint the same — is retired here on purpose rather than
+      quietly: it holds for Pit Wall, which is what a fresh install gets and
+      what `docs/SURFACES.md`'s note describes, and it breaks for a player who
+      has switched to Confetti or Scorecard and then installs. The splash stays
+      dark for them, which is the smaller failure than flashing white on the way
+      in for everyone. Making the installed splash follow the skin needs a
+      client-side manifest swap, and that belongs to whichever slice mounts the
+      button rather than to the token layer.
+    */
     background_color: '#0a0a0a',
     theme_color: '#0a0a0a',
     icons: [

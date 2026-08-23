@@ -57,6 +57,24 @@ describe('opening a share link', () => {
     expect(await screen.findByLabelText('Your name')).toBeDefined();
   });
 
+  /**
+   * #104's structural pieces the join screen did not have before: the boxed room
+   * code and the roster of who is already in, so a visitor choosing a name can see
+   * both without joining first.
+   */
+  it('shows the room code and who is already in before a name is chosen', async () => {
+    stubApi();
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+    await screen.findByLabelText('Your name');
+
+    const code = screen.getByLabelText('Room code ABCD');
+    expect(code.textContent).toBe('ABCD');
+
+    const roster = screen.getByLabelText('Players in the room');
+    expect(roster.textContent).toContain('Ash');
+  });
+
   it('joins the room and shows the roster', async () => {
     stubApi();
 
@@ -65,7 +83,7 @@ describe('opening a share link', () => {
     fireEvent.change(await screen.findByLabelText('Your name'), {
       target: { value: 'Bea' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
 
     expect(await screen.findByText(/Bea/)).toBeDefined();
     expect(screen.getByText(/Ash/)).toBeDefined();
@@ -81,7 +99,7 @@ describe('opening a share link', () => {
     fireEvent.change(await screen.findByLabelText('Your name'), {
       target: { value: 'Bea' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
     await screen.findByText(/Bea/);
 
     expect(window.localStorage.getItem('twinion-bingo:token:ABCD')).toBe(
@@ -193,7 +211,7 @@ describe('opening a share link', () => {
     fireEvent.change(await screen.findByLabelText('Your name'), {
       target: { value: 'Bea' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
 
     expect(await screen.findByText('That room is gone.')).toBeDefined();
   });
@@ -220,7 +238,7 @@ describe('opening a share link', () => {
     fireEvent.change(await screen.findByLabelText('Your name'), {
       target: { value: 'Bea' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Join' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
     await screen.findByRole('alert');
 
     expect(

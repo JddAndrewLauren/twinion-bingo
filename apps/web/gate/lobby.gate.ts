@@ -1,10 +1,33 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { openLobby } from './room-fixture';
 import {
   expectNoHorizontalScroll,
   expectNoRowClipped,
   expectThumbSized,
 } from './measure';
+
+/**
+ * #103: the Theme button's hit element, asserted the same way in both of this
+ * file's states that acceptance-criteria name — the join form and the lobby.
+ */
+async function expectThemeButton(page: Page): Promise<void> {
+  const theme = page.getByRole('button', { name: 'Theme' });
+  await expect(theme).toBeVisible();
+  await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
+}
+
+/**
+ * #108: the die beside it, on these same two screens, disabled rather than
+ * hidden — there is no card here to re-roll, but the handoff draws the die on
+ * every header ("join and card alike"), so it stays present and legible as
+ * unavailable rather than absent.
+ */
+async function expectDisabledDie(page: Page): Promise<void> {
+  const die = page.getByRole('button', { name: 'Re-roll card' });
+  await expect(die).toBeVisible();
+  await expect(die).toBeDisabled();
+  await expectThumbSized(die.locator('[data-hit-expand]'), "the die's hit element");
+}
 
 /**
  * Everything before the deal, which `docs/SURFACES.md` has carried as "signed off by
@@ -26,12 +49,14 @@ test.describe('joining', () => {
 
     // Disabled until there is a name, enabled after — the state has to be legible,
     // and it has to be a thumb-sized target either way.
-    const submit = page.getByRole('button', { name: 'Join' });
+    const submit = page.getByRole('button', { name: 'Enter room' });
     await expect(submit).toBeDisabled();
     await page.getByLabel('Your name').fill('Ash');
     await expect(submit).toBeEnabled();
     await expectThumbSized(submit, 'the Join button');
 
+    await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 });
@@ -51,6 +76,8 @@ test.describe('the lobby', () => {
     await expect(rows.filter({ hasText: '(host)' })).toHaveCount(1);
     await expect(rows.filter({ hasText: '— you' })).toHaveCount(1);
     await expectNoRowClipped(rows, 'the roster');
+    await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 
@@ -64,6 +91,8 @@ test.describe('the lobby', () => {
     const start = page.getByRole('button', { name: 'Start game' });
     await expect(start).toBeInViewport();
     await expectThumbSized(start, 'the Start game button');
+    await expectThemeButton(page);
+    await expectDisabledDie(page);
     await expectNoHorizontalScroll(page);
   });
 

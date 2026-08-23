@@ -59,7 +59,7 @@ const LONG_PRESS_MS = 400;
  * hides the cell and cancels the gesture.
  */
 const CELL =
-  'flex h-full w-full touch-manipulation select-none items-center justify-center overflow-hidden rounded border p-1 text-center leading-tight';
+  'flex h-full w-full touch-manipulation select-none items-center justify-center overflow-hidden rounded-skin border p-1 text-center leading-tight';
 
 /**
  * Does the label's *rendered* text leave the cell's content box?
@@ -376,7 +376,7 @@ export function CardGrid({
       <ul
         ref={grid}
         aria-label="Your card"
-        className={`grid grid-cols-5 gap-1 ${CARD_TEXT} ${cardFont.className}`}
+        className={`skin-card-grid grid grid-cols-5 gap-1 ${CARD_TEXT} ${cardFont.className}`}
       >
         {cells.map((square, index) => {
           const free = square === undefined || square === null;
@@ -389,9 +389,15 @@ export function CardGrid({
           return (
             <li key={square?.id ?? 'free'} className="aspect-square">
               {free ? (
+                // The free centre is its own element in the handoff (§ *Square
+                // cell per theme*, "Center (free)") rather than a plain surface
+                // plus a plain rule, so it gets its own token pair rather than
+                // borrowing `raised`/`rule` — in Slipstream and Confetti that
+                // fill is a solid accent, which no surface tier could carry.
+                // Pit Wall's pair is today's exact neutrals, so this is inert.
                 <span
                   title={freeCentre}
-                  className={`${CELL} border-neutral-500 bg-neutral-800 font-semibold uppercase`}
+                  className={`${CELL} skin-cell border-free-rule bg-free-surface font-semibold uppercase`}
                 >
                   {index === CENTRE ? freeCentre : null}
                 </span>
@@ -404,6 +410,7 @@ export function CardGrid({
                       : square.description
                   }
                   data-inherited={isInherited ? 'true' : undefined}
+                  data-mark={isMarked ? (isInherited ? 'inherited' : 'earned') : 'none'}
                   aria-pressed={isMarked}
                   disabled={inert}
                   onPointerDown={() => hold(square)}
@@ -429,7 +436,7 @@ export function CardGrid({
                     if (mark === undefined) onCall(square.id);
                     else onRetract(mark);
                   }}
-                  className={`${CELL} ${markedStyle(isMarked, isInherited)}`}
+                  className={`${CELL} skin-cell ${markedStyle(isMarked, isInherited)}`}
                 >
                   {/*
                     The label in a span of its own so the shrinking above has
@@ -465,8 +472,27 @@ function cannotBeTappedAgain(
 }
 
 function markedStyle(isMarked: boolean, isInherited: boolean): string {
-  if (!isMarked) return 'border-neutral-700 bg-neutral-900';
+  // The unmarked cell is a plain surface: `raised`/`rule` are the roles this
+  // issue's acceptance criteria cover.
+  if (!isMarked) return 'border-rule bg-raised';
 
+  // The inherited (grey) and earned (green) states are D8's three-way mark
+  // distinction, kept literal on purpose (#102's carve-out for "semantic
+  // host/mark colours"): each of the four skins gives marked and inherited
+  // their own real colours (README's *Square cell per theme* table — e.g.
+  // Slipstream's marked fill is solid yellow, Scorecard's is an ink ring), and
+  // none of that structural, per-skin styling lands until its own slice. Left
+  // as Tailwind literals rather than routed through `--color-marked` because a
+  // single token cannot also carry the *inherited* half of the distinction —
+  // inventing one is exactly the "structure lands per skin" work this slice's
+  // Traps section says not to do here.
+  //
+  // **#104 overrides both, but only under `[data-skin='pitwall']`.** These
+  // classes stay the fallback every other skin still renders — the `data-mark`
+  // attribute next to this class string is what `globals.css`'s
+  // `[data-skin='pitwall'] .skin-cell[data-mark=…]` rules key off instead, at
+  // higher specificity, so Pit Wall alone gets its real cyan-overlay earned
+  // state and its own invented inherited treatment.
   return isInherited
     ? 'border-neutral-600 bg-neutral-700 font-semibold text-neutral-400'
     : 'border-emerald-400 bg-emerald-800 font-semibold text-emerald-50';

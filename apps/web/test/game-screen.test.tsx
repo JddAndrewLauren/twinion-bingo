@@ -606,8 +606,14 @@ describe('the slim bar', () => {
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
 
     // The first rung has gone, so the rung being played for is the second — D5's
-    // ladder is climbed in order and only the next one is worth naming.
-    expect(await screen.findByText('2 marks · two lines next · 2 here')).toBeDefined();
+    // ladder is climbed in order and only the next one is worth naming. #103
+    // shortened "N marks" to "N/24" and moved "· <rung> next" into a nested
+    // `hidden lg:inline` span, which is why this reads `.textContent` (which
+    // descends into it) rather than `findByText` (whose default matcher only
+    // sees a node's own direct text, per `getNodeText`, and so never sees the
+    // span's text as part of the paragraph's).
+    const stats = await screen.findByText(/here$/, { selector: 'p' });
+    expect(stats.textContent).toBe('2/24 · two lines next · 2 here');
   });
 
   it('stops naming a rung once the full house has gone', async () => {
@@ -626,7 +632,7 @@ describe('the slim bar', () => {
 
     // Not "full house next" and not an empty gap where a rung was: there is
     // nothing left to play for, so the bar stops claiming there is.
-    expect(await screen.findByText('0 marks · 2 here')).toBeDefined();
+    expect(await screen.findByText('0/24 · 2 here')).toBeDefined();
   });
 
   /**
@@ -651,6 +657,39 @@ describe('the slim bar', () => {
 
     expect(
       await screen.findByRole('button', { name: 'Share room' }),
+    ).toBeDefined();
+  });
+});
+
+/**
+ * #104's progress readout: a second, purely-derived view of `marks.length` against
+ * 24 — no state of its own, so it can never disagree with the slim bar's own count.
+ */
+describe('the progress readout', () => {
+  it('reads the mark count against 24 straight from game state', async () => {
+    stubRoom({
+      you: host,
+      liveFromTheStart: true,
+      marks: [
+        { squareId: 'f1.v1:t:1', seq: 101, actorPlayerId: host.id },
+        { squareId: 'f1.v1:t:2', seq: 102, actorPlayerId: guest.id },
+      ],
+    });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('progressbar', { name: '2 of 24 marked' }),
+    ).toBeDefined();
+  });
+
+  it('reads 0 of 24 on a fresh card', async () => {
+    stubRoom({ you: host, liveFromTheStart: true });
+
+    render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
+
+    expect(
+      await screen.findByRole('progressbar', { name: '0 of 24 marked' }),
     ).toBeDefined();
   });
 });
@@ -1733,8 +1772,12 @@ describe('re-rolling a clean card', () => {
     expect(screen.getByRole('button', { name: 'Square 0' })).toBeDefined();
   });
 
-  /** No game, no card, nothing to re-roll — the lobby half of `canReroll`. */
-  it('offers no re-roll in the lobby', async () => {
+  /**
+   * #108: the die is on every header, "join and card alike" per the handoff, so
+   * the lobby no longer omits it the way #112's below-the-grid button did — it
+   * is disabled instead, since there is no card yet to re-roll.
+   */
+  it('offers the die disabled in the lobby, where there is no card yet', async () => {
     stubRoom({ you: guest });
 
     render(<RoomScreen apiUrl={apiUrl} code="ABCD" shareLink={shareLink} />);
@@ -1742,7 +1785,8 @@ describe('re-rolling a clean card', () => {
     await screen.findByText('Players');
     expect(screen.queryByLabelText('Your card')).toBeNull();
 
-    expect(rerollButton()).toBeNull();
+    expect(rerollButton()).not.toBeNull();
+    expect((rerollButton() as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('withdraws the offer once a call has marked the card', async () => {
@@ -1955,9 +1999,12 @@ describe('prizes, standings and the timeline', () => {
     const panel = await openRace();
     const list = within(panel).getByRole('heading', { name: 'Standings' })
       .parentElement!;
+    // "1"/"2" is #106's rank badge (`results.tsx`'s `skin-standing-rank`,
+    // unconditional across skins — see `docs/design/README.md`'s Confetti
+    // "each rank sits in a 20px filled circle").
     expect(
       [...list.querySelectorAll('li')].map((item) => item.textContent),
-    ).toEqual(['Ash2', 'Bea0']);
+    ).toEqual(['1Ash2', '2Bea0']);
   });
 
   it('calls the standings final once the full house has closed the game', async () => {
@@ -2116,10 +2163,11 @@ describe('a replayed log', () => {
       [...race.querySelectorAll('li')].map((item) => item.textContent);
 
     const before = await read();
+    // "1"/"2" is #106's rank badge (`results.tsx`'s `skin-standing-rank`).
     expect(before).toEqual([
       'first line — Bea',
-      'Ash1',
-      'Bea0',
+      '1Ash1',
+      '2Bea0',
       '+42:10Bea spotted Square 7',
     ]);
 

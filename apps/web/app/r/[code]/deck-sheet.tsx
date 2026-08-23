@@ -1,7 +1,7 @@
 import type { Deck, Mark } from '../../room-api';
 
 const ROW =
-  'flex min-h-11 w-full items-center justify-between gap-2 rounded border p-2 text-left';
+  'flex min-h-11 w-full items-center justify-between gap-2 rounded-skin border p-2 text-left';
 
 /**
  * The other half of D7: the host can call any square in the room's deck, not only
@@ -46,7 +46,7 @@ export function DeckSheet({
   return (
     <section
       aria-label="Host deck sheet"
-      className="flex flex-col gap-2 rounded border-2 border-amber-500 bg-amber-950 p-3"
+      className="flex flex-col gap-2 rounded-skin border-2 border-amber-500 bg-amber-950 p-3"
     >
       <h2 className="text-sm font-semibold uppercase tracking-wide text-amber-300">
         Host deck sheet
@@ -87,7 +87,11 @@ export function DeckSheet({
                 className={`${ROW} ${
                   mark !== undefined
                     ? 'border-emerald-400 bg-emerald-800 font-semibold text-emerald-50'
-                    : 'border-amber-700 bg-neutral-900'
+                    // The amber border is the sheet's own host chrome (left
+                    // literal, same carve-out as `card-grid.tsx`'s marked
+                    // states); the row surface underneath it is the plain
+                    // `raised` role this issue's tokens cover.
+                    : 'border-amber-700 bg-raised'
                 }`}
               >
                 <span>{square.label}</span>

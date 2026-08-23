@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { CARD, openRoom } from './room-fixture';
+import { CARD, openRoom, settleSkinFonts } from './room-fixture';
 import {
   expectBesideTheCard,
   expectClearOfTheCard,
@@ -67,6 +67,38 @@ const racePanel = (page: Page): Locator =>
 
 /** The undo row itself, not the span inside it — the row is what covers or does not. */
 const undoRow = (page: Page): Locator => page.getByText(/^Called /).locator('xpath=..');
+
+/** The slim bar, however this document happens to expose it. */
+const slimBar = (page: Page): Locator =>
+  page.getByRole('banner').or(page.locator('header')).first();
+
+/**
+ * "One line" said as a measurement, because nothing else here can see it: a wrapped
+ * row is not clipped, does not scroll the page and does not overflow anything — it
+ * just quietly takes a second line out of the card's own height. #88's Share room
+ * trigger did exactly that at both phone widths, wrapping the heading *and* the
+ * statistics and taking the bar from 44px to 69px, and every other assertion on the
+ * bar stayed green. Compared against each row's own computed `line-height` rather
+ * than a pixel constant, so a type-scale change does not have to come back here.
+ *
+ * Only `h1` and `> p` — the dice slot, the Theme button and Share are all single-line
+ * by construction (a `<button>` with no wrapping content), so a line count is not a
+ * meaningful thing to ask of them, and `expectThumbSized`/`expectNoHorizontalScroll`
+ * cover them instead.
+ *
+ * Lifted out of the test it was written in (#103) so that more than one stats line
+ * can be counted by the same instrument, and so that a caller can reach it without
+ * a copy assertion above it aborting the test first — see the worst-case test below.
+ */
+async function expectHeaderOnOneLine(bar: Locator) {
+  for (const row of ['h1', '> p']) {
+    const lines = await bar.locator(row).first().evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      return box.height / parseFloat(getComputedStyle(node).lineHeight);
+    });
+    expect(lines, `the slim bar's ${row} holds one line`).toBeLessThanOrEqual(1.01);
+  }
+}
 
 test.describe('the card', () => {
   /**
@@ -220,34 +252,271 @@ test.describe('the card', () => {
 });
 
 test.describe('the slim bar and the two surfaces', () => {
+  /**
+   * #103's rewrite of the same claim. The mark count is `n/24` rather than
+   * "n marks" (shorter, to buy back the width the dice slot and the Theme
+   * button now cost), and "· <rung> next" moved into a `hidden lg:inline` span
+   * — present only at `ipad-11-landscape`, the one viewport with room for the
+   * full sentence, per this issue's own acceptance criterion.
+   */
   test('says where you are without covering the card', async ({ page }) => {
     await openRoom(page, 'mid');
 
-    // Mark count, the rung being played for, and who is here — all three on one line
-    // at 375 CSS px, which is the width that decides whether they fit.
-    const bar = page.getByRole('banner').or(page.locator('header')).first();
-    await expect(bar).toContainText('marks');
-    await expect(bar).toContainText('next');
+    // Mark count over the card's own 24, and who is here — both on one line at
+    // 375 CSS px, which is the width that decides whether they fit.
+    const bar = slimBar(page);
+    await expect(bar).toContainText('/24');
     await expect(bar).toContainText('here');
+
+    // The rung being played for is the one part of the sentence that is not
+    // supposed to be on every viewport — asserted as visibility rather than as
+    // text content, since `hidden` is a CSS `display: none` and the node is in
+    // the document either way.
+    const rung = bar.getByText(/next$/);
+    if (twoPane()) {
+      await expect(rung).toBeVisible();
+    } else {
+      await expect(rung).toBeHidden();
+    }
+
     await expectNoRowClipped(bar.locator('p'), 'the slim bar');
     await expectNoHorizontalScroll(page);
 
     /*
-      "One line" said as a measurement, because nothing else here can see it: a wrapped
-      row is not clipped, does not scroll the page and does not overflow anything — it
-      just quietly takes a second line out of the card's own height. #88's Share room
-      trigger did exactly that at both phone widths, wrapping the heading *and* the
-      statistics and taking the bar from 44px to 69px, and every assertion above stayed
-      green. Compared against each row's own computed `line-height` rather than a pixel
-      constant, so a type-scale change does not have to come back here.
+      The `mid` stage's own line count. At `ipad-11-landscape` this is the longest
+      the row ever gets — `12/24 · full house next · 6 here`, the only stage and
+      viewport where the `hidden lg:inline` rung span is both populated and shown —
+      so it is a worst case in its own right, and the `done` stage below is the
+      worst case at the three viewports that drop the rung.
+
+      This one sits behind the copy assertions above, which is a real limitation:
+      Playwright aborts a test at its first failed `expect`, so a regression that
+      changed the *words* would never reach this line. That is exactly why the
+      worst-case count lives in a test of its own below, with nothing in front of it.
     */
-    for (const row of ['h1', '> p']) {
-      const lines = await bar.locator(row).first().evaluate((node) => {
-        const box = node.getBoundingClientRect();
-        return box.height / parseFloat(getComputedStyle(node).lineHeight);
-      });
-      expect(lines, `the slim bar's ${row} holds one line`).toBeLessThanOrEqual(1.01);
+    await expectHeaderOnOneLine(bar);
+  });
+
+  /**
+   * Acceptance criterion 3 and the Gate bullet both say "with the worst-case stats
+   * line", and the test above runs `mid` — `12/24 · 6 here` at the three viewports
+   * that hide the rung. The worst line this fixture can produce there is the `done`
+   * stage: every one of the 24 called, so `24/24 · 6 here`, two more tabular glyphs
+   * than `mid` gates. Between the two tests the line count now runs against the
+   * longest line each of the four viewports can actually render.
+   *
+   * A test of its own, and the line count is its *first* assertion, because that is
+   * the only arrangement in which the wrapping instrument can be the thing that
+   * fires. Sharing a test with the copy assertions meant a seeded regression that
+   * touched the words aborted before the count ran — the count was reachable only
+   * for regressions that widened the line without changing it, which is a narrower
+   * set than the criterion. The presence checks the criterion also names follow the
+   * count rather than preceding it, for the same reason: nothing about the page
+   * changes between the two, so the order costs the claim nothing and buys the
+   * measurement an unobstructed path.
+   */
+  test('holds one line at the worst-case stats line', async ({ page }) => {
+    await openRoom(page, 'done');
+
+    const bar = slimBar(page);
+    await expectHeaderOnOneLine(bar);
+
+    // Everything criterion 3 names, on the row that was just counted — a header
+    // that fits because a control went missing is not the claim being made.
+    //
+    // #108: `Dice` is gone from this list on purpose. `done` is a finished
+    // game — `canReroll` is false because `game.state !== 'live'` — so the die
+    // is correctly absent here, same as the marked-card case
+    // `offers no re-roll on a card a call has marked` below covers. This test
+    // is now the *text*-length worst case only; `holds the die and the Theme
+    // button beside the room code and Share` above is the die-present worst
+    // case, at `start`, where the stats text is shortest instead.
+    await expect(bar.getByRole('heading', { name: 'Room ABCD' })).toBeVisible();
+    await expect(bar.getByRole('button', { name: 'Theme' })).toBeVisible();
+    await expect(bar.getByRole('button', { name: /Share/ })).toBeVisible();
+    await expect(bar).toContainText('24/24');
+
+    await expectNoRowClipped(bar.locator('p'), 'the slim bar at its worst line');
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * #108 takes over #103's header-controls test. That version ran at `mid` and
+   * asserted the *reserved slot* — a permanently disabled placeholder that did
+   * not yet care whether a card had a mark. The real die does: it is offered
+   * only at `start` (`canReroll`), so this now runs there, names the button by
+   * what it actually does ("Re-roll card", not "Dice"), and asserts it enabled
+   * rather than disabled. `offers no re-roll on a card a call has marked` below
+   * covers the header at `mid`/`done`, where the die is correctly absent.
+   *
+   * It also owns criterion 1's real claim — that the die's side is *derived from*
+   * the Theme button's rendered height, not copied from a constant — by measuring
+   * both boxes and comparing them, at first render and after each press of one
+   * full turn of the skin cycle. See the comment on that block for why nothing
+   * else here can catch a collapsed or stale die.
+   */
+  test('holds the die and the Theme button beside the room code and Share', async ({
+    page,
+  }) => {
+    await openRoom(page, 'start');
+
+    const bar = page.getByRole('banner').or(page.locator('header')).first();
+    const dice = bar.getByRole('button', { name: 'Re-roll card' });
+    const theme = bar.getByRole('button', { name: 'Theme' });
+
+    await expect(dice).toBeVisible();
+    await expect(dice).toBeEnabled();
+    await expectThumbSized(dice.locator('[data-hit-expand]'), "the die's hit element");
+    await expectThumbSized(theme.locator('[data-hit-expand]'), "the Theme button's hit element");
+    await expectHeaderOnOneLine(bar);
+
+    /*
+      Criterion 1 — "sized from the adjacent Theme button rather than a hardcoded
+      pixel value" — asserted as the relationship itself, because nothing else in
+      this suite can see it. `toBeVisible()` is satisfied by any non-empty box (it
+      passed #103's ~2px reserved-slot sliver for a whole slice), and the two
+      `expectThumbSized` calls above point at fixed `h-11 w-11` expanders, so a
+      `ResizeObserver` that never fired — or fired against the wrong node, or held
+      a stale size across a skin change — leaves a collapsed die and every other
+      assertion here green.
+
+      So: the die's own *visible* box against the Theme button's own *visible* box,
+      on both axes, since the die is square. The tolerance is 1px, and 1px is the
+      whole budget: `die-button.tsx` sets its box from
+      `getBoundingClientRect().height` on this very button, so the only legitimate
+      difference is WebKit rounding a fractional CSS px onto the device grid — any
+      real failure of the mechanism is a collapse to ~0px or a stale value from a
+      differently-sized skin, both of which are orders of magnitude outside it.
+
+      The `toBeGreaterThan(20)` on the reference box is not decoration: it stops
+      this from degenerating into `0 === 0` if the Theme button itself ever
+      collapses, which is exactly the trap the assertion it replaces fell into.
+    */
+    const expectDieMatchesTheme = async (where: string): Promise<void> => {
+      const die = (await dice.boundingBox())!;
+      const button = (await theme.boundingBox())!;
+
+      expect(button.height, `the Theme button's own height ${where}`).toBeGreaterThan(20);
+      expect(
+        Math.abs(die.height - button.height),
+        `the die is ${die.height}px tall against a ${button.height}px Theme button ${where}`,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(die.width - button.height),
+        `the die is ${die.width}px wide against a ${button.height}px Theme button ${where}`,
+      ).toBeLessThanOrEqual(1);
+    };
+
+    await expectDieMatchesTheme('as the header first renders');
+
+    /*
+      And it holds across the skin cycle, which is the case the criterion is really
+      about: a skin's own type scale is what moves the Theme button's height (the
+      handoff tabulates 27px, 27px, 29px, 34px), so a die sized once and never
+      re-measured is a bug that only appears after a press. Four taps is one full
+      turn of the fixed cycle, so this leaves the skin as it found it. Today all
+      four skins render the same box — no per-skin type scale has landed yet — so
+      this is the regression guard for the slice that lands Scorecard's 34px
+      button, and it is also where "the header renders on one line at
+      `phone-small` in every skin" stops being an argument and becomes an
+      assertion.
+    */
+    for (const skin of ['slipstream', 'confetti', 'scorecard', 'pitwall']) {
+      await theme.tap();
+      await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
+      /*
+        Every measurement below this line is font-metrics driven, and the face
+        this skin paints with has only just been asked for. `openRoom` awaited
+        `document.fonts.ready` at load — in the *default* skin — so without this
+        the header is measured on whatever face happens to be resolved at this
+        instant, which with `display: 'swap'` is the fallback on a cold runner
+        and the real face on a warm one. That is precisely how #107 shipped a
+        `phone-small` header wrap that passed locally and failed in CI. See
+        `settleSkinFonts` in `room-fixture.ts`: it changes no assertion, only
+        which state the assertions are allowed to see.
+      */
+      await settleSkinFonts(page);
+
+      await expectDieMatchesTheme(`in ${skin}`);
+      await expectHeaderOnOneLine(bar);
+      await expectNoHorizontalScroll(page);
     }
+
+    /*
+      Two 44px hit targets cannot overlap — the whole reason the stats line had to
+      come down in the first place. #103 left this comparing the reserved slot's
+      *visible* box (there was no expander yet) against the Theme button's *hit*
+      box, and said explicitly to compare both expanders once slice 7 landed one —
+      this is that comparison.
+    */
+    const diceBox = (await dice.locator('[data-hit-expand]').boundingBox())!;
+    const themeBox = (await theme.locator('[data-hit-expand]').boundingBox())!;
+    const overlaps =
+      diceBox.x < themeBox.x + themeBox.width &&
+      diceBox.x + diceBox.width > themeBox.x &&
+      diceBox.y < themeBox.y + themeBox.height &&
+      diceBox.y + diceBox.height > themeBox.y;
+    expect(overlaps, 'the die and the Theme button`s hit targets overlap').toBe(false);
+
+    await expectNoHorizontalScroll(page);
+  });
+
+  /**
+   * The acceptance criterion that a screenshot cannot answer: pressing the
+   * button re-skins the surface *without* tearing down the live game's SSE
+   * connection. Driven at `phone`, four presses in a row (one full turn of the
+   * fixed cycle), and proven by more than "the colour changed" — a frame
+   * pushed down the stream after the presses still has to land as a fresh
+   * timeline entry, which only happens if the same `EventSource` is still open.
+   */
+  test('re-skins across four presses without dropping the stream', async ({ page }, info) => {
+    test.skip(info.project.name !== 'phone', 'this criterion names `phone` only');
+
+    const room = await openRoom(page, 'start');
+    const theme = page.getByRole('button', { name: 'Theme' });
+
+    const cycle = ['slipstream', 'confetti', 'scorecard', 'pitwall'];
+    for (const expected of cycle) {
+      await theme.tap();
+      await expect(page.locator('html')).toHaveAttribute('data-skin', expected);
+    }
+
+    // The stream is still the one this page opened at the start — no remount
+    // happened along the way.
+    expect(await room.streams(), 'streams opened across four presses').toBe(1);
+
+    // And it still delivers: a CALL pushed now has to reach the timeline, which
+    // it cannot do over a torn-down connection.
+    await raceTab(page).tap();
+    await expect(page.getByRole('heading', { name: 'Timeline' })).toBeVisible();
+
+    /*
+      Scoped to the timeline's own rows, and asserted as growth from a baseline.
+      This was `expect(racePanel(page).locator('li')).not.toHaveCount(0)`, which
+      could not fail: the panel also carries the Standings `<ol>`, which renders
+      one `<li>` per roster player — six, for this fixture — unconditionally at
+      every stage, so the assertion was already true before the emit and stayed
+      true with the `EventSource` dead. `getByText(/ spotted /)` matches only
+      timeline rows (the app writes that credit nowhere else inside this panel),
+      and a delivered frame is the only thing that can add one, so a baseline
+      taken here and a count taken after is a claim about the stream rather than
+      about the roster.
+
+      At `start` the baseline is zero — the timeline renders `Nothing called yet.`
+      as a bare `<p>` — but it is read rather than assumed, so this keeps working
+      if the stage this test opens ever changes.
+    */
+    const spotted = racePanel(page).getByText(/ spotted /);
+    const before = await spotted.count();
+
+    await room.emit({
+      seq: 701,
+      kind: 'CALL',
+      actorPlayerId: 'guest-id',
+      squareId: room.square(15).id,
+    });
+
+    await expect(spotted, 'the emitted CALL reached the timeline').toHaveCount(before + 1);
   });
 
   /**
@@ -773,11 +1042,15 @@ test.describe('the host deck sheet', () => {
 
 
 /**
- * #87's re-roll, which is a layout claim before it is anything else: the offer sits
- * directly *beneath* the grid, so the grid itself never moves when the first call
- * withdraws the button — `does not shift the grid when a call lands` above is the
- * regression guard for that, and is expected to stay green untouched. The slot is
- * still reserved permanently so that what sits below it does not jump either.
+ * #87's re-roll, and #108's placement change: the control used to sit directly
+ * *beneath* the grid with a permanently-reserved slot so nothing below it jumped
+ * when the first call withdrew it; it now lives in the header instead, beside the
+ * Theme button, as the die (`docs/design/README.md` § "Header controls"). Nothing
+ * about the *behaviour* below changed — one tap, no confirmation, gone once the
+ * card has a mark — only where the control lives, so most of these assertions are
+ * moved rather than rewritten. `does not shift the grid when a call lands` above is
+ * unaffected either way: the header's height never depended on the die, so its
+ * presence or absence there cannot move the grid.
  */
 test.describe('re-rolling a clean card', () => {
   const rerollButton = (page: Page) =>
@@ -788,16 +1061,19 @@ test.describe('re-rolling a clean card', () => {
 
     const button = rerollButton(page);
     await expect(button).toBeVisible();
-    // Beneath the card and still whole on screen — a real assertion at
-    // `phone-small`, where the grid runs most of the way to the bottom.
-    await expectThumbSized(button, 'the re-roll button');
-    await expectWholeOnScreen(page, button, 'the re-roll button');
+    // In the header now rather than beneath the grid, so its *hit* element is
+    // what has to clear 44px — its visible box is the die's glyph size, which
+    // the header-controls test above already checks against the Theme button.
+    await expectThumbSized(button.locator('[data-hit-expand]'), 'the die');
+    await expectWholeOnScreen(page, button, 'the die');
     await expectNoHorizontalScroll(page);
   });
 
   /**
-   * The consequence ADR-0006 attaches to a re-roll, now stated beside the button
-   * rather than gating it (#87 asks for the action to be immediate). It is prose in
+   * The consequence ADR-0006 attaches to a re-roll stays in the card column
+   * (#108: there is no room for a sentence in the header), still wired to the
+   * button by `aria-describedby` even though the two are no longer DOM-adjacent
+   * — that attribute is an id reference, not a proximity one. It is prose in
    * flow, so what a browser has to say about it is that no line of it is clipped.
    */
   test('states the consequence without clipping a line of it', async ({ page }) => {
@@ -807,6 +1083,10 @@ test.describe('re-rolling a clean card', () => {
     await expect(consequence).toBeVisible();
     await expectNoRowClipped(consequence, 'the re-roll consequence');
     await expectWholeOnScreen(page, consequence, 'the re-roll consequence');
+    await expect(rerollButton(page)).toHaveAttribute(
+      'aria-describedby',
+      'reroll-consequence',
+    );
     await expectNoHorizontalScroll(page);
   });
 
