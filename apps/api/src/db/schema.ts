@@ -42,7 +42,11 @@ export const prizeKind = bingo.enum('prize_kind', [
   'FULL_HOUSE',
 ]);
 
-/** A room is the persistent group: code, theme and roster. It outlives games (D13). */
+/**
+ * A room is the persistent group: code, theme and roster (ADR-0007 supersedes
+ * D13's "same code all season" — a room is one session now, and the deck is
+ * its character).
+ */
 export const rooms = bingo.table('rooms', {
   code: varchar('code', { length: ROOM_CODE_LENGTH }).primaryKey(),
   themeId: text('theme_id').notNull(),
@@ -51,6 +55,13 @@ export const rooms = bingo.table('rooms', {
   hostPlayerId: uuid('host_player_id').references(
     (): AnyPgColumn => players.id,
   ),
+  /**
+   * The ~40-square deck cards are dealt from (D6), moved here from `games` by
+   * ADR-0007: a room now hosts at most one session, so the deck belongs to the
+   * room rather than to a game row it outlived under the old model. Null until
+   * the host starts the game.
+   */
+  deck: text('deck').array(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -70,15 +81,16 @@ export const players = bingo.table('players', {
     .defaultNow(),
 });
 
-/** A game is one session within a room: its deck, cards, log and winners (D13). */
+/**
+ * A game is one session within a room: its cards, log and winners (ADR-0007;
+ * supersedes D13). The deck lives on `rooms` now, not here.
+ */
 export const games = bingo.table('games', {
   id: uuid('id').primaryKey().defaultRandom(),
   roomCode: varchar('room_code', { length: ROOM_CODE_LENGTH })
     .notNull()
     .references(() => rooms.code),
   themeId: text('theme_id').notNull(),
-  /** The ~40-square room deck cards are dealt from (D6). */
-  deck: text('deck').array().notNull(),
   seed: text('seed').notNull(),
   state: gameState('state').notNull().default('lobby'),
   startedAt: timestamp('started_at', { withTimezone: true }),

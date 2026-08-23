@@ -154,8 +154,12 @@ async function callRows(code: string): Promise<{ square_id: string }[]> {
 }
 
 async function gameRow(code: string): Promise<{ seed: string; deck: string[]; state: string }> {
+  // The deck lives on `rooms` now (ADR-0007); the game row itself keeps seed
+  // and state.
   const rows = await db.execute<{ seed: string; deck: string[]; state: string }>(
-    sql`SELECT seed, deck, state FROM bingo.games WHERE room_code = ${code}`,
+    sql`SELECT g.seed, r.deck, g.state
+        FROM bingo.games g JOIN bingo.rooms r ON r.code = g.room_code
+        WHERE g.room_code = ${code}`,
   );
 
   const [row] = [...rows];
@@ -508,11 +512,12 @@ describe.skipIf(noTestDatabase)('re-rolling a card', () => {
     const started = (await (await start(host.code, host.token)).json()) as GameView;
     const originalIds = started.card!.map((square) => square.id);
 
+    // The deck lives on `rooms` now (ADR-0007).
     await db.execute(
-      sql`UPDATE bingo.games SET deck = ARRAY[${sql.join(
+      sql`UPDATE bingo.rooms SET deck = ARRAY[${sql.join(
         originalIds.map((id) => sql`${id}`),
         sql`, `,
-      )}]::text[] WHERE id = ${started.id}`,
+      )}]::text[] WHERE code = ${host.code}`,
     );
 
     const res = await reroll(started.id, host.token);

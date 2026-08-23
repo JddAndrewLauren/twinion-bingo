@@ -57,10 +57,13 @@ describe('emitted migration SQL', () => {
    * the reason for the ban survives the narrowing: drizzle-kit diffs a schema it
    * has been filtered down to, so anything it cannot see reads as absent and is a
    * candidate for a drop. What is safe to permit is therefore the narrowest thing
-   * that admits ADR-0004's migration: an index, named, inside `bingo`. A table, a
-   * schema, a column, a type, or an unqualified name is still refused.
+   * that admits the migration in front of it: an index, or (ADR-0007's
+   * `games.deck` -> `rooms.deck` move) a named column, one at a time, on a
+   * schema-qualified `bingo` table. A table, a schema, a type, or an unqualified
+   * name is still refused.
    */
-  const ALLOWED_DROP = /^DROP INDEX (?:IF EXISTS )?"bingo"\."[a-z0-9_]+";?$/i;
+  const ALLOWED_DROP =
+    /^DROP INDEX (?:IF EXISTS )?"bingo"\."[a-z0-9_]+";?$|^ALTER TABLE "bingo"\."[a-z0-9_]+" DROP COLUMN "[a-z0-9_]+";?$/i;
 
   /**
    * One SQL statement per element, so the allowlist can anchor. drizzle-kit
@@ -78,7 +81,7 @@ describe('emitted migration SQL', () => {
       .filter((statement) => statement !== '')
       .map((statement) => `${statement};`);
 
-  it.each(migrations)('$name drops nothing but a bingo index', ({ sql }) => {
+  it.each(migrations)('$name drops nothing but a bingo index or column', ({ sql }) => {
     const drops = statementsOf(sql).filter((statement) =>
       /\bDROP\b/i.test(statement),
     );
@@ -93,21 +96,28 @@ describe('emitted migration SQL', () => {
    * generous fails silently — so the refusals are asserted rather than assumed,
    * and so is the splitting, which is the half that is easy to get wrong.
    */
-  it('refuses every drop but a schema-qualified bingo index', () => {
+  it('refuses every drop but a schema-qualified bingo index or column', () => {
     for (const statement of [
       'DROP TABLE "bingo"."room_events";',
       'DROP SCHEMA "bingo";',
-      'ALTER TABLE "bingo"."room_events" DROP COLUMN "square_id";',
       'DROP TYPE "bingo"."room_event_kind";',
       'DROP INDEX "room_events_call_unique";',
       'DROP INDEX "drizzle"."room_events_call_unique";',
       'DROP INDEX "bingo"."a", "bingo"."b";',
+      'ALTER TABLE "drizzle"."room_events" DROP COLUMN "square_id";',
+      'ALTER TABLE "room_events" DROP COLUMN "square_id";',
+      'ALTER TABLE "bingo"."room_events" DROP COLUMN "a", "bingo"."room_events" DROP COLUMN "b";',
     ]) {
       expect(statement).not.toMatch(ALLOWED_DROP);
     }
 
     expect('DROP INDEX "bingo"."room_events_call_unique";').toMatch(ALLOWED_DROP);
     expect('DROP INDEX IF EXISTS "bingo"."room_events_call_unique";').toMatch(
+      ALLOWED_DROP,
+    );
+    // ADR-0007's `games.deck` -> `rooms.deck` move: a named column drop on a
+    // schema-qualified `bingo` table, the same narrowness as the index case.
+    expect('ALTER TABLE "bingo"."games" DROP COLUMN "deck";').toMatch(
       ALLOWED_DROP,
     );
 

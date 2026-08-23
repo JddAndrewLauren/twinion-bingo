@@ -1,7 +1,7 @@
 import type { Pool } from '@twinion-bingo/theme';
 import { and, eq } from 'drizzle-orm';
 import type { Tx } from '../db/client.js';
-import { cards, games } from '../db/schema.js';
+import { cards, games, rooms } from '../db/schema.js';
 import { dealCard, deckSquares } from './deck.js';
 import { poolFor } from './pools.js';
 
@@ -29,13 +29,15 @@ export async function dealLateJoinCard(
     .select({
       id: games.id,
       themeId: games.themeId,
-      deck: games.deck,
+      deck: rooms.deck,
       seed: games.seed,
     })
     .from(games)
+    .innerJoin(rooms, eq(rooms.code, games.roomCode))
     .where(and(eq(games.roomCode, code), eq(games.state, 'live')));
 
   if (live === undefined) return;
+  if (live.deck === null) throw new Error(`room ${code} has a live game but no deck`);
 
   await tx.insert(cards).values({
     gameId: live.id,
