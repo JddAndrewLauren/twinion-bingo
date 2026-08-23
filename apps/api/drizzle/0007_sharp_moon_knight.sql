@@ -1,0 +1,1 @@
+ALTER TYPE "bingo"."room_event_kind" ADD VALUE 'GAME_FORCE_ENDED';

@@ -28,7 +28,19 @@ describe('the admin room list, locked', () => {
   });
 
   it('says so, generically, for the wrong secret — and still shows no room data', async () => {
-    vi.stubGlobal('fetch', unlockJson([{ code: 'ABCD', themeId: 'f1.v2', playerCount: 1, gameState: 'lobby', ageSeconds: 5 }]));
+    vi.stubGlobal(
+      'fetch',
+      unlockJson([
+        {
+          code: 'ABCD',
+          themeId: 'f1.v2',
+          playerCount: 1,
+          players: [{ id: 'p1', name: 'Ash' }],
+          gameState: 'lobby',
+          ageSeconds: 5,
+        },
+      ]),
+    );
 
     render(<RoomList apiUrl={apiUrl} />);
     fireEvent.change(screen.getByLabelText('Admin secret'), { target: { value: 'wrong' } });
@@ -41,11 +53,22 @@ describe('the admin room list, locked', () => {
 });
 
 describe('the admin room list, unlocked', () => {
-  it('lists code, theme, player count, game state and age for the right secret', async () => {
+  it('lists code, theme, players, game state and age for the right secret', async () => {
     vi.stubGlobal(
       'fetch',
       unlockJson([
-        { code: 'ABCD', themeId: 'f1.v2', playerCount: 3, gameState: 'live', ageSeconds: 125 },
+        {
+          code: 'ABCD',
+          themeId: 'f1.v2',
+          playerCount: 3,
+          players: [
+            { id: 'p1', name: 'Ash' },
+            { id: 'p2', name: 'Bea' },
+            { id: 'p3', name: 'Cy' },
+          ],
+          gameState: 'live',
+          ageSeconds: 125,
+        },
       ]),
     );
 
@@ -55,7 +78,9 @@ describe('the admin room list, unlocked', () => {
 
     await waitFor(() => expect(screen.getByText('ABCD')).toBeDefined());
     expect(screen.getByText('Formula 1')).toBeDefined();
-    expect(screen.getByText('3')).toBeDefined();
+    expect(screen.getByText('Ash')).toBeDefined();
+    expect(screen.getByText('Bea')).toBeDefined();
+    expect(screen.getByText('Cy')).toBeDefined();
     expect(screen.getByText('live')).toBeDefined();
     expect(screen.getByText('2m')).toBeDefined();
   });
@@ -67,12 +92,35 @@ describe('the admin room list, unlocked', () => {
       .fn()
       .mockResolvedValueOnce(
         Response.json({
-          rooms: [{ code: 'ABCD', themeId: 'f1.v2', playerCount: 1, gameState: 'lobby', ageSeconds: 5 }],
+          rooms: [
+            {
+              code: 'ABCD',
+              themeId: 'f1.v2',
+              playerCount: 1,
+              players: [{ id: 'p1', name: 'Ash' }],
+              gameState: 'lobby',
+              ageSeconds: 5,
+            },
+          ],
         }),
       )
       .mockResolvedValue(
         Response.json({
-          rooms: [{ code: 'ABCD', themeId: 'f1.v2', playerCount: 4, gameState: 'live', ageSeconds: 65 }],
+          rooms: [
+            {
+              code: 'ABCD',
+              themeId: 'f1.v2',
+              playerCount: 4,
+              players: [
+                { id: 'p1', name: 'Ash' },
+                { id: 'p2', name: 'Bea' },
+                { id: 'p3', name: 'Cy' },
+                { id: 'p4', name: 'Dez' },
+              ],
+              gameState: 'live',
+              ageSeconds: 65,
+            },
+          ],
         }),
       );
     vi.stubGlobal('fetch', fetchMock);
@@ -86,6 +134,115 @@ describe('the admin room list, unlocked', () => {
     await vi.advanceTimersByTimeAsync(10_000);
 
     await vi.waitFor(() => expect(screen.getByText('live')).toBeDefined());
-    expect(screen.getByText('4')).toBeDefined();
+    expect(screen.getByText('Dez')).toBeDefined();
+  });
+});
+
+describe('the admin room list, mutating actions', () => {
+  function unlockedFetch(
+    rooms: unknown[],
+    extra?: (url: string, init?: RequestInit) => Response | undefined,
+  ) {
+    return vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.endsWith('/admin/rooms')) {
+        const headers = init?.headers as Record<string, string>;
+        if (headers.authorization !== 'Bearer lax-paddock') {
+          return new Response(null, { status: 401 });
+        }
+        return Response.json({ rooms });
+      }
+
+      const extraResponse = extra?.(url, init);
+      if (extraResponse !== undefined) return extraResponse;
+
+      return new Response(null, { status: 204 });
+    });
+  }
+
+  async function unlock() {
+    fireEvent.change(screen.getByLabelText('Admin secret'), { target: { value: 'lax-paddock' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Unlock' }));
+    await waitFor(() => expect(screen.getByText('ABCD')).toBeDefined());
+  }
+
+  it('confirms, then force-ends the room’s live game and refreshes the row', async () => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    const fetchMock = unlockedFetch([
+      {
+        code: 'ABCD',
+        themeId: 'f1.v2',
+        playerCount: 1,
+        players: [{ id: 'p1', name: 'Ash' }],
+        gameState: 'live',
+        ageSeconds: 5,
+      },
+    ]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<RoomList apiUrl={apiUrl} />);
+    await unlock();
+
+    fireEvent.click(screen.getByRole('button', { name: 'End game' }));
+
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([url]) =>
+          url.endsWith('/admin/rooms/ABCD/game/end'),
+        ),
+      ).toBe(true),
+    );
+    expect(window.confirm).toHaveBeenCalled();
+  });
+
+  it('does not send the delete request when the confirm is declined', async () => {
+    vi.stubGlobal('confirm', vi.fn(() => false));
+    const fetchMock = unlockedFetch([
+      {
+        code: 'ABCD',
+        themeId: 'f1.v2',
+        playerCount: 1,
+        players: [{ id: 'p1', name: 'Ash' }],
+        gameState: 'lobby',
+        ageSeconds: 5,
+      },
+    ]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<RoomList apiUrl={apiUrl} />);
+    await unlock();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    expect(
+      fetchMock.mock.calls.some(([url]) => url.endsWith('/admin/rooms/ABCD') && url.includes('ABCD')),
+    ).toBe(false);
+  });
+
+  it('kicks a named player after confirming', async () => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    const fetchMock = unlockedFetch([
+      {
+        code: 'ABCD',
+        themeId: 'f1.v2',
+        playerCount: 1,
+        players: [{ id: 'p1', name: 'Ash' }],
+        gameState: 'lobby',
+        ageSeconds: 5,
+      },
+    ]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<RoomList apiUrl={apiUrl} />);
+    await unlock();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Kick' }));
+
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([url]) =>
+          url.endsWith('/admin/rooms/ABCD/players/p1/kick'),
+        ),
+      ).toBe(true),
+    );
   });
 });

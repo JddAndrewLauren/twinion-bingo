@@ -34,6 +34,16 @@ export const roomEventKind = bingo.enum('room_event_kind', [
   'PRIZE',
   'CARD_REROLLED',
   'LIGHTS_OUT',
+  /**
+   * ADR-0003's second door (#126): an operator force-ending a stale game,
+   * distinct from the `PRIZE`-driven `done` a full house sets. Every row still
+   * needs a real `actor_player_id` (the column stays `NOT NULL`), so this is
+   * attributed to the room's host — the one player guaranteed to exist by the
+   * time a game does. Nothing renders this kind by actor, so that attribution
+   * is never shown as a claim that the host ended their own game; it exists
+   * only to give the row a valid FK and a place on the stream.
+   */
+  'GAME_FORCE_ENDED',
 ]);
 
 /** The win ladder of D5: one line, then two lines, then a full house. */
