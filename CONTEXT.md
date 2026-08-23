@@ -27,7 +27,8 @@ only state in which a square may be called; `done` is terminal and one-way (ADR-
 
 **Room event** — an appended row in `room_events`, the log both containers are read out of. Every
 row carries a `seq`, monotonic within a room, which is also the SSE `Last-Event-ID`. Kinds:
-`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`, `CARD_REROLLED`, `LIGHTS_OUT`.
+`PLAYER_JOINED`, `GAME_STARTED`, `CALL`, `RETRACT`, `PRIZE`, `CARD_REROLLED`, `LIGHTS_OUT`,
+`GAME_FORCE_ENDED`.
 
 ## Squares and where they come from
 
@@ -196,8 +197,15 @@ the server as part of room state, and never part of the *Room* or *Game* this fi
 
 ## Identity
 
-**Player** — a display name plus a server-issued token held in `localStorage`, per browser. No
-accounts (D11).
+**Player** — a display name plus a server-issued token held in `localStorage`, per browser. Still no
+player accounts (D11) — the *Operator* below is a separate secret, not one.
 
 **Host** — the player who created the room. Holding a deck *is* the entitlement: only the host is
 handed one, so no separate "am I the host" check can disagree with the server's.
+
+**Operator** — not a player and not a D11 account: a single shared secret (`/admin`'s bearer
+secret, #125) held outside any room, that reaches every room at once rather than scoping to one the
+way a player's token does. From #126 it is more than read-only: the operator can force-end a live
+game, delete a room outright, or **kick** a player — revoking their token so their browser can no
+longer act as them, while their name and their past calls stay in the log untouched
+(`kickPlayer`, `apps/api/src/admin/store.ts`).
