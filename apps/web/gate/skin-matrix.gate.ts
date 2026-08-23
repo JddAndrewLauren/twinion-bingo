@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { forEachSkin, openRoom } from './room-fixture';
+import { forEachSkin, openRoom, settleSkinFonts } from './room-fixture';
 import {
   expectBesideTheCard,
   expectNoCellClipped,
@@ -51,6 +51,24 @@ import {
  *   also what proves the pane's `Looking for`/`Race` tabs both still open in
  *   every skin) — not the empty-list and full-house states `room.gate.ts`
  *   already covers once at the default skin.
+ *
+ * **`settleSkinFonts` (#107) runs after every `openRoom`/`page.goto` below,
+ * before any measurement.** Reaching a skin by cookie rather than by tap means
+ * each iteration is a *fresh navigation* that already loads in its target
+ * skin — not the live, already-painted-page skin swap #107's own account
+ * diagnosed, where `document.fonts.ready` awaited once after the *initial*
+ * `page.goto` (in the default skin) said nothing about a face requested by a
+ * later, in-page skin change. `openRoom`'s own built-in `document.fonts.ready`
+ * wait, taken right after the same navigation that requested this skin's own
+ * faces, is therefore already correct for the case this file is in — the same
+ * reasoning every other `skin-*.gate.ts` file relies on, none of which call
+ * `settleSkinFonts` either. It is called anyway, defensively: this file's own
+ * header-line-count assertion is the *same shape* of measurement #107's CI run
+ * found broken by font-swap timing (a `phone-small` wrap that passed locally
+ * and failed on a cold runner), so the extra, free re-assertion of
+ * `document.fonts.ready` plus `document.fonts.load()` for every element
+ * actually on screen costs nothing and removes any doubt on the one assertion
+ * in this file most likely to be sensitive to it.
  */
 
 const landscapeOnly = () => test.info().project.name === 'ipad-11-landscape';
@@ -67,10 +85,12 @@ test.describe('the card, at every skin', () => {
   test('clips no cell, marked or unmarked, at any skin', async ({ page }) => {
     await forEachSkin(page, async () => {
       await openRoom(page, 'start');
+      await settleSkinFonts(page);
       await expectNoCellClipped(page);
       await expectNoHorizontalScroll(page);
 
       await openRoom(page, 'mid');
+      await settleSkinFonts(page);
       await expectNoCellClipped(page);
       await expectNoHorizontalScroll(page);
     });
@@ -91,6 +111,7 @@ test.describe('the header, at every skin', () => {
     await forEachSkin(page, async (skin) => {
       await openRoom(page, 'start');
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
+      await settleSkinFonts(page);
 
       const bar: Locator = page.getByRole('banner').or(page.locator('header')).first();
       const dice = bar.getByRole('button', { name: 'Re-roll card' });
@@ -128,6 +149,7 @@ test.describe('the two-pane layout, at every skin', () => {
     await forEachSkin(page, async (skin) => {
       await openRoom(page, 'mid');
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
+      await settleSkinFonts(page);
 
       await expectNoVerticalScroll(page, `the two-pane layout in ${skin}`);
       await expectBesideTheCard(page, listPane(page), `the right pane in ${skin}`);
@@ -152,7 +174,7 @@ test.describe('legibility, at every skin', () => {
       await page.goto('/legibility');
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin);
       await expect(page.getByLabel('Your card')).toBeVisible();
-      await page.evaluate(() => document.fonts.ready);
+      await settleSkinFonts(page);
 
       await expectNoCellClipped(page);
       await expectNoHorizontalScroll(page);
